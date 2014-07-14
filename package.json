@@ -1,13 +1,13 @@
 {
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "name": "document-register-element",
-  "description": "",
+  "description": "A stand-alone working lightweight version of the W3C Custom Elements specification",
   "homepage": "https://github.com/WebReflection/document-register-element",
-  "keywords": [],
+  "keywords": ["Web", "Components", "Custom", "Element", "Elements", "DOM", "W3C", "polyfill"],
   "author": {
-    "name": "",
-    "web": ""
+    "name": "Andrea Giammarchi",
+    "web": "http://webreflection.blogspot.com/"
   },
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
   "scripts": {
     "test": "node test/.test.js"
   },
-  "dependencies": {
+  "devDependencies": {
     "wru": ">= 0.0.0"
   }
 }

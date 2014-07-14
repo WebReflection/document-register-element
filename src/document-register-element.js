@@ -1,7 +1,14 @@
 
 var
+  ADD_EVENT_LISTENER = 'addEventListener',
   PROTOTYPE = 'prototype',
   EXTENDS = 'extends',
+  /*
+  DOM_ATTR_MODIFIED = 'DOMAttrModified',
+  GET_ATTRIBUTE = 'getAttribute',
+  SET_ATTRIBUTE = 'setAttribute',
+  REMOVE_ATTRIBUTE = 'removeAttribute',
+  */
   validName = /^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$/,
   invalidNames = [
     'ANNOTATION-XML',
@@ -27,12 +34,14 @@ var
   },
   hOP = types.hasOwnProperty,
   iPO = types.isPrototypeOf,
+  // documentElement = document.documentElement,
   createElement = document.createElement,
   defineProperty = Object.defineProperty,
   gOPD = Object.getOwnPropertyDescriptor,
   gOPN = Object.getOwnPropertyNames,
   gPO = Object.getPrototypeOf,
   setListener = false,
+  attributeChangedAble = false,
   setPrototype = Object.setPrototypeOf || (
     Object.__proto__ ?
       function (o, p) {
@@ -75,7 +84,68 @@ var
   )[PROTOTYPE],
   cloneNode = HTMLElementPrototype.cloneNode,
   noOp = function(){}
+  /*, attrModified,
+    DOMAttrModified = function(e) {
+    attributeChangedAble = true;
+    documentElement.removeEventListener(
+      DOM_ATTR_MODIFIED,
+      DOMAttrModified
+    );
+  }*/
 ;
+
+/*
+// Fixing WebKit DOMAttrModified
+// inspired by the method used in the folwoing link
+// http://engineering.silk.co/post/31921750832/mutation-events-what-happens
+documentElement[ADD_EVENT_LISTENER](DOM_ATTR_MODIFIED, DOMAttrModified);
+documentElement[SET_ATTRIBUTE](REGISTER_ELEMENT, 1);
+documentElement[REMOVE_ATTRIBUTE](REGISTER_ELEMENT);
+if (attributeChangedAble) {
+  attrModified = DOM_ATTR_MODIFIED;
+} else {
+  attrModified = 'DOMSubtreeModified';
+  (function(
+    originalGetAttribute,
+    originalSetAttribute,
+    originalRemoveAttribute
+  ){
+    function setupAndDispatch(self, name, was, is, removal) {
+      var e = document.createEvent('MutationEvent');
+      e.initMutationEvent(
+        DOM_ATTR_MODIFIED,
+        true,
+        false,
+        self,
+        was,
+        is,
+        name,
+        removal ? e.REMOVAL : (
+          was == null ? e.ADDITION : e.MODIFICATION
+        )
+      );
+      self.dispatchEvent(e);
+    }
+    HTMLElementPrototype[SET_ATTRIBUTE] = function setAttribute(name, value) {
+      var is, self = this, was = originalGetAttribute.call(self, name);
+      originalSetAttribute.call(self, name, value);
+      is = originalGetAttribute.call(self, name);
+      if (is !== was) {
+        setupAndDispatch(self, name, was, is, false);
+      }
+    };
+    HTMLElementPrototype[REMOVE_ATTRIBUTE] = function removeAttribute(name) {
+      var self = this, was = originalGetAttribute.call(self, name);
+      originalRemoveAttribute.call(self, name);
+      setupAndDispatch(self, name, was, '', true);
+    };
+  }(
+    HTMLElementPrototype[GET_ATTRIBUTE],
+    HTMLElementPrototype[SET_ATTRIBUTE],
+    HTMLElementPrototype[REMOVE_ATTRIBUTE]
+  ));
+}
+*/
 
 function invoke(target, name) {
   (
@@ -112,21 +182,29 @@ function notifyEach(target, callback, context) {
   );
 }
 
-function triggerAction(node) {
-  var proto = protos[getTypeIndex(node)];
-  if (gPO(node) !== proto) {
-    setupNode(node, proto);
+// used only inside onDOMNode
+// maybe not needed here
+function verifyAndSetupAndAction(node, action) {
+  var proto, i = getTypeIndex(node);
+  if (-1 < i) {
+    proto = protos[i];
+    if (gPO(node) !== proto) {
+      setupNode(node, proto);
+    }
+    invoke(node, action);
   }
-  invoke(node, this);
 }
 
 function onDOMNode(whatHappened) {
+  function triggerAction(node) {
+    verifyAndSetupAndAction(node, whatHappened);
+  }
   return function (e) {
     var target = e.target;
-    if (-1 < getTypeIndex(target)) {
-      invoke(target, whatHappened);
+    if (iPO.call(HTMLElementPrototype, target)) {
+      verifyAndSetupAndAction(target, whatHappened);
+      notifyEach(target, triggerAction);
     }
-    notifyEach(target, triggerAction, whatHappened);
   };
 }
 
@@ -138,17 +216,15 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     // we need to set this listener
     // setting it by default might slow down for no reason
     setListener = true;
-    document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
-    document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
+    document[ADD_EVENT_LISTENER]('DOMNodeInserted', onDOMNode('attached'));
+    document[ADD_EVENT_LISTENER]('DOMNodeRemoved', onDOMNode('detached'));
     document.createElement = function (localName, typeExtension) {
       var i, node = createElement.apply(document, arguments);
       if (typeExtension) {
         node.setAttribute('is', localName = typeExtension.toLowerCase());
       }
       i = indexOf.call(types, localName.toUpperCase());
-      if (-1 < i) {
-        setupNode(node, protos[i]);
-      }
+      if (-1 < i) setupNode(node, protos[i]);
       return node;
     };
     HTMLElementPrototype.cloneNode = function (deep) {
@@ -156,12 +232,8 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         node = cloneNode.call(this, !!deep),
         i = getTypeIndex(node)
       ;
-      if (-1 < i) {
-        setupNode(node, protos[i]);
-      }
-      if (deep) {
-        notifyEach(node, setupEachNode);
-      }
+      if (-1 < i) setupNode(node, protos[i]);
+      if (deep) notifyEach(node, setupEachNode);
       return node;
     };
   }
