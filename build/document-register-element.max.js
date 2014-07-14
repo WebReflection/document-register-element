@@ -26,7 +26,7 @@ THE SOFTWARE.
 if (REGISTER_ELEMENT in document) return;
 
 var
-  // IE < 11 only + old WebKit for attributes
+  // IE < 11 only + old WebKit for attributes + feature detection
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
 
   // shortcuts and costants
@@ -181,8 +181,8 @@ var
 
 if (!MutationObserver) {
   documentElement.addEventListener(DOM_ATTR_MODIFIED, DOMAttrModified);
-  documentElement.setAttribute(REGISTER_ELEMENT, 1);
-  documentElement.removeAttribute(REGISTER_ELEMENT);
+  documentElement.setAttribute(EXPANDO_UID, 1);
+  documentElement.removeAttribute(EXPANDO_UID);
   if (doesNotSupportDOMAttrModified) {
     onSubtreeModified = function (e) {
       var
