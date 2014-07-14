@@ -195,5 +195,49 @@ wru.test(typeof document === 'undefined' ? [] : [
         }));
       }));
     }
+  },{
+    name: 'offline',
+    test: function () {
+      var args, node = document.createElement('x-direct');
+      node.setAttribute('what', 'ever');
+      setTimeout(wru.async(function () {
+        wru.assert('created callback triggered', node._info[0].type === 'created');
+        wru.assert('attributeChanged was called', node._info[1].type === 'attributeChanged');
+        args = node._info[1].arguments;
+        wru.assert('correct arguments with new value', args[0] === 'what' && args[1] == null && args[2] === 'ever');
+        node.setAttribute('what', 'else');
+        setTimeout(wru.async(function () {
+          args = node._info[2].arguments;
+          wru.assert('correct arguments with old value', args[0] === 'what' && args[1] === 'ever' && args[2] === 'else');
+          node.removeAttribute('what');
+          setTimeout(wru.async(function () {
+            args = node._info[3].arguments;
+            wru.assert(
+              'correct arguments with removed attribute',
+              args[0] === 'what' &&
+              args[1] === 'else' &&
+              args[2] == null
+            );
+          }));
+        }));
+      }));
+    }
+  },{
+    name: 'className',
+    test: function () {
+      var args, node = document.createElement('x-direct');
+      node.className = 'a';
+      setTimeout(wru.async(function () {
+        wru.assert('attributeChanged was called', node._info[1].type === 'attributeChanged');
+        args = node._info[1].arguments;
+        wru.assert('correct arguments with new value', args[0] === 'class' && args[1] == null && args[2] === 'a');
+        node.className += ' b';
+        setTimeout(wru.async(function () {
+          wru.assert('attributeChanged was called', node._info[2].type === 'attributeChanged');
+          args = node._info[2].arguments;
+          wru.assert('correct arguments with new value', args[0] === 'class' && args[1] == 'a' && args[2] === 'a b');
+        }));
+      }));
+    }
   }
 ]);
