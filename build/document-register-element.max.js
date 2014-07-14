@@ -30,12 +30,13 @@ var
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
 
   // shortcuts and costants
-  ADD_EVENT_LISTENER = 'addEventListener',
   PROTOTYPE = 'prototype',
   EXTENDS = 'extends',
-
+  
+  ADD_EVENT_LISTENER = 'addEventListener',
   DOM_ATTR_MODIFIED = 'DOMAttrModified',
   DOM_SUBTREE_MODIFIED = 'DOMSubtreeModified',
+  QUERY_SELECTOR_ALL = 'querySelectorAll',
   GET_ATTRIBUTE = 'getAttribute',
   SET_ATTRIBUTE = 'setAttribute',
   REMOVE_ATTRIBUTE = 'removeAttribute',
@@ -60,7 +61,7 @@ var
   protos = [],
 
   // to query subnodes
-  query = [],
+  query = '',
 
   // html shortcut used to feature detect
   documentElement = document.documentElement,
@@ -269,7 +270,10 @@ function executeAction(action) {
   return function (node) {
     if (iPO.call(HTMLElementPrototype, node)) {
       verifyAndSetupAndAction(node, action);
-      notifyEach(node, triggerAction);
+      forEach.call(
+        target[QUERY_SELECTOR_ALL](query),
+        triggerAction
+      );
     }
   };
 }
@@ -279,15 +283,6 @@ function getTypeIndex(target) {
   return indexOf.call(
     types,
     is ? is[TO_UPPER_CASE]() : target.nodeName
-  );
-}
-
-function notifyEach(target, callback) {
-  forEach.call(
-    target.querySelectorAll(
-      query.join(',')
-    ),
-    callback
   );
 }
 
@@ -414,7 +409,12 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         i = getTypeIndex(node)
       ;
       if (-1 < i) setupNode(node, protos[i]);
-      if (deep) notifyEach(node, setupEachNode);
+      if (deep) {
+        forEach.call(
+          target[QUERY_SELECTOR_ALL](query),
+          setupEachNode
+        );
+      }
       return node;
     };
   }
@@ -429,7 +429,12 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     nodeName = extending ? options[EXTENDS] : upperType,
     i = types.push(upperType) - 1
   ;
-  query.push(extending ? nodeName + '[is="' + type[TO_LOWER_CASE]() + '"]' : nodeName);
+  query = query.concat(
+    query.length ? ',' : '',
+    extending ?
+      nodeName + '[is="' + type[TO_LOWER_CASE]() + '"]' :
+      nodeName
+  );
   protos[i] = hOP.call(options, PROTOTYPE) ? options[PROTOTYPE] : HTMLElementPrototype;
   return function () {
     return document.createElement(nodeName, extending && upperType);
