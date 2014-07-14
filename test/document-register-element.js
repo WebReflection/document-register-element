@@ -233,6 +233,7 @@ wru.test(typeof document === 'undefined' ? [] : [
         wru.assert('correct arguments with new value', args[0] === 'class' && args[1] == null && args[2] === 'a');
         node.className += ' b';
         setTimeout(wru.async(function () {
+          // the only known device that fails this test is Blackberry 7
           wru.assert('attributeChanged was called', node._info[2].type === 'attributeChanged');
           args = node._info[2].arguments;
           wru.assert('correct arguments with new value', args[0] === 'class' && args[1] == 'a' && args[2] === 'a b');
