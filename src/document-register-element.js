@@ -1,7 +1,3 @@
-(function(window, document, Object, REGISTER_ELEMENT){'use strict';
-
-// in case it's there or already patched
-if (REGISTER_ELEMENT in document) return;
 
 var
   PROTOTYPE = 'prototype',
@@ -187,4 +183,3 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
   };
 };
 
-}(window, document, Object, 'registerElement'));

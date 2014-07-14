@@ -209,4 +209,5 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
   };
 };
 
+
 }(window, document, Object, 'registerElement'));
