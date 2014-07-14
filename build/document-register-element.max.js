@@ -125,6 +125,11 @@ var
   )[PROTOTYPE],
   cloneNode = HTMLElementPrototype.cloneNode,
   noOp = function(){},
+  attributesObserver = {
+    attributes: true,
+    characterData: true,
+    attributeOldValue: true
+  },
   observer
   /*, attrModified,
     DOMAttrModified = function(e) {
@@ -189,17 +194,32 @@ if (attributeChangedAble) {
 }
 */
 
-function invoke(target, name) {
-  (
-    target[name] ||
-    target[name + 'Callback'] ||
-    noOp
-  ).call(target);
+function onDOMAttrModified(e) {
+  var
+    node = e.currentTarget,
+    attrChange = e.attrChange,
+    prevValue = e.prevValue,
+    newValue = e.newValue
+  ;
+  if (node.attributeChangedCallback) {
+    node.attributeChangedCallback(
+      e.attrName,
+      attrChange === e.ADDITION ? null : prevValue,
+      attrChange === e.REMOVAL ? null : newValue
+    );
+  }
 }
 
 function setupNode(node, proto) {
   setPrototype(node, proto);
-  invoke(node, 'created');
+  if (observer) {
+    observer.observe(node, attributesObserver);
+  } else {
+    node[ADD_EVENT_LISTENER]('DOMAttrModified', onDOMAttrModified);
+  }
+  if (node.createdCallback) {
+    node.createdCallback();
+  }
 }
 
 function setupEachNode(node) {
@@ -226,10 +246,11 @@ function notifyEach(target, callback) {
 // used only inside onDOMNode
 // maybe not needed here
 function verifyAndSetupAndAction(node, action) {
-  var i = getTypeIndex(node);
+  var fn, i = getTypeIndex(node);
   if (-1 < i) {
     patchIfNotAlready(node, protos[i]);
-    invoke(node, action);
+    fn = node[action + 'Callback'];
+    if (fn) fn.call(node);
   }
 }
 
@@ -261,8 +282,6 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     // setting it by default might slow down for no reason
     setListener = true;
     if (MutationObserver) {
-      // TODO: recycle observer for attributes too
-      //       during patch time, then react in this loop
       observer = (function(executor){
         return new MutationObserver(function (records) {
           for (var
@@ -270,13 +289,24 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
             i = 0, length = records.length; i < length; i++
           ) {
             current = records[i];
-            for (list = current.addedNodes, j = 0, l = list.length; j < l; j++) {
-              if (iPO.call(HTMLElementPrototype, node = list[j])) {
-                verifyAndSetupAndAction(node, 'attached');
+            if (current.type === 'childList') {
+              for (list = current.addedNodes, j = 0, l = list.length; j < l; j++) {
+                if (iPO.call(HTMLElementPrototype, node = list[j])) {
+                  verifyAndSetupAndAction(node, 'attached');
+                }
               }
-            }
-            for (list = current.removedNodes, j = 0, l = list.length; j < l; j++) {
-              executor(list[j]);
+              for (list = current.removedNodes, j = 0, l = list.length; j < l; j++) {
+                executor(list[j]);
+              }
+            } else {
+              node = current.target;
+              if (node.attributeChangedCallback) {
+                node.attributeChangedCallback(
+                  current.attributeName,
+                  current.oldValue,
+                  node.getAttribute(current.attributeName)
+                );
+              }
             }
           }
         });
