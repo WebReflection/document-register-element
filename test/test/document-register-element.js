@@ -117,7 +117,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }));
     }
   },{
-    name: 'as &lt;x-indirect&gt; innerHTML',
+    name: 'as &lt;div is="x-indirect"&gt; innerHTML',
     test: function () {
       var node = document.body.appendChild(document.createElement('div'));
       node.innerHTML = '<div is="x-indirect"></div>';
@@ -134,7 +134,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }));
     }
   },{
-    name: 'as createElement(x-direct) innerHTML',
+    name: 'as createElement(x-direct)',
     test: function () {
       var node = document.body.appendChild(document.createElement('div')).appendChild(
         document.createElement('x-direct')
@@ -150,7 +150,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }));
     }
   },{
-    name: 'as createElement(div, x-indirect) innerHTML',
+    name: 'as createElement(div, x-indirect)',
     test: function () {
       var node = document.body.appendChild(document.createElement('div')).appendChild(
         document.createElement('div', 'x-indirect')
