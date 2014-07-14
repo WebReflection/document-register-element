@@ -30,18 +30,9 @@ var
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
 
   // shortcuts and costants
-  PROTOTYPE = 'prototype',
   EXTENDS = 'extends',
-  
-  ADD_EVENT_LISTENER = 'addEventListener',
   DOM_ATTR_MODIFIED = 'DOMAttrModified',
   DOM_SUBTREE_MODIFIED = 'DOMSubtreeModified',
-  QUERY_SELECTOR_ALL = 'querySelectorAll',
-  GET_ATTRIBUTE = 'getAttribute',
-  SET_ATTRIBUTE = 'setAttribute',
-  REMOVE_ATTRIBUTE = 'removeAttribute',
-  TO_LOWER_CASE = 'toLowerCase',
-  TO_UPPER_CASE = 'toUpperCase',
 
   // valid and invalid node names
   validName = /^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$/,
@@ -78,28 +69,30 @@ var
   },
 
   // other helpers / shortcuts
-  hOP = types.hasOwnProperty,
-  iPO = types.isPrototypeOf,
+  OP = Object.prototype,
+  hOP = OP.hasOwnProperty,
+  iPO = OP.isPrototypeOf,
 
-  createElement = document.createElement,
   defineProperty = Object.defineProperty,
   gOPD = Object.getOwnPropertyDescriptor,
   gOPN = Object.getOwnPropertyNames,
   gPO = Object.getPrototypeOf,
-  setPrototypeOf = Object.setPrototypeOf,
+  sPO = Object.setPrototypeOf,
 
   MutationObserver = window.MutationObserver ||
                      window.WebKitMutationObserver,
 
   hasProto = !!Object.__proto__,
 
-  setPrototype = setPrototypeOf || (
+  // will set the prototype if possible
+  // or copy over all properties
+  setPrototype = sPO || (
     hasProto ?
       function (o, p) {
         o.__proto__ = p;
         return o;
       } : (
-    'getOwnPropertyDescriptor' in Object ?
+    gOPD ?
       (function(){
         function setProperties(o, p) {
           for (var
@@ -129,7 +122,10 @@ var
       }
   )),
 
-  patchIfNotAlready = setPrototypeOf || hasProto ?
+  // based on setting prototype capability
+  // will check proto or the expando attribute
+  // in order to setup the node once
+  patchIfNotAlready = sPO || hasProto ?
     function (node, proto) {
       if (!iPO.call(proto, node)) {
         setupNode(node, proto);
@@ -143,24 +139,27 @@ var
     }
   ,
 
+  // DOM shortcuts and helpers
   HTMLElementPrototype = (
     window.HTMLElement ||
     window.Element ||
     window.Node
-  )[PROTOTYPE],
+  ).prototype,
 
   cloneNode = HTMLElementPrototype.cloneNode,
-  setAttribute = HTMLElementPrototype[SET_ATTRIBUTE],
+  setAttribute = HTMLElementPrototype.setAttribute,
 
+  // replaced later on
+  createElement = document.createElement,
+
+  // shared observer for all attributes
   attributesObserver = MutationObserver && {
     attributes: true,
     characterData: true,
     attributeOldValue: true
   },
 
-  setListener = false,
-  doesNotSupportDOMAttrModified = true,
-
+  // useful to detect only if there's no MutationObserver
   DOMAttrModified = MutationObserver || function(e) {
     doesNotSupportDOMAttrModified = false;
     documentElement.removeEventListener(
@@ -169,6 +168,11 @@ var
     );
   },
 
+  // internal flags
+  setListener = false,
+  doesNotSupportDOMAttrModified = true,
+
+  // optionally defined later on
   onSubtreeModified,
   callDOMAttrModified,
   getAttributesMirror,
@@ -176,9 +180,9 @@ var
 ;
 
 if (!MutationObserver) {
-  documentElement[ADD_EVENT_LISTENER](DOM_ATTR_MODIFIED, DOMAttrModified);
-  documentElement[SET_ATTRIBUTE](REGISTER_ELEMENT, 1);
-  documentElement[REMOVE_ATTRIBUTE](REGISTER_ELEMENT);
+  documentElement.addEventListener(DOM_ATTR_MODIFIED, DOMAttrModified);
+  documentElement.setAttribute(REGISTER_ELEMENT, 1);
+  documentElement.removeAttribute(REGISTER_ELEMENT);
   if (doesNotSupportDOMAttrModified) {
     onSubtreeModified = function (e) {
       var
@@ -271,7 +275,7 @@ function executeAction(action) {
     if (iPO.call(HTMLElementPrototype, node)) {
       verifyAndSetupAndAction(node, action);
       forEach.call(
-        target[QUERY_SELECTOR_ALL](query),
+        node.querySelectorAll(query),
         triggerAction
       );
     }
@@ -279,10 +283,10 @@ function executeAction(action) {
 }
 
 function getTypeIndex(target) {
-  var is = target.getAttribute('is');
   return indexOf.call(
     types,
-    is ? is[TO_UPPER_CASE]() : target.nodeName
+    (target.getAttribute('is') || '').toUpperCase() ||
+    target.nodeName
   );
 }
 
@@ -325,11 +329,11 @@ function setupNode(node, proto) {
     observer.observe(node, attributesObserver);
   } else {
     if (doesNotSupportDOMAttrModified) {
-      node[SET_ATTRIBUTE] = patchedSetAttribute;
+      node.setAttribute = patchedSetAttribute;
       node[EXPANDO_UID] = getAttributesMirror(node);
-      node[ADD_EVENT_LISTENER](DOM_SUBTREE_MODIFIED, onSubtreeModified);
+      node.addEventListener(DOM_SUBTREE_MODIFIED, onSubtreeModified);
     }
-    node[ADD_EVENT_LISTENER](DOM_ATTR_MODIFIED, onDOMAttrModified);
+    node.addEventListener(DOM_ATTR_MODIFIED, onDOMAttrModified);
   }
   if (node.createdCallback) {
     node.createdCallback();
@@ -347,7 +351,7 @@ function verifyAndSetupAndAction(node, action) {
 
 // set as enumerable, writable and configurable
 document[REGISTER_ELEMENT] = function registerElement(type, options) {
-  var upperType = type[TO_UPPER_CASE]();
+  var upperType = type.toUpperCase();
   if (!setListener) {
     // only first time document.registerElement is used
     // we need to set this listener
@@ -391,15 +395,15 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         }
       );
     } else {
-      document[ADD_EVENT_LISTENER]('DOMNodeInserted', onDOMNode('attached'));
-      document[ADD_EVENT_LISTENER]('DOMNodeRemoved', onDOMNode('detached'));
+      document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
+      document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
     }
     document.createElement = function (localName, typeExtension) {
       var i, node = createElement.apply(document, arguments);
       if (typeExtension) {
-        node[SET_ATTRIBUTE]('is', localName = typeExtension[TO_LOWER_CASE]());
+        node.setAttribute('is', localName = typeExtension.toLowerCase());
       }
-      i = indexOf.call(types, localName[TO_UPPER_CASE]());
+      i = indexOf.call(types, localName.toUpperCase());
       if (-1 < i) setupNode(node, protos[i]);
       return node;
     };
@@ -411,7 +415,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       if (-1 < i) setupNode(node, protos[i]);
       if (deep) {
         forEach.call(
-          target[QUERY_SELECTOR_ALL](query),
+          node.querySelectorAll(query),
           setupEachNode
         );
       }
@@ -425,17 +429,16 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     throw new Error('The type ' + type + ' is invalid');
   }
   var
-    extending = hOP.call(options || type, EXTENDS),
+    opt = options || OP,
+    extending = hOP.call(opt, EXTENDS),
     nodeName = extending ? options[EXTENDS] : upperType,
     i = types.push(upperType) - 1
   ;
   query = query.concat(
     query.length ? ',' : '',
-    extending ?
-      nodeName + '[is="' + type[TO_LOWER_CASE]() + '"]' :
-      nodeName
+    extending ? nodeName + '[is="' + type.toLowerCase() + '"]' : nodeName
   );
-  protos[i] = hOP.call(options, PROTOTYPE) ? options[PROTOTYPE] : HTMLElementPrototype;
+  protos[i] = hOP.call(opt, 'prototype') ? options.prototype : HTMLElementPrototype;
   return function () {
     return document.createElement(nodeName, extending && upperType);
   };
