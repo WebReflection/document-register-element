@@ -99,10 +99,14 @@ wru.test(typeof document === 'undefined' ? [] : [
       node.innerHTML = '<x-direct></x-direct>';
       node = node.firstChild;
       wru.assert('right name', node.nodeName === 'X-DIRECT');
-      wru.assert('created callback triggered', node._info[0].type === 'created');
-      wru.assert('attached callback triggered', node._info[1].type === 'attached');
-      document.body.removeChild(node.parentNode);
-      wru.assert('detached callback triggered', node._info[2].type === 'detached');
+      setTimeout(wru.async(function(){
+        wru.assert('created callback triggered', node._info[0].type === 'created');
+        wru.assert('attached callback triggered', node._info[1].type === 'attached');
+        document.body.removeChild(node.parentNode);
+        setTimeout(wru.async(function(){
+          wru.assert('detached callback triggered', node._info[2].type === 'detached');
+        }));
+      }));
     }
   },{
     name: 'as &lt;x-indirect&gt; innerHTML',
@@ -112,10 +116,14 @@ wru.test(typeof document === 'undefined' ? [] : [
       node = node.firstChild;
       wru.assert('right name', node.nodeName === 'DIV');
       wru.assert('right type', node.getAttribute('is') === 'x-indirect');
-      wru.assert('created callback triggered', node._info[0].type === 'created');
-      wru.assert('attached callback triggered', node._info[1].type === 'attached');
-      document.body.removeChild(node.parentNode);
-      wru.assert('detached callback triggered', node._info[2].type === 'detached');
+      setTimeout(wru.async(function () {
+        wru.assert('created callback triggered', node._info[0].type === 'created');
+        wru.assert('attached callback triggered', node._info[1].type === 'attached');
+        document.body.removeChild(node.parentNode);
+        setTimeout(wru.async(function () {
+          wru.assert('detached callback triggered', node._info[2].type === 'detached');
+        }));
+      }));
     }
   },{
     name: 'as createElement(x-direct) innerHTML',
@@ -124,10 +132,14 @@ wru.test(typeof document === 'undefined' ? [] : [
         document.createElement('x-direct')
       );
       wru.assert('right name', node.nodeName === 'X-DIRECT');
-      wru.assert('created callback triggered', node._info[0].type === 'created');
-      wru.assert('attached callback triggered', node._info[1].type === 'attached');
-      document.body.removeChild(node.parentNode);
-      wru.assert('detached callback triggered', node._info[2].type === 'detached');
+      setTimeout(wru.async(function () {
+        wru.assert('created callback triggered', node._info[0].type === 'created');
+        wru.assert('attached callback triggered', node._info[1].type === 'attached');
+        document.body.removeChild(node.parentNode);
+        setTimeout(wru.async(function () {
+          wru.assert('detached callback triggered', node._info[2].type === 'detached');
+        }));
+      }));
     }
   },{
     name: 'as createElement(div, x-indirect) innerHTML',
@@ -137,10 +149,14 @@ wru.test(typeof document === 'undefined' ? [] : [
       );
       wru.assert('right name', node.nodeName === 'DIV');
       wru.assert('right type', node.getAttribute('is') === 'x-indirect');
-      wru.assert('created callback triggered', node._info[0].type === 'created');
-      wru.assert('attached callback triggered', node._info[1].type === 'attached');
-      document.body.removeChild(node.parentNode);
-      wru.assert('detached callback triggered', node._info[2].type === 'detached');
+      setTimeout(wru.async(function () {
+        wru.assert('created callback triggered', node._info[0].type === 'created');
+        wru.assert('attached callback triggered', node._info[1].type === 'attached');
+        document.body.removeChild(node.parentNode);
+        setTimeout(wru.async(function () {
+          wru.assert('detached callback triggered', node._info[2].type === 'detached');
+        }));
+      }));
     }
   }
 ]);

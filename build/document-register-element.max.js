@@ -69,6 +69,8 @@ var
   gPO = Object.getPrototypeOf,
   setListener = false,
   attributeChangedAble = false,
+  MutationObserver = window.MutationObserver ||
+                     window.WebKitMutationObserver,
   setPrototype = Object.setPrototypeOf || (
     Object.__proto__ ?
       function (o, p) {
@@ -122,7 +124,8 @@ var
     window.Node
   )[PROTOTYPE],
   cloneNode = HTMLElementPrototype.cloneNode,
-  noOp = function(){}
+  noOp = function(){},
+  observer
   /*, attrModified,
     DOMAttrModified = function(e) {
     attributeChangedAble = true;
@@ -230,16 +233,22 @@ function verifyAndSetupAndAction(node, action) {
   }
 }
 
-function onDOMNode(whatHappened) {
+function executeAction(action) {
   function triggerAction(node) {
-    verifyAndSetupAndAction(node, whatHappened);
+    verifyAndSetupAndAction(node, action);
   }
-  return function (e) {
-    var target = e.target;
-    if (iPO.call(HTMLElementPrototype, target)) {
-      verifyAndSetupAndAction(target, whatHappened);
-      notifyEach(target, triggerAction);
+  return function (node) {
+    if (iPO.call(HTMLElementPrototype, node)) {
+      verifyAndSetupAndAction(node, action);
+      notifyEach(node, triggerAction);
     }
+  };
+}
+
+function onDOMNode(action) {
+  var executor = executeAction(action);
+  return function (e) {
+    executor(e.target);
   };
 }
 
@@ -251,8 +260,38 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     // we need to set this listener
     // setting it by default might slow down for no reason
     setListener = true;
-    document[ADD_EVENT_LISTENER]('DOMNodeInserted', onDOMNode('attached'));
-    document[ADD_EVENT_LISTENER]('DOMNodeRemoved', onDOMNode('detached'));
+    if (MutationObserver) {
+      // TODO: recycle observer for attributes too
+      //       during patch time, then react in this loop
+      observer = (function(executor){
+        return new MutationObserver(function (records) {
+          for (var
+            j, l, current, list, node,
+            i = 0, length = records.length; i < length; i++
+          ) {
+            current = records[i];
+            for (list = current.addedNodes, j = 0, l = list.length; j < l; j++) {
+              if (iPO.call(HTMLElementPrototype, node = list[j])) {
+                verifyAndSetupAndAction(node, 'attached');
+              }
+            }
+            for (list = current.removedNodes, j = 0, l = list.length; j < l; j++) {
+              executor(list[j]);
+            }
+          }
+        });
+      }(executeAction('detached')));
+      observer.observe(
+        document,
+        {
+          childList: true,
+          subtree: true
+        }
+      );
+    } else {
+      document[ADD_EVENT_LISTENER]('DOMNodeInserted', onDOMNode('attached'));
+      document[ADD_EVENT_LISTENER]('DOMNodeRemoved', onDOMNode('detached'));
+    }
     document.createElement = function (localName, typeExtension) {
       var i, node = createElement.apply(document, arguments);
       if (typeExtension) {
