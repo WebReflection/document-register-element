@@ -1,0 +1,56 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'info',
+1 verbose cli   'document-register-element' ]
+2 info using npm@1.4.9
+3 info using node@v0.10.28
+4 verbose url raw document-register-element
+5 verbose url resolving [ 'https://registry.npmjs.org/', './document-register-element' ]
+6 verbose url resolved https://registry.npmjs.org/document-register-element
+7 info trying registry request attempt 1 at 19:28:48
+8 http GET https://registry.npmjs.org/document-register-element
+9 http 404 https://registry.npmjs.org/document-register-element
+10 verbose headers { date: 'Mon, 14 Jul 2014 02:27:12 GMT',
+10 verbose headers   server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+10 verbose headers   'content-type': 'application/json',
+10 verbose headers   'cache-control': 'max-age=0',
+10 verbose headers   'content-length': '52',
+10 verbose headers   'accept-ranges': 'bytes',
+10 verbose headers   via: '1.1 varnish',
+10 verbose headers   age: '0',
+10 verbose headers   'x-served-by': 'cache-lax1430-LAX',
+10 verbose headers   'x-cache': 'MISS',
+10 verbose headers   'x-cache-hits': '0',
+10 verbose headers   'x-timer': 'S1405304832.418658,VS0,VE54',
+10 verbose headers   'keep-alive': 'timeout=10, max=50',
+10 verbose headers   connection: 'Keep-Alive' }
+11 silly registry.get cb [ 404,
+11 silly registry.get   { date: 'Mon, 14 Jul 2014 02:27:12 GMT',
+11 silly registry.get     server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+11 silly registry.get     'content-type': 'application/json',
+11 silly registry.get     'cache-control': 'max-age=0',
+11 silly registry.get     'content-length': '52',
+11 silly registry.get     'accept-ranges': 'bytes',
+11 silly registry.get     via: '1.1 varnish',
+11 silly registry.get     age: '0',
+11 silly registry.get     'x-served-by': 'cache-lax1430-LAX',
+11 silly registry.get     'x-cache': 'MISS',
+11 silly registry.get     'x-cache-hits': '0',
+11 silly registry.get     'x-timer': 'S1405304832.418658,VS0,VE54',
+11 silly registry.get     'keep-alive': 'timeout=10, max=50',
+11 silly registry.get     connection: 'Keep-Alive' } ]
+12 error 404 404 Not Found: document-register-element
+12 error 404
+12 error 404 'document-register-element' is not in the npm registry.
+12 error 404 You should bug the author to publish it
+12 error 404
+12 error 404 Note that you can also install from a
+12 error 404 tarball, folder, or http url, or git url.
+13 error System Darwin 12.5.0
+14 error command "/usr/local/bin/node" "/usr/local/bin/npm" "info" "document-register-element"
+15 error cwd /Users/agiammarchi/code/document-register-element
+16 error node -v v0.10.28
+17 error npm -v 1.4.9
+18 error code E404
+19 verbose exit [ 1, true ]
