@@ -1,5 +1,6 @@
 
 var
+  EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
   ADD_EVENT_LISTENER = 'addEventListener',
   PROTOTYPE = 'prototype',
   EXTENDS = 'extends',
@@ -77,6 +78,18 @@ var
         return o;
       }
   )),
+  patchIfNotAlready = Object.setPrototypeOf || Object.__proto__ ?
+    function (node, proto) {
+      if (!iPO.call(proto, node)) {
+        setupNode(node, proto);
+      }
+    } :
+    function (node, proto) {
+      if (!node[EXPANDO_UID]) {
+        node[EXPANDO_UID] = Object(true);
+        setupNode(node, proto);
+      }
+    },
   HTMLElementPrototype = (
     window.HTMLElement ||
     window.Element ||
@@ -172,25 +185,21 @@ function getTypeIndex(target) {
   );
 }
 
-function notifyEach(target, callback, context) {
+function notifyEach(target, callback) {
   forEach.call(
     target.querySelectorAll(
       query.join(',')
     ),
-    callback,
-    context
+    callback
   );
 }
 
 // used only inside onDOMNode
 // maybe not needed here
 function verifyAndSetupAndAction(node, action) {
-  var proto, i = getTypeIndex(node);
+  var i = getTypeIndex(node);
   if (-1 < i) {
-    proto = protos[i];
-    if (gPO(node) !== proto) {
-      setupNode(node, proto);
-    }
+    patchIfNotAlready(node, protos[i]);
     invoke(node, action);
   }
 }
