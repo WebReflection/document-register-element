@@ -1,0 +1,23 @@
+{
+  "version": "0.0.0",
+  "license": "MIT",
+  "name": "document-register-element",
+  "description": "",
+  "homepage": "https://github.com/WebReflection/document-register-element",
+  "keywords": [],
+  "author": {
+    "name": "",
+    "web": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/WebReflection/document-register-element.git"
+  },
+  "main": "./build/document-register-element.node.js",
+  "scripts": {
+    "test": "node test/.test.js"
+  },
+  "dependencies": {
+    "wru": ">= 0.0.0"
+  }
+}
