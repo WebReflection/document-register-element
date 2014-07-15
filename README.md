@@ -1,7 +1,8 @@
 document-register-element
 =========================
 
-A stand-alone working lightweight version of the [W3C Custom Elements](http://w3c.github.io/webcomponents/spec/custom/) specification
+A stand-alone working lightweight version of the [W3C Custom Elements](http://w3c.github.io/webcomponents/spec/custom/) specification.
+
 
 ### How
 
@@ -12,12 +13,6 @@ Otherwise simply:
 <script src="build/document-register-element.js"></script>
 ```
 on your head element and you should be good to go.
-
-
-#### Please Note
-In order to have a reliable native-like behavior this polyfill needs to sit on the `<head>` element or before the `<body>` tag and **without `defer` or `async` attributes**
-
-I might consider to improve register logic to react at any time but right now `<head>` will just work.
 
 
 ### Why

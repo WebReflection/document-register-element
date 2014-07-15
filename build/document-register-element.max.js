@@ -178,6 +178,7 @@ var
   // internal flags
   setListener = false,
   doesNotSupportDOMAttrModified = true,
+  initialTrigger = 0,
 
   // optionally defined later on
   onSubtreeModified,
@@ -274,16 +275,27 @@ if (!MutationObserver) {
   }
 }
 
-function executeAction(action) {
-  function triggerAction(node) {
-    verifyAndSetupAndAction(node, action);
+function loopAndVerify(list, action) {
+  for (var i = 0, length = list.length; i < length; i++) {
+    verifyAndSetupAndAction(list[i], action);
   }
+}
+
+function discoverUncaughtElements() {
+  initialTrigger = 0;
+  loopAndVerify(
+    document.querySelectorAll(query),
+    'attached'
+  );
+}
+
+function executeAction(action) {
   return function (node) {
     if (iPO.call(HTMLElementPrototype, node)) {
       verifyAndSetupAndAction(node, action);
-      forEach.call(
+      loopAndVerify(
         node.querySelectorAll(query),
-        triggerAction
+        action
       );
     }
   };
@@ -363,7 +375,7 @@ function verifyAndSetupAndAction(node, action) {
       node[detached] = false;
       node[attached] = true;
       i = 1;
-    } else if (action === detached && !node[detached]) {  
+    } else if (action === detached && !node[detached]) {
       node[attached] = false;
       node[detached] = true;
       i = 1;
@@ -467,6 +479,12 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       opt.prototype :
       create(HTMLElementPrototype)
   );
+
+  // do not discover per each register but once
+  clearTimeout(initialTrigger);
+  // needed to initialize components already present in the DOM
+  initialTrigger = setTimeout(discoverUncaughtElements);
+
   return constructor;
 };
 
