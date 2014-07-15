@@ -5,10 +5,13 @@ A stand-alone working lightweight version of the W3C Custom Elements specificati
 
 ### How
 
-`npm install document-register-element` should bring [build/document-register-element.js] inside the module folder.
+`npm install document-register-element` should bring [build/document-register-element.js](build/document-register-element.js) inside the module folder.
 
-Otherwise simply `<script src="build/document-register-element.js"></script>` on your head element and you should be good to go.
-
+Otherwise simply:
+```html
+<script src="build/document-register-element.js"></script>
+```
+on your head element and you should be good to go.
 
 
 ### Why
