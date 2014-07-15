@@ -36,11 +36,6 @@ var
     for(var i = this.length; i-- && this[i] !== v;){}
     return i;
   },
-  forEach = types.forEach || function (f, c) {
-    for (var i = 0, length = this.length; i < length; i++) {
-      f.call(c, this[i]);
-    }
-  },
 
   // other helpers / shortcuts
   OP = Object.prototype,
@@ -255,6 +250,13 @@ function loopAndVerify(list, action) {
   }
 }
 
+function loopAndSetup(list) {
+  for (var i = 0, length = list.length, node; i < length; i++) {
+    node = list[i];
+    setupNode(node, protos[getTypeIndex(node)]);
+  }
+}
+
 function discoverUncaughtElements() {
   initialTrigger = 0;
   loopAndVerify(
@@ -276,10 +278,12 @@ function executeAction(action) {
 }
 
 function getTypeIndex(target) {
+  var is = target.getAttribute('is');
   return indexOf.call(
     types,
-    (target.getAttribute('is') || '').toUpperCase() ||
-    target.nodeName
+    is ?
+        is.toUpperCase() :
+        target.nodeName
   );
 }
 
@@ -310,10 +314,6 @@ function patchedSetAttribute(name, value) {
   var self = this;
   setAttribute.call(self, name, value);
   onSubtreeModified.call(self, {target: self});
-}
-
-function setupEachNode(node) {
-  setupNode(node, protos[getTypeIndex(node)]);
 }
 
 function setupNode(node, proto) {
@@ -419,12 +419,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         i = getTypeIndex(node)
       ;
       if (-1 < i) setupNode(node, protos[i]);
-      if (deep) {
-        forEach.call(
-          node.querySelectorAll(query),
-          setupEachNode
-        );
-      }
+      if (deep) loopAndSetup(node.querySelectorAll(query));
       return node;
     };
   }

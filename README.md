@@ -15,6 +15,68 @@ Otherwise simply:
 on your head element and you should be good to go.
 
 
+### Usage Example
+
+A basic HTML example page
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>testing my-element</title>
+  <script src="js/document-register-element.js"></script>
+  <script src="js/my-element.js"></script>
+</head>
+<body>
+  <my-element>
+    some content
+  </my-element>
+</body>
+```
+
+with the following `my-element.js` content
+```javascript
+var MyElement = document.registerElement(
+  'my-element',
+  {
+    prototype: Object.create(
+      HTMLElement.prototype, {
+      createdCallback: {value: function() {
+        console.log('here I am ^_^ ');
+        console.log('with content: ', this.textContent);
+      }},
+      attachedCallback: {value: function() {
+        console.log('live on DOM ;-) ');
+      }},
+      detachedCallback: {value: function() {
+        console.log('leaving the DOM :-( )');
+      }},
+      attributeChangedCallback: {value: function(
+        name, previousValue, value
+      ) {
+        if (previousValue == null) {
+          console.log(
+            'got a new attribute ', name,
+            ' with value ', value
+          );
+        } else if (value == null) {
+          console.log(
+            'somebody removed ', name,
+            ' its value was ', previousValue
+          );
+        } else {
+          console.log(
+            name,
+            ' changed from ', previousValue,
+            ' to ', value
+          );
+        }
+      }}
+    })
+  }
+);
+```
+
+
 ### Why
 
 The Polymer framework has a [CustomElements](https://github.com/Polymer/CustomElements) under the hood that requires other repositories and a build process that will end up creating 15KB of `custom-elements.min.js` that will most likely not even work due a missing [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) that is needed for a big percentage of today browsing users out there.
