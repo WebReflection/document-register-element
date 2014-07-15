@@ -36,6 +36,7 @@ The following list of **mobile** OS has been successfully tested:
   * Windows Phone 7 or greater
   * Opera Mobile 12 or greater
   * Blackberry OS 7* and OS 10
+  * webOS 2 or LG TV
   * Samsung Bada OS 2 or greater
   * NOKIA Asha with Express Browser
 
