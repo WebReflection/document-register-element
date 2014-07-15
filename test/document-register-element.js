@@ -3,12 +3,11 @@ wru.test(typeof document === 'undefined' ? [] : [
     name: "main",
     test: function () {
       wru.assert('registerElement exists', document.registerElement);
-
       var XDirect = window.XDirect = document.registerElement(
         'x-direct',
         {
           prototype: Object.create(
-            HTMLDivElement.prototype, {
+            HTMLElement.prototype, {
             createdCallback: {value: function() {
               this._info = [{
                 type: 'created',
@@ -91,6 +90,11 @@ wru.test(typeof document === 'undefined' ? [] : [
       var node = document.body.appendChild(new XDirect);
       wru.assert('right name', node.nodeName === 'X-DIRECT');
       wru.assert('createdInvoked', node._info[0].type === 'created');
+      wru.assert('is instance',
+        node instanceof XDirect ||
+        // IE < 11 where setPrototypeOf is absent
+        Object.getPrototypeOf(XDirect.prototype).isPrototypeOf(node)
+      );
     }
   },{
     name: 'as XIndirect constructor',
@@ -99,6 +103,11 @@ wru.test(typeof document === 'undefined' ? [] : [
       wru.assert('right name', node.nodeName === 'DIV');
       wru.assert('right type', node.getAttribute('is') === 'x-indirect');
       wru.assert('createdInvoked', node._info[0].type === 'created');
+      wru.assert('is instance',
+        node instanceof XIndirect ||
+        // IE < 11 where setPrototypeOf is absent
+        Object.getPrototypeOf(XIndirect.prototype).isPrototypeOf(node)
+      );
     }
   },{
     name: 'as &lt;x-direct&gt; innerHTML',
@@ -220,6 +229,36 @@ wru.test(typeof document === 'undefined' ? [] : [
             );
           }));
         }));
+      }));
+    }
+  },{
+    name: 'nested',
+    test: function () {
+      var
+        args,
+        parentNode = document.createElement('div'),
+        direct = parentNode.appendChild(
+          document.createElement('x-direct')
+        ),
+        indirect = parentNode.appendChild(
+          document.createElement('div', 'x-indirect')
+        ),
+        indirectNested = direct.appendChild(
+          document.createElement('div', 'x-indirect')
+        )
+      ;
+      document.body.appendChild(parentNode);
+      setTimeout(wru.async(function () {
+        wru.assert('all node created',
+          direct._info[0].type === 'created' &&
+          indirect._info[0].type === 'created' &&
+          indirectNested._info[0].type === 'created'
+        );
+        wru.assert('all node attached',
+          direct._info[1].type === 'attached' &&
+          indirect._info[1].type === 'attached' &&
+          indirectNested._info[1].type === 'attached'
+        );
       }));
     }
   },{
