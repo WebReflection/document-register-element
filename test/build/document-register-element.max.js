@@ -79,10 +79,13 @@ var
   gPO = Object.getPrototypeOf,
   sPO = Object.setPrototypeOf,
 
-  MutationObserver = window.MutationObserver ||
-                     window.WebKitMutationObserver,
-
   hasProto = !!Object.__proto__,
+
+  // used to create unique instances
+  create = Object.create || function Bridge(proto) {
+    // silly broken polyfill probably ever used but short enough to work
+    return proto ? ((Bridge.prototype = proto), new Bridge) : this;
+  },
 
   // will set the prototype if possible
   // or copy over all properties
@@ -139,7 +142,11 @@ var
     }
   ,
 
-  // DOM shortcuts and helpers
+  // DOM shortcuts and helpers, if any
+
+  MutationObserver = window.MutationObserver ||
+                     window.WebKitMutationObserver,
+
   HTMLElementPrototype = (
     window.HTMLElement ||
     window.Element ||
@@ -336,44 +343,57 @@ function setupNode(node, proto) {
     node.addEventListener(DOM_ATTR_MODIFIED, onDOMAttrModified);
   }
   if (node.createdCallback) {
+    node.created = true;
     node.createdCallback();
+    node.created = false;
   }
 }
 
 function verifyAndSetupAndAction(node, action) {
-  var fn, i = getTypeIndex(node);
+  var
+    fn,
+    i = getTypeIndex(node),
+    attached = 'attached',
+    detached = 'detached'
+  ;
   if (-1 < i) {
     patchIfNotAlready(node, protos[i]);
-    fn = node[action + 'Callback'];
-    if (fn) fn.call(node);
+    i = 0;
+    if (action === attached && !node[attached]) {
+      node[detached] = false;
+      node[attached] = true;
+      i = 1;
+    } else if (action === detached && !node[detached]) {  
+      node[attached] = false;
+      node[detached] = true;
+      i = 1;
+    }
+    if (i && (fn = node[action + 'Callback'])) fn.call(node);
   }
 }
 
 // set as enumerable, writable and configurable
 document[REGISTER_ELEMENT] = function registerElement(type, options) {
-  var upperType = type.toUpperCase();
+  upperType = type.toUpperCase();
   if (!setListener) {
     // only first time document.registerElement is used
     // we need to set this listener
     // setting it by default might slow down for no reason
     setListener = true;
     if (MutationObserver) {
-      observer = (function(executor){
+      observer = (function(attached, detached){
+        function checkEmAll(list, callback) {
+          for (var i = 0, length = list.length; i < length; callback(list[i++])){}
+        }
         return new MutationObserver(function (records) {
           for (var
-            j, l, current, list, node,
+            current, node,
             i = 0, length = records.length; i < length; i++
           ) {
             current = records[i];
             if (current.type === 'childList') {
-              for (list = current.addedNodes, j = 0, l = list.length; j < l; j++) {
-                if (iPO.call(HTMLElementPrototype, node = list[j])) {
-                  verifyAndSetupAndAction(node, 'attached');
-                }
-              }
-              for (list = current.removedNodes, j = 0, l = list.length; j < l; j++) {
-                executor(list[j]);
-              }
+              checkEmAll(current.addedNodes, attached);
+              checkEmAll(current.removedNodes, detached);
             } else {
               node = current.target;
               if (node.attributeChangedCallback) {
@@ -386,7 +406,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
             }
           }
         });
-      }(executeAction('detached')));
+      }(executeAction('attached'), executeAction('detached')));
       observer.observe(
         document,
         {
@@ -429,19 +449,25 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     throw new Error('The type ' + type + ' is invalid');
   }
   var
+    constructor = function () {
+      return document.createElement(nodeName, extending && upperType);
+    },
     opt = options || OP,
     extending = hOP.call(opt, EXTENDS),
     nodeName = extending ? options[EXTENDS] : upperType,
-    i = types.push(upperType) - 1
+    i = types.push(upperType) - 1,
+    upperType
   ;
   query = query.concat(
     query.length ? ',' : '',
     extending ? nodeName + '[is="' + type.toLowerCase() + '"]' : nodeName
   );
-  protos[i] = hOP.call(opt, 'prototype') ? options.prototype : HTMLElementPrototype;
-  return function () {
-    return document.createElement(nodeName, extending && upperType);
-  };
+  constructor.prototype = (
+    protos[i] = hOP.call(opt, 'prototype') ?
+      opt.prototype :
+      create(HTMLElementPrototype)
+  );
+  return constructor;
 };
 
 
