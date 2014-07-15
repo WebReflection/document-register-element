@@ -14,6 +14,12 @@ Otherwise simply:
 on your head element and you should be good to go.
 
 
+#### Please Note
+In order to have a reliable native-like behavior this polyfill needs to sit on the `<head>` element or before the `<body>` tag and **without `defer` or `async` attributes**
+
+I might consider to improve register logic to react at any time but right now `<head>` will just work.
+
+
 ### Why
 
 The Polymer framework has a [CustomElements](https://github.com/Polymer/CustomElements) under the hood that requires other repositories and a build process that will end up creating 15KB of `custom-elements.min.js` that will most likely not even work due a missing [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) that is needed for a big percentage of today browsing users out there.
