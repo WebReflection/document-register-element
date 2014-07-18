@@ -87,6 +87,10 @@ Adding such polyfill in a reliable way means including [this file](http://code.g
 
 Add if you want [dom4](https://github.com/WebReflection/dom4#dom4) normalizer and you'll find yourself in a modern DOM environment that works reliably with today browsers with an eye always open on performance.
 
+- - -
+
+Here also the [dedicate blog post](http://webreflection.blogspot.com/2014/07/a-w3c-custom-elements-alternative.html) to know even more, if interested :-)
+
 
 ### Tested On
 
