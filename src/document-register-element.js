@@ -1,4 +1,10 @@
 
+// DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
+// THIS IS A PROJECT BASED ON A BUILD SYSTEM
+// THIS FILE IS JUST WRAPPED UP RESULTING IN
+// build/document-register-element.js
+// and its .max.js counter part
+
 var
   // IE < 11 only + old WebKit for attributes + feature detection
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
