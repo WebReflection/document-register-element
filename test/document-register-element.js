@@ -343,5 +343,25 @@ wru.test(typeof document === 'undefined' ? [] : [
                                             xd._info[1].type === 'attached');
       }), 100);
     }
+  },{
+    name: 'constructor',
+    test: function () {
+      var XEL, runtime, xEl = document.body.appendChild(
+        document.createElement('x-el-created')
+      );
+      XEL = document.registerElement(
+        'x-el-created',
+        {
+          prototype: Object.create(
+            HTMLElement.prototype, {
+            createdCallback: {value: function() {
+              runtime = this.constructor;
+            }}
+          })
+        }
+      );
+      wru.assert(xEl.constructor === runtime);
+      wru.assert(xEl instanceof XEL);
+    }
   }
 ]);
