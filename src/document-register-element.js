@@ -153,7 +153,6 @@ var
   // internal flags
   setListener = false,
   doesNotSupportDOMAttrModified = true,
-  initialTrigger = 0,
 
   // optionally defined later on
   onSubtreeModified,
@@ -261,14 +260,6 @@ function loopAndSetup(list) {
     node = list[i];
     setupNode(node, protos[getTypeIndex(node)]);
   }
-}
-
-function discoverUncaughtElements() {
-  initialTrigger = 0;
-  loopAndVerify(
-    document.querySelectorAll(query),
-    'attached'
-  );
 }
 
 function executeAction(action) {
@@ -410,6 +401,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
       document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
     }
+
     document.createElement = function (localName, typeExtension) {
       var i, node = createElement.apply(document, arguments);
       if (typeExtension) {
@@ -419,6 +411,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       if (-1 < i) setupNode(node, protos[i]);
       return node;
     };
+
     HTMLElementPrototype.cloneNode = function (deep) {
       var
         node = cloneNode.call(this, !!deep),
@@ -429,12 +422,15 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       return node;
     };
   }
+
   if (-1 < indexOf.call(types, upperType)) {
     throw new Error('A ' + type + ' type is already registered');
   }
+
   if (!validName.test(upperType) || -1 < indexOf.call(invalidNames, upperType)) {
     throw new Error('The type ' + type + ' is invalid');
   }
+
   var
     constructor = function () {
       return document.createElement(nodeName, extending && upperType);
@@ -445,20 +441,22 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     i = types.push(upperType) - 1,
     upperType
   ;
+
   query = query.concat(
     query.length ? ',' : '',
     extending ? nodeName + '[is="' + type.toLowerCase() + '"]' : nodeName
   );
+
   constructor.prototype = (
     protos[i] = hOP.call(opt, 'prototype') ?
       opt.prototype :
       create(HTMLElementPrototype)
   );
 
-  // do not discover per each register but once
-  clearTimeout(initialTrigger);
-  // needed to initialize components already present in the DOM
-  initialTrigger = setTimeout(discoverUncaughtElements);
+  loopAndVerify(
+    document.querySelectorAll(query),
+    'attached'
+  );
 
   return constructor;
 };
