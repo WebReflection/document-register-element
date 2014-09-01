@@ -367,7 +367,7 @@ wru.test(typeof document === 'undefined' ? [] : [
     name: 'simulating a table element',
     test: function () {
       if (window.HTMLTableElement && 'createCaption' in HTMLTableElement.prototype) {
-        document.registerElement(
+        var HiTable = document.registerElement(
           'hi-table',
           {
             'extends': 'table',
@@ -375,6 +375,8 @@ wru.test(typeof document === 'undefined' ? [] : [
           }
         );
         var ht = document.createElement('table', 'hi-table');
+        wru.assert(!!ht.createCaption());
+        ht = new HiTable;
         wru.assert(!!ht.createCaption());
       }
     }
