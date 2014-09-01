@@ -4,52 +4,86 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Document-register-element by WebReflection</title>
+
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/main.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <script src="javascripts/scale.fix.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
   <body>
-
-      <header>
-        <h1>Document-register-element</h1>
-        <p>A stand-alone working lightweight version of the W3C Custom Elements specification</p>
-      </header>
-
-      <div id="banner">
-        <span id="logo"></span>
-
-        <a href="https://github.com/WebReflection/document-register-element" class="button fork"><strong>View On GitHub</strong></a>
-        <div class="downloads">
-          <span>Downloads:</span>
-          <ul>
-            <li><a href="https://github.com/WebReflection/document-register-element/zipball/master" class="button">ZIP</a></li>
-            <li><a href="https://github.com/WebReflection/document-register-element/tarball/master" class="button">TAR</a></li>
-          </ul>
-        </div>
-      </div><!-- end banner -->
-
     <div class="wrapper">
-      <nav>
-        <ul></ul>
-      </nav>
+      <header>
+        <h1 class="header">Document-register-element</h1>
+        <p class="header">A stand-alone working lightweight version of the W3C Custom Elements specification</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/WebReflection/document-register-element/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/WebReflection/document-register-element/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/WebReflection/document-register-element">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/WebReflection">WebReflection</a></p>
+
+
+      </header>
       <section>
         <h1>
 <a name="document-register-element" class="anchor" href="#document-register-element"><span class="octicon octicon-link"></span></a>document-register-element</h1>
 
-<p><a href="http://travis-ci.org/WebReflection/document-register-element"><img src="https://secure.travis-ci.org/WebReflection/document-register-element.png" alt="build status"></a></p>
+<p>A stand-alone working lightweight version of the W3C Custom Elements specification</p>
+
+<h3>
+<a name="why" class="anchor" href="#why"><span class="octicon octicon-link"></span></a>Why</h3>
+
+<p>The Polymer framework has a <a href="https://github.com/Polymer/CustomElements">CustomElements</a> under the hood that requires other repositories and a build process that will end up creating 15KB of <code>custom-elements.min.js</code> that will most likely not even work due a missing <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap">ES6 WeakMap</a> that is needed for a big percentage of today browsing users out there.</p>
+
+<p>Adding such polyfill in a reliable way means including <a href="http://code.google.com/p/es-lab/source/browse/trunk/src/ses/WeakMap.js">this file</a> plus different extra files from SES to make that work and yet you simply wanted to create some reusable DOM element ... so here an alternative!</p>
+
+<p><a href="build/document-register-element.js">document-register-element.js</a> is a stand alone polyfill which aim is to support as many browsers as possible, without requiring extra dependencies, without needing a <code>WeakMap</code> at all, in about <strong>2KB</strong> minified and gzipped, around 13KB plain as it is ... strawberry on top, feel free to contribute without signing anything :)</p>
+
+<p>Add if you want <a href="https://github.com/WebReflection/dom4#dom4">dom4</a> normalizer and you'll find yourself in a modern DOM environment that works reliably with today browsers with an eye always open on performance.</p>
+
+<h3>
+<a name="tested-on" class="anchor" href="#tested-on"><span class="octicon octicon-link"></span></a>Tested On</h3>
+
+<p>The <a href="http://webreflection.github.io/document-register-element/test/">live test page</a> is here, containing all tests as listed in <a href="test/document-register-element.js">the test file</a>.</p>
+
+<p>The following list of <strong>desktop</strong> browsers has been successfully tested:</p>
+
+<ul>
+<li>Chrome</li>
+<li>Firefox</li>
+<li>IE 9 or greater</li>
+<li>Safari</li>
+<li>Opera</li>
+</ul><p>The following list of <strong>mobile</strong> OS has been successfully tested:</p>
+
+<ul>
+<li>iOS 5.1 or greater</li>
+<li>Android 2.3 or greater</li>
+<li>FirefoxOS 1.2 or greater</li>
+<li>KindleFire 3 or greater</li>
+<li>Windows Phone 7 or greater</li>
+<li>Opera Mobile 12 or greater</li>
+<li>Blackberry OS 7* and OS 10</li>
+<li>webOS 2 or LG TV</li>
+<li>Samsung Bada OS 2 or greater</li>
+<li>NOKIA Asha with Express Browser</li>
+</ul><p>The good old <a href="http://us.blackberry.com/software/smartphones/blackberry-7-os.html">BB OS 7</a> is the only one failing the test with <code>className</code> which is not notified as <code>attributeChanged</code> when it's changed. This means BB OS 7 will also fail with <code>id</code>, however changing <code>id</code> at runtime has never been a common or useful pattern.</p>
+
+<h4>
+<a name="about-ie8" class="anchor" href="#about-ie8"><span class="octicon octicon-link"></span></a>About IE8</h4>
+
+<p>I don't think there's any library out there able to bring IE8 to these levels, but the code used in this project is syntactically compatible with this old pal too ... moreover, if anyone would ever manage to bring the deprecated <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Mutation_events">Mutation events</a> API to IE8, being the <code>observer</code> way more complex to shim, this library should work out of the box!</p>
       </section>
       <footer>
-        <p>Project maintained by <a href="https://github.com/WebReflection">WebReflection</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
       </footer>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
+		
   </body>
 </html>
