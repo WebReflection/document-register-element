@@ -363,5 +363,20 @@ wru.test(typeof document === 'undefined' ? [] : [
       wru.assert(xEl.constructor === runtime);
       wru.assert(xEl instanceof XEL);
     }
+  },{
+    name: 'simulating a table element',
+    test: function () {
+      if (window.HTMLTableElement && 'createCaption' in HTMLTableElement.prototype) {
+        document.registerElement(
+          'hi-table',
+          {
+            'extends': 'table',
+            prototype: Object.create(HTMLTableElement.prototype)
+          }
+        );
+        var ht = document.createElement('table', 'hi-table');
+        wru.assert(!!ht.createCaption());
+      }
+    }
   }
 ]);
