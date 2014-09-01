@@ -279,5 +279,106 @@ wru.test(typeof document === 'undefined' ? [] : [
         }));
       }));
     }
+  },{
+    name: 'registered after',
+    test: function () {
+      var
+        node = document.body.appendChild(
+          document.createElement('div')
+        ),
+        xd = node.appendChild(document.createElement('x-direct')),
+        laterWeirdoElement = node.appendChild(
+          document.createElement('later-weirdo')
+        ),
+        LaterWeirdo
+      ;
+      wru.assert('_info is not even present', !laterWeirdoElement._info);
+      wru.assert('x-direct behaved regularly', xd._info);
+      // now it's registered
+      LaterWeirdo = document.registerElement(
+        'later-weirdo',
+        {
+          prototype: Object.create(
+            HTMLElement.prototype, {
+            createdCallback: {value: function() {
+              this._info = [{
+                type: 'created',
+                arguments: arguments
+              }];
+            }},
+            attachedCallback: {value: function() {
+              this._info.push({
+                type: 'attached',
+                arguments: arguments
+              });
+            }},
+            detachedCallback: {value: function() {
+              this._info.push({
+                type: 'detached',
+                arguments: arguments
+              });
+            }},
+            attributeChangedCallback: {value: function(
+              name,           // always present
+              previousValue,  // if null, it's a new attribute
+              value           // if null, it's a removed attribute
+            ) {
+              this._info.push({
+                type: 'attributeChanged',
+                arguments: arguments
+              });
+            }}
+          })
+        }
+      );
+      // later on this should be setup
+      setTimeout(wru.async(function(){
+        wru.assert('_info is now present', laterWeirdoElement._info);
+        wru.assert('_info has right info',  laterWeirdoElement._info.length === 2 &&
+                                            laterWeirdoElement._info[0].type === 'created' &&
+                                            laterWeirdoElement._info[1].type === 'attached');
+        
+        wru.assert('xd has right info too', xd._info.length === 2 &&
+                                            xd._info[0].type === 'created' &&
+                                            xd._info[1].type === 'attached');
+      }), 100);
+    }
+  },{
+    name: 'constructor',
+    test: function () {
+      var XEL, runtime, xEl = document.body.appendChild(
+        document.createElement('x-el-created')
+      );
+      XEL = document.registerElement(
+        'x-el-created',
+        {
+          prototype: Object.create(
+            HTMLElement.prototype, {
+            createdCallback: {value: function() {
+              runtime = this.constructor;
+            }}
+          })
+        }
+      );
+      wru.assert(xEl.constructor === runtime);
+      wru.assert(xEl instanceof XEL);
+    }
+  },{
+    name: 'simulating a table element',
+    test: function () {
+      if (window.HTMLTableElement && 'createCaption' in HTMLTableElement.prototype) {
+        var HiTable = document.registerElement(
+          'hi-table',
+          {
+            'extends': 'table',
+            prototype: Object.create(HTMLTableElement.prototype)
+          }
+        );
+        var ht = document.createElement('table', 'hi-table');
+        wru.assert(!!ht.createCaption());
+        ht = new HiTable;
+        wru.assert(!!ht.createCaption());
+      }
+    }
   }
 ]);

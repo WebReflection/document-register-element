@@ -1,4 +1,10 @@
 
+// DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
+// THIS IS A PROJECT BASED ON A BUILD SYSTEM
+// THIS FILE IS JUST WRAPPED UP RESULTING IN
+// build/document-register-element.js
+// and its .max.js counter part
+
 var
   // IE < 11 only + old WebKit for attributes + feature detection
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
@@ -35,11 +41,6 @@ var
   indexOf = types.indexOf || function (v) {
     for(var i = this.length; i-- && this[i] !== v;){}
     return i;
-  },
-  forEach = types.forEach || function (f, c) {
-    for (var i = 0, length = this.length; i < length; i++) {
-      f.call(c, this[i]);
-    }
   },
 
   // other helpers / shortcuts
@@ -248,26 +249,38 @@ if (!MutationObserver) {
   }
 }
 
-function executeAction(action) {
-  function triggerAction(node) {
-    verifyAndSetupAndAction(node, action);
+function loopAndVerify(list, action) {
+  for (var i = 0, length = list.length; i < length; i++) {
+    verifyAndSetupAndAction(list[i], action);
   }
+}
+
+function loopAndSetup(list) {
+  for (var i = 0, length = list.length, node; i < length; i++) {
+    node = list[i];
+    setupNode(node, protos[getTypeIndex(node)]);
+  }
+}
+
+function executeAction(action) {
   return function (node) {
     if (iPO.call(HTMLElementPrototype, node)) {
       verifyAndSetupAndAction(node, action);
-      forEach.call(
+      loopAndVerify(
         node.querySelectorAll(query),
-        triggerAction
+        action
       );
     }
   };
 }
 
 function getTypeIndex(target) {
+  var is = target.getAttribute('is');
   return indexOf.call(
     types,
-    (target.getAttribute('is') || '').toUpperCase() ||
-    target.nodeName
+    is ?
+        is.toUpperCase() :
+        target.nodeName
   );
 }
 
@@ -298,10 +311,6 @@ function patchedSetAttribute(name, value) {
   var self = this;
   setAttribute.call(self, name, value);
   onSubtreeModified.call(self, {target: self});
-}
-
-function setupEachNode(node) {
-  setupNode(node, protos[getTypeIndex(node)]);
 }
 
 function setupNode(node, proto) {
@@ -337,7 +346,7 @@ function verifyAndSetupAndAction(node, action) {
       node[detached] = false;
       node[attached] = true;
       i = 1;
-    } else if (action === detached && !node[detached]) {  
+    } else if (action === detached && !node[detached]) {
       node[attached] = false;
       node[detached] = true;
       i = 1;
@@ -392,6 +401,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
       document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
     }
+
     document.createElement = function (localName, typeExtension) {
       var i, node = createElement.apply(document, arguments);
       if (typeExtension) {
@@ -401,27 +411,26 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       if (-1 < i) setupNode(node, protos[i]);
       return node;
     };
+
     HTMLElementPrototype.cloneNode = function (deep) {
       var
         node = cloneNode.call(this, !!deep),
         i = getTypeIndex(node)
       ;
       if (-1 < i) setupNode(node, protos[i]);
-      if (deep) {
-        forEach.call(
-          node.querySelectorAll(query),
-          setupEachNode
-        );
-      }
+      if (deep) loopAndSetup(node.querySelectorAll(query));
       return node;
     };
   }
+
   if (-1 < indexOf.call(types, upperType)) {
     throw new Error('A ' + type + ' type is already registered');
   }
+
   if (!validName.test(upperType) || -1 < indexOf.call(invalidNames, upperType)) {
     throw new Error('The type ' + type + ' is invalid');
   }
+
   var
     constructor = function () {
       return document.createElement(nodeName, extending && upperType);
@@ -432,15 +441,23 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     i = types.push(upperType) - 1,
     upperType
   ;
+
   query = query.concat(
     query.length ? ',' : '',
     extending ? nodeName + '[is="' + type.toLowerCase() + '"]' : nodeName
   );
+
   constructor.prototype = (
     protos[i] = hOP.call(opt, 'prototype') ?
       opt.prototype :
       create(HTMLElementPrototype)
   );
+
+  loopAndVerify(
+    document.querySelectorAll(query),
+    'attached'
+  );
+
   return constructor;
 };
 
