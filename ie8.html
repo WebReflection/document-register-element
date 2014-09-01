@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Custom Element IE8</title>
+    <script src="node_modules/es5-shim/es5-shim.js"></script>
+    <script src="node_modules/es5-shim/es5-sham.js"></script>
+    <script>
+       document.write('<script src="build/document-register-element-ie8.max.js?' + Math.random() + '"><' + '/script>');
+    </script>
+    <script>
+    this.onload = function () {
+      var MyElement = document.registerElement('my-element', {
+        prototype: Object.create(HTMLElement.prototype)
+      });
+      window.me = new MyElement;
+    };
+    </script>
+  </head>
+  <body>
+  </body>
+</html>

@@ -6,6 +6,9 @@ REPO = document-register-element
 # make var files
 VAR = src/$(REPO).js
 
+# make var files
+IE8 = src/$(REPO)-ie8.js
+
 # make node files
 NODE = $(VAR)
 
@@ -19,6 +22,7 @@ AMD = $(VAR)
 build:
 	make clean
 	make var
+	make ie8
 #	make node
 #	make amd
 	make test
@@ -34,6 +38,16 @@ var:
 	cat template/copyright build/no-copy.$(REPO).js >build/$(REPO).js
 	rm build/no-copy.$(REPO).max.js
 	rm build/no-copy.$(REPO).js
+
+# build IE8 specific version
+ie8:
+	mkdir -p build
+	cat template/var.before $(IE8) template/var.after >build/no-copy.$(REPO)-ie8.max.js
+	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.$(REPO)-ie8.max.js >build/no-copy.$(REPO)-ie8.js
+	cat template/license.before LICENSE.txt template/license.after build/no-copy.$(REPO)-ie8.max.js >build/$(REPO)-ie8.max.js
+	cat template/copyright build/no-copy.$(REPO)-ie8.js >build/$(REPO)-ie8.js
+	rm build/no-copy.$(REPO)-ie8.max.js
+	rm build/no-copy.$(REPO)-ie8.js
 
 # build node.js version
 node:

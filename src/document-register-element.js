@@ -70,7 +70,7 @@ var
         o.__proto__ = p;
         return o;
       } : (
-    gOPD ?
+    (gOPN && gOPD) ?
       (function(){
         function setProperties(o, p) {
           for (var
@@ -235,14 +235,17 @@ if (!MutationObserver) {
     };
     getAttributesMirror = function (node) {
       for (var
-        attr,
+        attr, name,
         result = {},
         attributes = node.attributes,
         i = 0, length = attributes.length;
         i < length; i++
       ) {
         attr = attributes[i];
-        result[attr.name] = attr.value;
+        name = attr.name;
+        if (name !== 'setAttribute') {
+          result[name] = attr.value;
+        }
       }
       return result;
     };
