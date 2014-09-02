@@ -120,6 +120,68 @@ The following list of **mobile** OS has been successfully tested:
 The good old [BB OS 7](http://us.blackberry.com/software/smartphones/blackberry-7-os.html) is the only one failing the test with `className` which is not notified as `attributeChanged` when it's changed. This means BB OS 7 will also fail with `id`, however changing `id` at runtime has never been a common or useful pattern.
 
 
+### Common Issues
+Here a list of gotchas you might encounter when developing *CustomElement* components.
+
+#### HTML{TABLE|ROW|INPUT|SELECT|others...}Element
+As described in [issue 6](https://github.com/WebReflection/document-register-element/issues/6) it's not possible to fully inherit a table, input, select, or other special element behaviors.
+```js
+// This will NOT work as expected
+document.registerElement(
+  'my-input',
+  {
+    prototype: Object.create(
+      HTMLInputElement.prototype
+    )
+  }
+);
+
+var mi = document.createElement('my-input');
+```
+
+The correct way to properly implement a custom input that will be also backward compatible is the following one:
+```js
+// This will NOT work as expected
+document.registerElement(
+  'my-input',
+  {
+    extends: 'input', // <== IMPORTANT
+    prototype: Object.create(
+      HTMLInputElement.prototype
+    )
+  }
+);
+
+// how to create the input
+var mi = document.createElement(
+  'input',    // the extend
+  'my-input'  // the enriched custom definition
+);
+```
+
+Another approach is to use just a basic `HTMLElement` component and initialize its content at runtime.
+```js
+document.registerElement(
+  'my-input',
+  {
+    prototype: Object.create(
+      HTMLElement.prototype,
+      {
+        createdCallback: {value: function () {
+          // here the input
+          this.el = this.appendChild(
+            document.createElement('input')
+          );
+        }}
+      }
+    )
+  }
+);
+
+var mi = document.createElement('my-input');
+```
+In this case every method that wants to interact with the input will refer `this.el` instead of just `this`.
+
 #### About IE8
 
 I don't think there's any library out there able to bring IE8 to these levels, but the code used in this project is syntactically compatible with this old pal too ... moreover, if anyone would ever manage to bring the deprecated [Mutation events](https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Mutation_events) API to IE8, being the `observer` way more complex to shim, this library should work out of the box!
