@@ -320,7 +320,8 @@ function onDOMAttrModified(e) {
     prevValue = e.prevValue,
     newValue = e.newValue
   ;
-  if (node.attributeChangedCallback) {
+  if (node.attributeChangedCallback &&
+      e.attrName !== 'style') {
     node.attributeChangedCallback(
       e.attrName,
       attrChange === e.ADDITION ? null : prevValue,
@@ -408,7 +409,8 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
               checkEmAll(current.removedNodes, detached);
             } else {
               node = current.target;
-              if (node.attributeChangedCallback) {
+              if (node.attributeChangedCallback &&
+                  current.attributeName !== 'style') {
                 node.attributeChangedCallback(
                   current.attributeName,
                   current.oldValue,

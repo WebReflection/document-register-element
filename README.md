@@ -120,7 +120,7 @@ The following list of **mobile** OS has been successfully tested:
 The good old [BB OS 7](http://us.blackberry.com/software/smartphones/blackberry-7-os.html) is the only one failing the test with `className` which is not notified as `attributeChanged` when it's changed. This means BB OS 7 will also fail with `id`, however changing `id` at runtime has never been a common or useful pattern.
 
 
-### Common Issues
+### Common Issues + Caveat
 Here a list of gotchas you might encounter when developing *CustomElement* components.
 
 #### HTML{TABLE|ROW|INPUT|SELECT|others...}Element
@@ -181,6 +181,14 @@ document.registerElement(
 var mi = document.createElement('my-input');
 ```
 In this case every method that wants to interact with the input will refer `this.el` instead of just `this`.
+
+
+#### Changing the `style` property
+
+If you change the style property via `node.style.cssText` or `node.style.backgroundColor = "red"` this change will most likely reflect through `node.getAttribute("style")`.
+
+In order to prevent footguns inside `attributeChangedCallback` invocations causing potential stack overflows, the `style` property has been filtered starting from version `0.1.1`, also reflecting current native implementation where changing this special property won't invoke the callback.
+
 
 #### About IE8
 
