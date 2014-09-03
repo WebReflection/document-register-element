@@ -189,6 +189,8 @@ If you change the style property via `node.style.cssText` or `node.style.backgro
 
 In order to prevent footguns inside `attributeChangedCallback` invocations causing potential stack overflows, the `style` property has been filtered starting from version `0.1.1`, also reflecting current native implementation where changing this special property won't invoke the callback.
 
+(yes, even using `node.setAttribute("style", "value")` that you shouldn't ... just use `node.style.cssText = "value"` instead)
+
 
 #### About IE8
 
