@@ -70,7 +70,7 @@ var
         o.__proto__ = p;
         return o;
       } : (
-    gOPD ?
+    (gOPN && gOPD) ?
       (function(){
         function setProperties(o, p) {
           for (var
@@ -235,14 +235,17 @@ if (!MutationObserver) {
     };
     getAttributesMirror = function (node) {
       for (var
-        attr,
+        attr, name,
         result = {},
         attributes = node.attributes,
         i = 0, length = attributes.length;
         i < length; i++
       ) {
         attr = attributes[i];
-        result[attr.name] = attr.value;
+        name = attr.name;
+        if (name !== 'setAttribute') {
+          result[name] = attr.value;
+        }
       }
       return result;
     };
@@ -291,7 +294,8 @@ function onDOMAttrModified(e) {
     prevValue = e.prevValue,
     newValue = e.newValue
   ;
-  if (node.attributeChangedCallback) {
+  if (node.attributeChangedCallback &&
+      e.attrName !== 'style') {
     node.attributeChangedCallback(
       e.attrName,
       attrChange === e.ADDITION ? null : prevValue,
@@ -379,7 +383,8 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
               checkEmAll(current.removedNodes, detached);
             } else {
               node = current.target;
-              if (node.attributeChangedCallback) {
+              if (node.attributeChangedCallback &&
+                  current.attributeName !== 'style') {
                 node.attributeChangedCallback(
                   current.attributeName,
                   current.oldValue,

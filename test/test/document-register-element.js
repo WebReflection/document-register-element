@@ -361,7 +361,10 @@ wru.test(typeof document === 'undefined' ? [] : [
         }
       );
       wru.assert(xEl.constructor === runtime);
-      wru.assert(xEl instanceof XEL);
+      wru.assert(xEl instanceof XEL ||
+          // IE9 and IE10 will use HTMLUnknownElement
+          // TODO: features tests/detection and use such prototype instead
+          xEl instanceof HTMLUnknownElement);
     }
   },{
     name: 'simulating a table element',
