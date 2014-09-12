@@ -407,6 +407,13 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
     }
 
+    document.addEventListener('readystatechange', function (e) {
+      loopAndVerify(
+        document.querySelectorAll(query),
+        'attached'
+      );
+    });
+
     document.createElement = function (localName, typeExtension) {
       var i, node = createElement.apply(document, arguments);
       if (typeExtension) {
