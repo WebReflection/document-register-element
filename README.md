@@ -107,8 +107,8 @@ The following list of **desktop** browsers has been successfully tested:
 The following list of **mobile** OS has been successfully tested:
 
   * iOS 5.1 or greater
-  * Android 2.3 or greater
-  * FirefoxOS 1.2 or greater
+  * Android 2.2 or greater
+  * FirefoxOS 1.1 or greater
   * KindleFire 3 or greater
   * Windows Phone 7 or greater
   * Opera Mobile 12 or greater
