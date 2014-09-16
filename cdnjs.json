@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/WebReflection/ie8.git"
+    "url": "git://github.com/WebReflection/document-register-element.git"
   },
   "filename": "document-register-element.js",
   "npmName": "document-register-element",
