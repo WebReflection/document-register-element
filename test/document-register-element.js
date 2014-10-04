@@ -383,5 +383,41 @@ wru.test(typeof document === 'undefined' ? [] : [
         wru.assert(!!ht.createCaption());
       }
     }
+  },{
+    name: 'if registered one way, cannot be registered another way',
+    test: function () {
+      var failed = false;
+      document.registerElement(
+        'no-double-behavior',
+        {}
+      );
+      try {
+        document.registerElement(
+          'no-double-behavior',
+          {
+            'extends': 'div'
+          }
+        );
+      } catch(e) {
+        failed = true;
+      }
+      wru.assert('unable to register IS after TAG', failed);
+      failed = false;
+      document.registerElement(
+        'nope-double-behavior',
+        {
+          'extends': 'div'
+        }
+      );
+      try {
+        document.registerElement(
+          'nope-double-behavior',
+          {}
+        );
+      } catch(e) {
+        failed = true;
+      }
+      wru.assert('unable to register TAG after IS', failed);
+    }
   }
 ]);

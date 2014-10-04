@@ -13,6 +13,8 @@ var
   EXTENDS = 'extends',
   DOM_ATTR_MODIFIED = 'DOMAttrModified',
   DOM_SUBTREE_MODIFIED = 'DOMSubtreeModified',
+  PREFIX_TAG = '<',
+  PREFIX_IS = '=',
 
   // valid and invalid node names
   validName = /^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$/,
@@ -282,8 +284,8 @@ function getTypeIndex(target) {
   return indexOf.call(
     types,
     is ?
-        is.toUpperCase() :
-        target.nodeName
+        PREFIX_IS + is.toUpperCase() :
+        PREFIX_TAG + target.nodeName
   );
 }
 
@@ -415,11 +417,17 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     });
 
     document.createElement = function (localName, typeExtension) {
-      var i, node = createElement.apply(document, arguments);
+      var
+        node = createElement.apply(document, arguments),
+        i = indexOf.call(
+          types,
+          (typeExtension ? PREFIX_IS : PREFIX_TAG) +
+          (typeExtension || localName).toUpperCase()
+        )
+      ;
       if (typeExtension) {
-        node.setAttribute('is', localName = typeExtension.toLowerCase());
+        node.setAttribute('is', typeExtension.toLowerCase());
       }
-      i = indexOf.call(types, localName.toUpperCase());
       if (-1 < i) setupNode(node, protos[i]);
       return node;
     };
@@ -435,7 +443,10 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     };
   }
 
-  if (-1 < indexOf.call(types, upperType)) {
+  if (-2 < (
+    indexOf.call(types, PREFIX_IS + upperType) +
+    indexOf.call(types, PREFIX_TAG + upperType)
+  )) {
     throw new Error('A ' + type + ' type is already registered');
   }
 
@@ -450,7 +461,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     opt = options || OP,
     extending = hOP.call(opt, EXTENDS),
     nodeName = extending ? options[EXTENDS] : upperType,
-    i = types.push(upperType) - 1,
+    i = types.push((extending ? PREFIX_IS : PREFIX_TAG) + upperType) - 1,
     upperType
   ;
 
