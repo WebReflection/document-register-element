@@ -419,5 +419,41 @@ wru.test(typeof document === 'undefined' ? [] : [
       }
       wru.assert('unable to register TAG after IS', failed);
     }
+  },{
+    name: 'is="type" is a setup for known extends only',
+    test: function () {
+      var divTriggered = false;
+      var spanTriggered = false;
+      document.registerElement(
+        'did-trigger',
+        {
+          'extends': 'div',
+          prototype: Object.create(
+            HTMLDivElement.prototype, {
+            createdCallback: {value: function() {
+              divTriggered = true;
+            }}
+          })
+        }
+      );
+      document.registerElement(
+        'didnt-trigger',
+        {
+          'extends': 'div',
+          prototype: Object.create(
+            HTMLDivElement.prototype, {
+            createdCallback: {value: function() {
+              spanTriggered = true;
+            }}
+          })
+        }
+      );
+      var div = document.createElement('div', 'did-trigger');
+      var span = document.createElement('span', 'didnt-trigger');
+      setTimeout(wru.async(function () {
+        wru.assert('it did trigger on div', divTriggered);
+        wru.assert('but it did not trigger on span', !spanTriggered);
+      }), 100);
+    }
   }
 ]);

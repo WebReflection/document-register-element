@@ -306,13 +306,21 @@ function executeAction(action) {
 }
 
 function getTypeIndex(target) {
-  var is = target.getAttribute('is');
-  return indexOf.call(
-    types,
-    is ?
-        PREFIX_IS + is.toUpperCase() :
-        PREFIX_TAG + target.nodeName
-  );
+  var
+    is = target.getAttribute('is'),
+    nodeName = target.nodeName,
+    i = indexOf.call(
+      types,
+      is ?
+          PREFIX_IS + is.toUpperCase() :
+          PREFIX_TAG + nodeName
+    )
+  ;
+  return is && -1 < i && !isInQSA(nodeName, is) ? -1 : i;
+}
+
+function isInQSA(name, type) {
+  return -1 < query.indexOf(name + '[is="' + type + '"]');
 }
 
 function onDOMAttrModified(e) {
@@ -449,12 +457,16 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
           types,
           (typeExtension ? PREFIX_IS : PREFIX_TAG) +
           (typeExtension || localName).toUpperCase()
-        )
+        ),
+        setup = -1 < i
       ;
       if (typeExtension) {
-        node.setAttribute('is', typeExtension.toLowerCase());
+        node.setAttribute('is', typeExtension = typeExtension.toLowerCase());
+        if (setup) {
+          setup = isInQSA(localName.toUpperCase(), typeExtension);
+        }
       }
-      if (-1 < i) setupNode(node, protos[i]);
+      if (setup) setupNode(node, protos[i]);
       return node;
     };
 
@@ -486,7 +498,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     },
     opt = options || OP,
     extending = hOP.call(opt, EXTENDS),
-    nodeName = extending ? options[EXTENDS] : upperType,
+    nodeName = extending ? options[EXTENDS].toUpperCase() : upperType,
     i = types.push((extending ? PREFIX_IS : PREFIX_TAG) + upperType) - 1,
     upperType
   ;
