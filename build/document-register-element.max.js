@@ -128,23 +128,6 @@ var
       }
   )),
 
-  // based on setting prototype capability
-  // will check proto or the expando attribute
-  // in order to setup the node once
-  patchIfNotAlready = sPO || hasProto ?
-    function (node, proto) {
-      if (!iPO.call(proto, node)) {
-        setupNode(node, proto);
-      }
-    } :
-    function (node, proto) {
-      if (!node[EXPANDO_UID]) {
-        node[EXPANDO_UID] = Object(true);
-        setupNode(node, proto);
-      }
-    }
-  ,
-
   // DOM shortcuts and helpers, if any
 
   MutationObserver = window.MutationObserver ||
@@ -186,8 +169,31 @@ var
   onSubtreeModified,
   callDOMAttrModified,
   getAttributesMirror,
-  observer
+  observer,
+
+  // based on setting prototype capability
+  // will check proto or the expando attribute
+  // in order to setup the node once
+  patchIfNotAlready,
+  patch
 ;
+
+if (sPO || hasProto) {
+    patchIfNotAlready = function (node, proto) {
+      if (!iPO.call(proto, node)) {
+        setupNode(node, proto);
+      }
+    };
+    patch = setupNode;
+} else {
+    patchIfNotAlready = function (node, proto) {
+      if (!node[EXPANDO_UID]) {
+        node[EXPANDO_UID] = Object(true);
+        setupNode(node, proto);
+      }
+    };
+    patch = patchIfNotAlready;
+}
 
 if (!MutationObserver) {
   documentElement.addEventListener(DOM_ATTR_MODIFIED, DOMAttrModified);
@@ -289,7 +295,7 @@ function loopAndVerify(list, action) {
 function loopAndSetup(list) {
   for (var i = 0, length = list.length, node; i < length; i++) {
     node = list[i];
-    patchIfNotAlready(node, protos[getTypeIndex(node)]);
+    patch(node, protos[getTypeIndex(node)]);
   }
 }
 
@@ -466,7 +472,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
           setup = isInQSA(localName.toUpperCase(), typeExtension);
         }
       }
-      if (setup) patchIfNotAlready(node, protos[i]);
+      if (setup) patch(node, protos[i]);
       return node;
     };
 
@@ -475,7 +481,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         node = cloneNode.call(this, !!deep),
         i = getTypeIndex(node)
       ;
-      if (-1 < i) patchIfNotAlready(node, protos[i]);
+      if (-1 < i) patch(node, protos[i]);
       if (deep) loopAndSetup(node.querySelectorAll(query));
       return node;
     };
