@@ -1,7 +1,7 @@
 {
     "name": "document-register-element",
     "description": "A stand-alone working lightweight version of the W3C Custom Elements specification",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "main": "./build/document-register-element.js",
     "ignore": [
         "test",

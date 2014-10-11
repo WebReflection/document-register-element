@@ -289,7 +289,7 @@ function loopAndVerify(list, action) {
 function loopAndSetup(list) {
   for (var i = 0, length = list.length, node; i < length; i++) {
     node = list[i];
-    setupNode(node, protos[getTypeIndex(node)]);
+    patchIfNotAlready(node, protos[getTypeIndex(node)]);
   }
 }
 
@@ -466,7 +466,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
           setup = isInQSA(localName.toUpperCase(), typeExtension);
         }
       }
-      if (setup) setupNode(node, protos[i]);
+      if (setup) patchIfNotAlready(node, protos[i]);
       return node;
     };
 
@@ -475,7 +475,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         node = cloneNode.call(this, !!deep),
         i = getTypeIndex(node)
       ;
-      if (-1 < i) setupNode(node, protos[i]);
+      if (-1 < i) patchIfNotAlready(node, protos[i]);
       if (deep) loopAndSetup(node.querySelectorAll(query));
       return node;
     };
