@@ -22,6 +22,9 @@ Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following 
 >/* W3C Custom Elements */</script>
 ```
 
+### TL;DR does it work ?
+If you [see the first clock ticking](https://webreflection.github.io/custom-element/), the TL;DR answer is yes.
+
 
 ### Usage Example
 
