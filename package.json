@@ -29,6 +29,7 @@
     "test": "node test/.test.js"
   },
   "devDependencies": {
-    "wru": ">= 0.0.0"
+    "wru": ">= 0.0.0",
+    "uglify-js": "1.x"
   }
 }
