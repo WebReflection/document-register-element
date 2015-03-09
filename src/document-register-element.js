@@ -9,6 +9,9 @@ var
   // IE < 11 only + old WebKit for attributes + feature detection
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
 
+  // polyfillOptions
+  DOMNodeInsertionEvents = true,
+
   // shortcuts and costants
   EXTENDS = 'extends',
   DOM_ATTR_MODIFIED = 'DOMAttrModified',
@@ -149,8 +152,19 @@ var
   // will check proto or the expando attribute
   // in order to setup the node once
   patchIfNotAlready,
-  patch
+  patch,
+  defined = function(variable){
+    return (variable !== undefined && variable !== null);
+  }
 ;
+
+// If polyfillOptions have been provided
+// adjust which callbacks should be fired
+// respectively which events to listen to
+if (polyfillOptions) {
+  if ( defined(polyfillOptions.DOMNodeInsertionEvents) )
+    DOMNodeInsertionEvents = polyfillOptions.DOMNodeInsertionEvents;
+}
 
 if (sPO || hasProto) {
     patchIfNotAlready = function (node, proto) {
@@ -395,7 +409,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
           ) {
             current = records[i];
             if (current.type === 'childList') {
-              checkEmAll(current.addedNodes, attached);
+              if (DOMNodeInsertionEvents) checkEmAll(current.addedNodes, attached);
               checkEmAll(current.removedNodes, detached);
             } else {
               node = current.target;
@@ -419,7 +433,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         }
       );
     } else {
-      document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
+      if (DOMNodeInsertionEvents) document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
       document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
     }
 
@@ -502,3 +516,9 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
   return constructor;
 };
 
+return {
+  activateComponentsInNode: function(rootNode){
+    if (!rootNode) return void 0;
+    executeAction('attached')(rootNode);
+  }
+};

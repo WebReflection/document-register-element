@@ -20,10 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-(function(window, document, Object, REGISTER_ELEMENT){'use strict';
+(function(window, document, Object, REGISTER_ELEMENT, polyfillOptions){'use strict';
 
 // in case it's there or already patched
-if (REGISTER_ELEMENT in document) return;
+if (REGISTER_ELEMENT in document) return {};
 
 // THIS IS A WORK IN PROGRESS AND IT WON'T WORK
 
