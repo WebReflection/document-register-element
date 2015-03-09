@@ -542,4 +542,11 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
   return constructor;
 };
 
+return {
+  activateComponentsInNode: function(rootNode){
+    if (!rootNode) return void 0;
+    executeAction('attached')(rootNode);
+  }
+};
+
 }(window, document, Object, 'registerElement'));
