@@ -20,10 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-(function(window, document, Object, REGISTER_ELEMENT){'use strict';
+(function(window, document, Object, REGISTER_ELEMENT, polyfillOptions){'use strict';
 
 // in case it's there or already patched
-if (REGISTER_ELEMENT in document) return;
+if (REGISTER_ELEMENT in document) return {};
 
 // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
 // THIS IS A PROJECT BASED ON A BUILD SYSTEM
@@ -34,6 +34,9 @@ if (REGISTER_ELEMENT in document) return;
 var
   // IE < 11 only + old WebKit for attributes + feature detection
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
+
+  // polyfillOptions
+  DOMNodeInsertionEvents = true,
 
   // shortcuts and costants
   EXTENDS = 'extends',
@@ -175,8 +178,19 @@ var
   // will check proto or the expando attribute
   // in order to setup the node once
   patchIfNotAlready,
-  patch
+  patch,
+  defined = function(variable){
+    return (variable !== undefined && variable !== null);
+  }
 ;
+
+// If polyfillOptions have been provided
+// adjust which callbacks should be fired
+// respectively which events to listen to
+if (polyfillOptions) {
+  if ( defined(polyfillOptions.DOMNodeInsertionEvents) )
+    DOMNodeInsertionEvents = polyfillOptions.DOMNodeInsertionEvents;
+}
 
 if (sPO || hasProto) {
     patchIfNotAlready = function (node, proto) {
@@ -421,7 +435,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
           ) {
             current = records[i];
             if (current.type === 'childList') {
-              checkEmAll(current.addedNodes, attached);
+              if (DOMNodeInsertionEvents) checkEmAll(current.addedNodes, attached);
               checkEmAll(current.removedNodes, detached);
             } else {
               node = current.target;
@@ -445,7 +459,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         }
       );
     } else {
-      document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
+      if (DOMNodeInsertionEvents) document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
       document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
     }
 
@@ -527,6 +541,5 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
   return constructor;
 };
-
 
 }(window, document, Object, 'registerElement'));
