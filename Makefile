@@ -24,7 +24,7 @@ build:
 	make var
 	make ie8
 #	make node
-#	make amd
+	make amd
 	make test
 #	make hint
 	make size
