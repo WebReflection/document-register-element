@@ -26,7 +26,8 @@
   },
   "main": "./build/document-register-element.js",
   "scripts": {
-    "test": "node test/.test.js"
+    "test": "node test/.test.js",
+    "web": "node node_modules/polpetta"
   },
   "devDependencies": {
     "wru": ">= 0.0.0",
