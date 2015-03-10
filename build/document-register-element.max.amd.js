@@ -448,7 +448,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
     document.addEventListener('readystatechange', function (e) {
       loopAndVerify(
-        document.querySelectorAll(query),
+        (e.target || document).querySelectorAll(query),
         'attached'
       );
     });
