@@ -35,6 +35,7 @@ var
   // shortcuts and costants
   EXTENDS = 'extends',
   DOM_ATTR_MODIFIED = 'DOMAttrModified',
+  DOM_CONTENT_LOADED = 'DOMContentLoaded',
   DOM_SUBTREE_MODIFIED = 'DOMSubtreeModified',
   PREFIX_TAG = '<',
   PREFIX_IS = '=',
@@ -161,6 +162,7 @@ var
   // internal flags
   setListener = false,
   doesNotSupportDOMAttrModified = true,
+  dropDomContentLoaded = true,
 
   // optionally defined later on
   onSubtreeModified,
@@ -350,6 +352,17 @@ function onDOMNode(action) {
   };
 }
 
+function onReadyStateChange(e) {
+  if (dropDomContentLoaded) {
+    dropDomContentLoaded = false;
+    e.currentTarget.removeEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
+  }
+  loopAndVerify(
+    (e.target || document).querySelectorAll(query),
+    'attached'
+  );
+}
+
 function patchedSetAttribute(name, value) {
   var self = this;
   setAttribute.call(self, name, value);
@@ -446,12 +459,8 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
     }
 
-    document.addEventListener('readystatechange', function (e) {
-      loopAndVerify(
-        (e.target || document).querySelectorAll(query),
-        'attached'
-      );
-    });
+    document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
+    document.addEventListener('readystatechange', onReadyStateChange);
 
     document.createElement = function (localName, typeExtension) {
       var
