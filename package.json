@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "wru": ">= 0.0.0",
-    "uglify-js": "1.x"
+    "uglify-js": "1.x",
+    "polpetta": ">= 0.0.0"
   }
 }

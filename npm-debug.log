@@ -1,0 +1,23 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/iojs', '/usr/bin/npm', 'run', 'polpetta' ]
+2 info using npm@2.6.0
+3 info using node@v1.4.1
+4 verbose stack Error: missing script: polpetta
+4 verbose stack     at run (/usr/lib/node_modules/npm/lib/run-script.js:138:19)
+4 verbose stack     at /usr/lib/node_modules/npm/lib/run-script.js:81:5
+4 verbose stack     at /usr/lib/node_modules/npm/node_modules/read-package-json/read-json.js:51:40
+4 verbose stack     at /usr/lib/node_modules/npm/node_modules/read-package-json/read-json.js:375:33
+4 verbose stack     at checkBinReferences_ (/usr/lib/node_modules/npm/node_modules/read-package-json/read-json.js:340:59)
+4 verbose stack     at final (/usr/lib/node_modules/npm/node_modules/read-package-json/read-json.js:372:17)
+4 verbose stack     at then (/usr/lib/node_modules/npm/node_modules/read-package-json/read-json.js:126:33)
+4 verbose stack     at /usr/lib/node_modules/npm/node_modules/read-package-json/read-json.js:331:40
+4 verbose stack     at FSReqWrap.readFileAfterClose [as oncomplete] (evalmachine.<anonymous>:379:3)
+5 verbose cwd /home/webreflection/code/document-register-element
+6 error Linux 3.18.6-1-ARCH
+7 error argv "/usr/bin/iojs" "/usr/bin/npm" "run" "polpetta"
+8 error node v1.4.1
+9 error npm  v2.6.0
+10 error missing script: polpetta
+11 error If you need help, you may report this error at:
+11 error     <http://github.com/npm/npm/issues>
+12 verbose exit [ 1, true ]
