@@ -19,7 +19,7 @@ on your head element and you should be good to go.
 Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following an example on how to include it.
 ```html
 <script
-  src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/0.1.6/document-register-element.js"
+  src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/0.1.8/document-register-element.js"
 >/* W3C Custom Elements */</script>
 ```
 
