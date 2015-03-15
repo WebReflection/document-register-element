@@ -27,7 +27,7 @@
   "main": "./build/document-register-element.js",
   "scripts": {
     "test": "node test/.test.js",
-    "web": "node node_modules/polpetta"
+    "web": "IP=0.0.0.0 node node_modules/polpetta"
   },
   "devDependencies": {
     "wru": ">= 0.0.0",
