@@ -26,12 +26,13 @@
   },
   "main": "./build/document-register-element.js",
   "scripts": {
-    "test": "node test/.test.js",
+    "test": "phantomjs testrunner.js",
     "web": "IP=0.0.0.0 node node_modules/polpetta"
   },
   "devDependencies": {
     "wru": ">= 0.0.0",
     "uglify-js": "1.x",
-    "polpetta": ">= 0.0.0"
+    "polpetta": ">= 0.0.0",
+    "phantomjs": ">= 0.0.0"
   }
 }
