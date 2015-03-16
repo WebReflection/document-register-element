@@ -3,7 +3,9 @@ document-register-element
 
 A stand-alone working lightweight version of the [W3C Custom Elements](http://w3c.github.io/webcomponents/spec/custom/) specification.
 
-![build status](https://travis-ci.org/WebReflection/document-register-element.svg)
+
+[![build status](https://travis-ci.org/WebReflection/document-register-element.svg)](https://travis-ci.org/WebReflection/document-register-element)
+
 
 ### How
 
