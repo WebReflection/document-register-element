@@ -23,6 +23,7 @@ build:
 	make clean
 	make var
 	make ie8
+	make dreie8
 #	make node
 	make amd
 	make test
@@ -48,6 +49,15 @@ ie8:
 	cat template/copyright build/no-copy.$(REPO)-ie8.js >build/$(REPO)-ie8.js
 	rm build/no-copy.$(REPO)-ie8.max.js
 	rm build/no-copy.$(REPO)-ie8.js
+
+dreie8:
+	mkdir -p build
+	cat src/dre-ie8-upfront-fix.js>build/no-copy.dre-ie8-upfront-fix.max.js
+	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.dre-ie8-upfront-fix.max.js >build/no-copy.dre-ie8-upfront-fix.js
+	cat template/license.before LICENSE.txt template/license.after build/no-copy.dre-ie8-upfront-fix.max.js >build/dre-ie8-upfront-fix.max.js
+	cat template/copyright build/no-copy.dre-ie8-upfront-fix.js >build/dre-ie8-upfront-fix.js
+	rm build/no-copy.dre-ie8-upfront-fix.max.js
+	rm build/no-copy.dre-ie8-upfront-fix.js
 
 # build node.js version
 node:
@@ -80,6 +90,8 @@ duk:
 size:
 	wc -c build/$(REPO).max.js
 	gzip -c build/$(REPO).js | wc -c
+	wc -c build/$(REPO)-ie8.max.js
+	gzip -c build/$(REPO)-ie8.js | wc -c
 
 # hint built file
 hint:
