@@ -88,7 +88,7 @@ wru.test(typeof document === 'undefined' ? [] : [
     name: 'as XDirect constructor',
     test: function () {
       var node = document.body.appendChild(new XDirect);
-      wru.assert('right name', node.nodeName === 'X-DIRECT');
+      wru.assert('right name', node.nodeName.toUpperCase() === 'X-DIRECT');
       wru.assert('createdInvoked', node._info[0].type === 'created');
       wru.assert('is instance',
         node instanceof XDirect ||
@@ -100,7 +100,7 @@ wru.test(typeof document === 'undefined' ? [] : [
     name: 'as XIndirect constructor',
     test: function () {
       var node = document.body.appendChild(new XIndirect);
-      wru.assert('right name', node.nodeName === 'DIV');
+      wru.assert('right name', node.nodeName.toUpperCase() === 'DIV');
       wru.assert('right type', node.getAttribute('is') === 'x-indirect');
       wru.assert('createdInvoked', node._info[0].type === 'created');
       wru.assert('is instance',
@@ -115,15 +115,15 @@ wru.test(typeof document === 'undefined' ? [] : [
       var node = document.body.appendChild(document.createElement('div'));
       node.innerHTML = '<x-direct></x-direct>';
       node = node.firstChild;
-      wru.assert('right name', node.nodeName === 'X-DIRECT');
+      wru.assert('right name', node.nodeName.toUpperCase() === 'X-DIRECT');
       setTimeout(wru.async(function(){
         wru.assert('created callback triggered', node._info[0].type === 'created');
         wru.assert('attached callback triggered', node._info[1].type === 'attached');
         document.body.removeChild(node.parentNode);
         setTimeout(wru.async(function(){
           wru.assert('detached callback triggered', node._info[2].type === 'detached');
-        }));
-      }));
+        }), 20);
+      }), 20);
     }
   },{
     name: 'as &lt;div is="x-indirect"&gt; innerHTML',
@@ -131,7 +131,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       var node = document.body.appendChild(document.createElement('div'));
       node.innerHTML = '<div is="x-indirect"></div>';
       node = node.firstChild;
-      wru.assert('right name', node.nodeName === 'DIV');
+      wru.assert('right name', node.nodeName.toUpperCase() === 'DIV');
       wru.assert('right type', node.getAttribute('is') === 'x-indirect');
       setTimeout(wru.async(function () {
         wru.assert('created callback triggered', node._info[0].type === 'created');
@@ -139,8 +139,8 @@ wru.test(typeof document === 'undefined' ? [] : [
         document.body.removeChild(node.parentNode);
         setTimeout(wru.async(function () {
           wru.assert('detached callback triggered', node._info[2].type === 'detached');
-        }));
-      }));
+        }), 20);
+      }), 20);
     }
   },{
     name: 'as createElement(x-direct)',
@@ -148,15 +148,15 @@ wru.test(typeof document === 'undefined' ? [] : [
       var node = document.body.appendChild(document.createElement('div')).appendChild(
         document.createElement('x-direct')
       );
-      wru.assert('right name', node.nodeName === 'X-DIRECT');
+      wru.assert('right name', node.nodeName.toUpperCase() === 'X-DIRECT');
       setTimeout(wru.async(function () {
         wru.assert('created callback triggered', node._info[0].type === 'created');
         wru.assert('attached callback triggered', node._info[1].type === 'attached');
         document.body.removeChild(node.parentNode);
         setTimeout(wru.async(function () {
           wru.assert('detached callback triggered', node._info[2].type === 'detached');
-        }));
-      }));
+        }), 20);
+      }), 20);
     }
   },{
     name: 'as createElement(div, x-indirect)',
@@ -164,7 +164,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       var node = document.body.appendChild(document.createElement('div')).appendChild(
         document.createElement('div', 'x-indirect')
       );
-      wru.assert('right name', node.nodeName === 'DIV');
+      wru.assert('right name', node.nodeName.toUpperCase() === 'DIV');
       wru.assert('right type', node.getAttribute('is') === 'x-indirect');
       setTimeout(wru.async(function () {
         wru.assert('created callback triggered', node._info[0].type === 'created');
@@ -172,42 +172,46 @@ wru.test(typeof document === 'undefined' ? [] : [
         document.body.removeChild(node.parentNode);
         setTimeout(wru.async(function () {
           wru.assert('detached callback triggered', node._info[2].type === 'detached');
-        }));
-      }));
+        }), 20);
+      }), 20);
     }
   },{
     name: 'attributes',
     test: function () {
-      var args, node = document.body.appendChild(document.createElement('div')).appendChild(
-        document.createElement('x-direct')
-      );
-      node.setAttribute('what', 'ever');
+      var args, info;
+      var node = document.createElement('x-direct');
+      document.body.appendChild(document.createElement('div')).appendChild(node);
       setTimeout(wru.async(function () {
-        wru.assert('attributeChanged was called', node._info[2].type === 'attributeChanged');
-        args = node._info[2].arguments;
-        wru.assert('correct arguments with new value', args[0] === 'what' && args[1] == null && args[2] === 'ever');
-        node.setAttribute('what', 'else');
+        node.setAttribute('what', 'ever');
+        wru.assert(node.getAttribute('what') === 'ever');
         setTimeout(wru.async(function () {
-          args = node._info[3].arguments;
-          wru.assert('correct arguments with old value', args[0] === 'what' && args[1] === 'ever' && args[2] === 'else');
-          node.removeAttribute('what');
+          info = node._info.pop();
+          wru.assert('attributeChanged was called', info.type === 'attributeChanged');
+          args = info.arguments;
+          wru.assert('correct arguments with new value', args[0] === 'what' && args[1] == null && args[2] === 'ever');
+          node.setAttribute('what', 'else');
           setTimeout(wru.async(function () {
-            args = node._info[4].arguments;
-            wru.assert(
-              'correct arguments with removed attribute',
-              args[0] === 'what' &&
-              args[1] === 'else' &&
-              args[2] == null
-            );
-            document.body.removeChild(node.parentNode);
-          }));
-        }));
-      }));
+            args = node._info.pop().arguments;
+            wru.assert('correct arguments with old value', args[0] === 'what' && args[1] === 'ever' && args[2] === 'else');
+            node.removeAttribute('what');
+            setTimeout(wru.async(function () {
+              args = node._info.pop().arguments;
+              wru.assert(
+                'correct arguments with removed attribute',
+                args[0] === 'what' &&
+                args[1] === 'else' &&
+                args[2] == null
+              );
+              document.body.removeChild(node.parentNode);
+            }), 20);
+          }), 20);
+        }), 20);
+      }), 20);
     }
   },{
     name: 'offline',
     test: function () {
-      var args, node = document.createElement('x-direct');
+      var node = document.createElement('x-direct');
       node.setAttribute('what', 'ever');
       setTimeout(wru.async(function () {
         wru.assert('created callback triggered', node._info[0].type === 'created');
@@ -227,9 +231,9 @@ wru.test(typeof document === 'undefined' ? [] : [
               args[1] === 'else' &&
               args[2] == null
             );
-          }));
-        }));
-      }));
+          }), 20);
+        }), 20);
+      }), 20);
     }
   },{
     name: 'nested',
@@ -259,25 +263,31 @@ wru.test(typeof document === 'undefined' ? [] : [
           indirect._info[1].type === 'attached' &&
           indirectNested._info[1].type === 'attached'
         );
-      }));
+      }), 20);
     }
   },{
     name: 'className',
     test: function () {
-      var args, node = document.createElement('x-direct');
-      node.className = 'a';
+      // online for className, needed by IE8
+      var args, info, node = document.body.appendChild(document.createElement('x-direct'));
       setTimeout(wru.async(function () {
-        wru.assert('attributeChanged was called', node._info[1].type === 'attributeChanged');
-        args = node._info[1].arguments;
-        wru.assert('correct arguments with new value', args[0] === 'class' && args[1] == null && args[2] === 'a');
-        node.className += ' b';
+        node.className = 'a';
+        wru.assert(node.className === 'a');
         setTimeout(wru.async(function () {
-          // the only known device that fails this test is Blackberry 7
-          wru.assert('attributeChanged was called', node._info[2].type === 'attributeChanged');
-          args = node._info[2].arguments;
-          wru.assert('correct arguments with new value', args[0] === 'class' && args[1] == 'a' && args[2] === 'a b');
-        }));
-      }));
+          info = node._info.pop();
+          wru.assert('attributeChanged was called', info.type === 'attributeChanged');
+          args = info.arguments;
+          wru.assert('correct arguments with new value', args[0] === 'class' && args[1] == null && args[2] === 'a');
+          node.className += ' b';
+          setTimeout(wru.async(function () {
+            info = node._info.pop();
+            // the only known device that fails this test is Blackberry 7
+            wru.assert('attributeChanged was called', info.type === 'attributeChanged');
+            args = info.arguments;
+            wru.assert('correct arguments with new value', args[0] === 'class' && args[1] == 'a' && args[2] === 'a b');
+          }), 20);
+        }), 20);
+      }), 20);
     }
   },{
     name: 'registered after',
@@ -361,10 +371,13 @@ wru.test(typeof document === 'undefined' ? [] : [
         }
       );
       wru.assert(xEl.constructor === runtime);
-      wru.assert(xEl instanceof XEL ||
+      // avoid IE8 problems
+      if (!('attachEvent' in xEl)) {
+        wru.assert(xEl instanceof XEL ||
           // IE9 and IE10 will use HTMLUnknownElement
           // TODO: features tests/detection and use such prototype instead
           xEl instanceof HTMLUnknownElement);
+      }
     }
   },{
     name: 'simulating a table element',
@@ -383,5 +396,77 @@ wru.test(typeof document === 'undefined' ? [] : [
         wru.assert(!!ht.createCaption());
       }
     }
-  }
+  },{
+    name: 'if registered one way, cannot be registered another way',
+    test: function () {
+      var failed = false;
+      document.registerElement(
+        'no-double-behavior',
+        {}
+      );
+      try {
+        document.registerElement(
+          'no-double-behavior',
+          {
+            'extends': 'div'
+          }
+        );
+      } catch(e) {
+        failed = true;
+      }
+      wru.assert('unable to register IS after TAG', failed);
+      failed = false;
+      document.registerElement(
+        'nope-double-behavior',
+        {
+          'extends': 'div'
+        }
+      );
+      try {
+        document.registerElement(
+          'nope-double-behavior',
+          {}
+        );
+      } catch(e) {
+        failed = true;
+      }
+      wru.assert('unable to register TAG after IS', failed);
+    }
+  },{
+    name: 'is="type" is a setup for known extends only',
+    test: function () {
+      var divTriggered = false;
+      var spanTriggered = false;
+      document.registerElement(
+        'did-trigger',
+        {
+          'extends': 'div',
+          prototype: Object.create(
+            HTMLDivElement.prototype, {
+            createdCallback: {value: function() {
+              divTriggered = true;
+            }}
+          })
+        }
+      );
+      document.registerElement(
+        'didnt-trigger',
+        {
+          'extends': 'div',
+          prototype: Object.create(
+            HTMLDivElement.prototype, {
+            createdCallback: {value: function() {
+              spanTriggered = true;
+            }}
+          })
+        }
+      );
+      var div = document.createElement('div', 'did-trigger');
+      var span = document.createElement('span', 'didnt-trigger');
+      setTimeout(wru.async(function () {
+        wru.assert('it did trigger on div', divTriggered);
+        wru.assert('but it did not trigger on span', !spanTriggered);
+      }), 100);
+    }
+  } //*/
 ]);

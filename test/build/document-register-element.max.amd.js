@@ -1,3 +1,26 @@
+/*!
+Copyright (C) 2014 by WebReflection
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
+define(function(){
 
 // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
 // THIS IS A PROJECT BASED ON A BUILD SYSTEM
@@ -10,8 +33,6 @@ var
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
 
   // shortcuts and costants
-  ATTACHED = 'attached',
-  DETACHED = 'detached',
   EXTENDS = 'extends',
   DOM_ATTR_MODIFIED = 'DOMAttrModified',
   DOM_CONTENT_LOADED = 'DOMContentLoaded',
@@ -116,21 +137,8 @@ var
     window.Node
   ).prototype,
 
-  IE8 = !iPO.call(HTMLElementPrototype, documentElement),
-
-  isValidNode = IE8 ?
-    function (node) {
-      return node.nodeType === 1;
-    } :
-    function (node) {
-      return iPO.call(HTMLElementPrototype, node);
-    },
-
-  targets = IE8 && [],
-
   cloneNode = HTMLElementPrototype.cloneNode,
   setAttribute = HTMLElementPrototype.setAttribute,
-  removeAttribute = HTMLElementPrototype.removeAttribute,
 
   // replaced later on
   createElement = document.createElement,
@@ -185,81 +193,8 @@ if (sPO || hasProto) {
     };
     patch = patchIfNotAlready;
 }
-if (IE8) {
-  doesNotSupportDOMAttrModified = false;
-  (function (){
-    var
-      descriptor = gOPD(HTMLElementPrototype, 'addEventListener'),
-      addEventListener = descriptor.value,
-      patchedRemoveAttribute = function (name) {
-        var e = new CustomEvent(DOM_ATTR_MODIFIED, {bubles: true});
-        e.attrName = name;
-        e.prevValue = this.getAttribute(name);
-        e.newValue = null;
-        e['REMOVAL'] = e.attrChange = 2;
-        removeAttribute.call(this, name);
-        this.dispatchEvent(e);
-      },
-      patchedSetAttribute = function (name, value) {
-        var
-          had = this.hasAttribute(name),
-          old = had && this.getAttribute(name),
-          e = new CustomEvent(DOM_ATTR_MODIFIED, {bubles: true})
-        ;
-        setAttribute.call(this, name, value);
-        e.attrName = name;
-        e.prevValue = had ? old : null;
-        e.newValue = value;
-        if (had) {
-          e['MODIFICATION'] = e.attrChange = 1;
-        } else {
-          e['ADDITION'] = e.attrChange = 0;
-        }
-        this.dispatchEvent(e);
-      },
-      onPropertyChange = function (e) {
-        var
-          node = e.currentTarget,
-          superSecret = node[EXPANDO_UID],
-          propertyName = e.propertyName,
-          event
-        ;
-        if (superSecret.hasOwnProperty(propertyName)) {
-          superSecret = superSecret[propertyName];
-          event = new CustomEvent(DOM_ATTR_MODIFIED, {bubles: true});
-          event.attrName = superSecret.name;
-          event.prevValue = superSecret.value || null;
-          event.newValue = (superSecret.value = node[propertyName] || null);
-          if (event.prevValue == null) {
-            event['ADDITION'] = event.attrChange = 0;
-          } else {
-            event['MODIFICATION'] = event.attrChange = 1;
-          }
-          node.dispatchEvent(event);
-        }
-      }
-    ;
-    descriptor.value = function (type, handler, capture) {
-      if (
-        type === DOM_ATTR_MODIFIED &&
-        this.attributeChangedCallback &&
-        this.setAttribute !== patchedSetAttribute
-      ) {
-        this[EXPANDO_UID] = {
-          className: {
-            name: 'class',
-            value: this.className
-          }
-        };
-        this.setAttribute = patchedSetAttribute;
-        this.removeAttribute = patchedRemoveAttribute;
-        addEventListener.call(this, 'propertychange', onPropertyChange);
-      }
-      addEventListener.call(this, type, handler, capture);
-    };
-    defineProperty(HTMLElementPrototype, 'addEventListener', descriptor);
-  }());
-} else if (!MutationObserver) {
+
+if (!MutationObserver) {
   documentElement.addEventListener(DOM_ATTR_MODIFIED, DOMAttrModified);
   documentElement.setAttribute(EXPANDO_UID, 1);
   documentElement.removeAttribute(EXPANDO_UID);
@@ -365,7 +300,7 @@ function loopAndSetup(list) {
 
 function executeAction(action) {
   return function (node) {
-    if (isValidNode(node)) {
+    if (iPO.call(HTMLElementPrototype, node)) {
       verifyAndSetupAndAction(node, action);
       loopAndVerify(
         node.querySelectorAll(query),
@@ -378,7 +313,7 @@ function executeAction(action) {
 function getTypeIndex(target) {
   var
     is = target.getAttribute('is'),
-    nodeName = target.nodeName.toUpperCase(),
+    nodeName = target.nodeName,
     i = indexOf.call(
       types,
       is ?
@@ -424,9 +359,8 @@ function onReadyStateChange(e) {
   }
   loopAndVerify(
     (e.target || document).querySelectorAll(query),
-    e.detail === DETACHED ? DETACHED : ATTACHED
+    'attached'
   );
-  if (IE8) purge();
 }
 
 function patchedSetAttribute(name, value) {
@@ -454,39 +388,23 @@ function setupNode(node, proto) {
   }
 }
 
-function purge() {
-  for (var
-    node,
-    i = 0,
-    length = targets.length;
-    i < length; i++
-  ) {
-    node = targets[i];
-    if (!documentElement.contains(node)) {
-      targets.splice(i, 1);
-      verifyAndSetupAndAction(node, DETACHED);
-    }
-  }
-}
-
 function verifyAndSetupAndAction(node, action) {
   var
     fn,
-    i = getTypeIndex(node)
+    i = getTypeIndex(node),
+    attached = 'attached',
+    detached = 'detached'
   ;
   if (-1 < i) {
     patchIfNotAlready(node, protos[i]);
     i = 0;
-    if (action === ATTACHED && !node[ATTACHED]) {
-      node[DETACHED] = false;
-      node[ATTACHED] = true;
+    if (action === attached && !node[attached]) {
+      node[detached] = false;
+      node[attached] = true;
       i = 1;
-      if (IE8 && indexOf.call(targets, node) < 0) {
-        targets.push(node);
-      }
-    } else if (action === DETACHED && !node[DETACHED]) {
-      node[ATTACHED] = false;
-      node[DETACHED] = true;
+    } else if (action === detached && !node[detached]) {
+      node[attached] = false;
+      node[detached] = true;
       i = 1;
     }
     if (i && (fn = node[action + 'Callback'])) fn.call(node);
@@ -528,7 +446,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
             }
           }
         });
-      }(executeAction(ATTACHED), executeAction(DETACHED)));
+      }(executeAction('attached'), executeAction('detached')));
       observer.observe(
         document,
         {
@@ -537,8 +455,8 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         }
       );
     } else {
-      document.addEventListener('DOMNodeInserted', onDOMNode(ATTACHED));
-      document.addEventListener('DOMNodeRemoved', onDOMNode(DETACHED));
+      document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
+      document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
     }
 
     document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
@@ -610,9 +528,10 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
   loopAndVerify(
     document.querySelectorAll(query),
-    ATTACHED
+    'attached'
   );
 
   return constructor;
 };
 
+});

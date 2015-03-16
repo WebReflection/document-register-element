@@ -1,8 +1,9 @@
 var MyElement = document.registerElement(
   'my-element',
   {
+    // extends: 'div',
     prototype: Object.create(
-      HTMLElement.prototype, {
+      HTMLDivElement.prototype, {
       createdCallback: {value: function() {
         console.log('here I am ^_^ ');
         console.log('with content: ', this.textContent);

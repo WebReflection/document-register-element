@@ -12,7 +12,10 @@ var
   // shortcuts and costants
   EXTENDS = 'extends',
   DOM_ATTR_MODIFIED = 'DOMAttrModified',
+  DOM_CONTENT_LOADED = 'DOMContentLoaded',
   DOM_SUBTREE_MODIFIED = 'DOMSubtreeModified',
+  PREFIX_TAG = '<',
+  PREFIX_IS = '=',
 
   // valid and invalid node names
   validName = /^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$/,
@@ -100,23 +103,6 @@ var
       }
   )),
 
-  // based on setting prototype capability
-  // will check proto or the expando attribute
-  // in order to setup the node once
-  patchIfNotAlready = sPO || hasProto ?
-    function (node, proto) {
-      if (!iPO.call(proto, node)) {
-        setupNode(node, proto);
-      }
-    } :
-    function (node, proto) {
-      if (!node[EXPANDO_UID]) {
-        node[EXPANDO_UID] = Object(true);
-        setupNode(node, proto);
-      }
-    }
-  ,
-
   // DOM shortcuts and helpers, if any
 
   MutationObserver = window.MutationObserver ||
@@ -153,13 +139,37 @@ var
   // internal flags
   setListener = false,
   doesNotSupportDOMAttrModified = true,
+  dropDomContentLoaded = true,
 
   // optionally defined later on
   onSubtreeModified,
   callDOMAttrModified,
   getAttributesMirror,
-  observer
+  observer,
+
+  // based on setting prototype capability
+  // will check proto or the expando attribute
+  // in order to setup the node once
+  patchIfNotAlready,
+  patch
 ;
+
+if (sPO || hasProto) {
+    patchIfNotAlready = function (node, proto) {
+      if (!iPO.call(proto, node)) {
+        setupNode(node, proto);
+      }
+    };
+    patch = setupNode;
+} else {
+    patchIfNotAlready = function (node, proto) {
+      if (!node[EXPANDO_UID]) {
+        node[EXPANDO_UID] = Object(true);
+        setupNode(node, proto);
+      }
+    };
+    patch = patchIfNotAlready;
+}
 
 if (!MutationObserver) {
   documentElement.addEventListener(DOM_ATTR_MODIFIED, DOMAttrModified);
@@ -261,7 +271,7 @@ function loopAndVerify(list, action) {
 function loopAndSetup(list) {
   for (var i = 0, length = list.length, node; i < length; i++) {
     node = list[i];
-    setupNode(node, protos[getTypeIndex(node)]);
+    patch(node, protos[getTypeIndex(node)]);
   }
 }
 
@@ -278,13 +288,21 @@ function executeAction(action) {
 }
 
 function getTypeIndex(target) {
-  var is = target.getAttribute('is');
-  return indexOf.call(
-    types,
-    is ?
-        is.toUpperCase() :
-        target.nodeName
-  );
+  var
+    is = target.getAttribute('is'),
+    nodeName = target.nodeName,
+    i = indexOf.call(
+      types,
+      is ?
+          PREFIX_IS + is.toUpperCase() :
+          PREFIX_TAG + nodeName
+    )
+  ;
+  return is && -1 < i && !isInQSA(nodeName, is) ? -1 : i;
+}
+
+function isInQSA(name, type) {
+  return -1 < query.indexOf(name + '[is="' + type + '"]');
 }
 
 function onDOMAttrModified(e) {
@@ -309,6 +327,17 @@ function onDOMNode(action) {
   return function (e) {
     executor(e.target);
   };
+}
+
+function onReadyStateChange(e) {
+  if (dropDomContentLoaded) {
+    dropDomContentLoaded = false;
+    e.currentTarget.removeEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
+  }
+  loopAndVerify(
+    (e.target || document).querySelectorAll(query),
+    'attached'
+  );
 }
 
 function patchedSetAttribute(name, value) {
@@ -407,20 +436,26 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
     }
 
-    document.addEventListener('readystatechange', function (e) {
-      loopAndVerify(
-        document.querySelectorAll(query),
-        'attached'
-      );
-    });
+    document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
+    document.addEventListener('readystatechange', onReadyStateChange);
 
     document.createElement = function (localName, typeExtension) {
-      var i, node = createElement.apply(document, arguments);
+      var
+        node = createElement.apply(document, arguments),
+        i = indexOf.call(
+          types,
+          (typeExtension ? PREFIX_IS : PREFIX_TAG) +
+          (typeExtension || localName).toUpperCase()
+        ),
+        setup = -1 < i
+      ;
       if (typeExtension) {
-        node.setAttribute('is', localName = typeExtension.toLowerCase());
+        node.setAttribute('is', typeExtension = typeExtension.toLowerCase());
+        if (setup) {
+          setup = isInQSA(localName.toUpperCase(), typeExtension);
+        }
       }
-      i = indexOf.call(types, localName.toUpperCase());
-      if (-1 < i) setupNode(node, protos[i]);
+      if (setup) patch(node, protos[i]);
       return node;
     };
 
@@ -429,13 +464,16 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         node = cloneNode.call(this, !!deep),
         i = getTypeIndex(node)
       ;
-      if (-1 < i) setupNode(node, protos[i]);
+      if (-1 < i) patch(node, protos[i]);
       if (deep) loopAndSetup(node.querySelectorAll(query));
       return node;
     };
   }
 
-  if (-1 < indexOf.call(types, upperType)) {
+  if (-2 < (
+    indexOf.call(types, PREFIX_IS + upperType) +
+    indexOf.call(types, PREFIX_TAG + upperType)
+  )) {
     throw new Error('A ' + type + ' type is already registered');
   }
 
@@ -449,8 +487,8 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     },
     opt = options || OP,
     extending = hOP.call(opt, EXTENDS),
-    nodeName = extending ? options[EXTENDS] : upperType,
-    i = types.push(upperType) - 1,
+    nodeName = extending ? options[EXTENDS].toUpperCase() : upperType,
+    i = types.push((extending ? PREFIX_IS : PREFIX_TAG) + upperType) - 1,
     upperType
   ;
 
