@@ -85,12 +85,13 @@ var
   gPO = Object.getPrototypeOf,
   sPO = Object.setPrototypeOf,
 
+  // jshint proto: true
   hasProto = !!Object.__proto__,
 
   // used to create unique instances
   create = Object.create || function Bridge(proto) {
     // silly broken polyfill probably ever used but short enough to work
-    return proto ? ((Bridge.prototype = proto), new Bridge) : this;
+    return proto ? ((Bridge.prototype = proto), new Bridge()) : this;
   },
 
   // will set the prototype if possible
@@ -119,7 +120,7 @@ var
         return function (o, p) {
           do {
             setProperties(o, p);
-          } while (p = gPO(p));
+          } while ((p = gPO(p)));
           return o;
         };
       }()) :
@@ -456,6 +457,7 @@ function onReadyStateChange(e) {
 }
 
 function patchedSetAttribute(name, value) {
+  // jshint validthis:true
   var self = this;
   setAttribute.call(self, name, value);
   onSubtreeModified.call(self, {target: self});
@@ -573,17 +575,18 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     document.createElement = function (localName, typeExtension) {
       var
         node = createElement.apply(document, arguments),
+        name = '' + localName,
         i = indexOf.call(
           types,
           (typeExtension ? PREFIX_IS : PREFIX_TAG) +
-          (typeExtension || localName).toUpperCase()
+          (typeExtension || name).toUpperCase()
         ),
         setup = -1 < i
       ;
       if (typeExtension) {
         node.setAttribute('is', typeExtension = typeExtension.toLowerCase());
         if (setup) {
-          setup = isInQSA(localName.toUpperCase(), typeExtension);
+          setup = isInQSA(name.toUpperCase(), typeExtension);
         }
       }
       if (setup) patch(node, protos[i]);

@@ -1,5 +1,5 @@
 {
-  "version": "0.1.8",
+  "version": "0.1.9",
   "license": "MIT",
   "name": "document-register-element",
   "description": "A stand-alone working lightweight version of the W3C Custom Elements specification",
@@ -32,6 +32,7 @@
   "devDependencies": {
     "wru": ">= 0.0.0",
     "uglify-js": "1.x",
+    "jshint": "~2.x",
     "polpetta": ">= 0.0.0",
     "phantomjs": ">= 0.0.0"
   }
