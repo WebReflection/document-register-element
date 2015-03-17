@@ -95,7 +95,6 @@ wrapMethod('insertData');
 wrapMethod('replaceChild');
 wrapMethod('removeChild');
 wrapMethod('appendChild');
-wrapMethod('appendChild');
 
 window[HTMLElement] = Element;
 
