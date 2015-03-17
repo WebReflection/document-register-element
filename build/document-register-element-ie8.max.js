@@ -571,6 +571,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     document.addEventListener('readystatechange', onReadyStateChange);
 
     document.createElement = function (localName, typeExtension) {
+      localName = String(localName);
       var
         node = createElement.apply(document, arguments),
         i = indexOf.call(
