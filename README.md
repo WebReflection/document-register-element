@@ -212,7 +212,7 @@ Starting from version `0.2.0` there is an experimental support for IE8.
 There is a specific file that needs to be loaded in IE8 only upfront, plus a sequence of polyfills
 that will be simply ignored by every browser but downloaded in IE8.
 
-Please check [base.html file](base.html) in order to have a basic model to reuse in case you want to support IE8.
+Please check [base.html file](examples/base.html) in order to have a basic model to reuse in case you want to support IE8.
 
 All tests pass and there is a [map component example](examples/x-map.html) that already works in IE8 too.
 
