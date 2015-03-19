@@ -212,9 +212,19 @@ Starting from version `0.2.0` there is an experimental support for IE8.
 There is a specific file that needs to be loaded in IE8 only upfront, plus a sequence of polyfills
 that will be simply ignored by every browser but downloaded in IE8.
 
-Please check [base.html] to have a basic model to reuse in order to support IE8.
+Please check [base.html file](base.html) in order to have a basic model to reuse in case you want to support IE8.
 
-All tests pass and there is a [map component example](examples/x-map.html) that alredy works in IE8 too.
+All tests pass and there is a [map component example](examples/x-map.html) that already works in IE8 too.
 
 Remember there are few things to consider when IE8 is a target but since it didn't cost many bytes
 to have it in, I've decided to merge the logic and maintain only one file that will work in IE8 too.
+
+
+#### IE8 caveats
+
+  * it's IE8
+  * all operations are batched and eventually executed ASAP but asynchronously. This behavior is closer to native Mutation Observers but might have some extra glitch in rendering time
+  * `className` is right now the only special attribute that reacts. Others might be implemented in the [dre-ie8-upfront-fix.js](src/dre-ie8-upfront-fix.js) file.
+  * in order to have node reacting to attributes changes, these must be live on the DOM
+  * if you are using `extends` when create a custom element, remember to minify the production code or wrap such reserved word in quotes
+
