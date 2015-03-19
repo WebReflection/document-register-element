@@ -22,7 +22,7 @@ AMD = $(VAR)
 build:
 	make clean
 	make var
-	make ie8
+#	make ie8
 	make dreie8
 #	make node
 	make amd
@@ -90,8 +90,6 @@ duk:
 size:
 	wc -c build/$(REPO).max.js
 	gzip -c build/$(REPO).js | wc -c
-	wc -c build/$(REPO)-ie8.max.js
-	gzip -c build/$(REPO)-ie8.js | wc -c
 
 # hint built file
 hint:

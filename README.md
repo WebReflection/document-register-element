@@ -208,4 +208,13 @@ In order to prevent footguns inside `attributeChangedCallback` invocations causi
 
 #### About IE8
 
-I don't think there's any library out there able to bring IE8 to these levels, but the code used in this project is syntactically compatible with this old pal too ... moreover, if anyone would ever manage to bring the deprecated [Mutation events](https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Mutation_events) API to IE8, being the `observer` way more complex to shim, this library should work out of the box!
+Starting from version `0.2.0` there is an experimental support for IE8.
+There is a specific file that needs to be loaded in IE8 only upfront, plus a sequence of polyfills
+that will be simply ignored by every browser but downloaded in IE8.
+
+Please check [base.html] to have a basic model to reuse in order to support IE8.
+
+All tests pass and there is a [map component example](examples/x-map.html) that alredy works in IE8 too.
+
+Remember there are few things to consider when IE8 is a target but since it didn't cost many bytes
+to have it in, I've decided to merge the logic and maintain only one file that will work in IE8 too.

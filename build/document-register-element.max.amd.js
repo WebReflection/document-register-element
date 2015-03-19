@@ -33,7 +33,12 @@ var
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
 
   // shortcuts and costants
+  ATTACHED = 'attached',
+  DETACHED = 'detached',
   EXTENDS = 'extends',
+  ADDITION = 'ADDITION',
+  MODIFICATION = 'MODIFICATION',
+  REMOVAL = 'REMOVAL',
   DOM_ATTR_MODIFIED = 'DOMAttrModified',
   DOM_CONTENT_LOADED = 'DOMContentLoaded',
   DOM_SUBTREE_MODIFIED = 'DOMSubtreeModified',
@@ -138,8 +143,21 @@ var
     window.Node
   ).prototype,
 
+  IE8 = !iPO.call(HTMLElementPrototype, documentElement),
+
+  isValidNode = IE8 ?
+    function (node) {
+      return node.nodeType === 1;
+    } :
+    function (node) {
+      return iPO.call(HTMLElementPrototype, node);
+    },
+
+  targets = IE8 && [],
+
   cloneNode = HTMLElementPrototype.cloneNode,
   setAttribute = HTMLElementPrototype.setAttribute,
+  removeAttribute = HTMLElementPrototype.removeAttribute,
 
   // replaced later on
   createElement = document.createElement,
@@ -194,8 +212,82 @@ if (sPO || hasProto) {
     };
     patch = patchIfNotAlready;
 }
-
-if (!MutationObserver) {
+if (IE8) {
+  doesNotSupportDOMAttrModified = false;
+  (function (){
+    var
+      descriptor = gOPD(HTMLElementPrototype, 'addEventListener'),
+      addEventListener = descriptor.value,
+      patchedRemoveAttribute = function (name) {
+        var e = new CustomEvent(DOM_ATTR_MODIFIED, {bubles: true});
+        e.attrName = name;
+        e.prevValue = this.getAttribute(name);
+        e.newValue = null;
+        e[REMOVAL] = e.attrChange = 2;
+        removeAttribute.call(this, name);
+        this.dispatchEvent(e);
+      },
+      patchedSetAttribute = function (name, value) {
+        var
+          had = this.hasAttribute(name),
+          old = had && this.getAttribute(name),
+          e = new CustomEvent(DOM_ATTR_MODIFIED, {bubles: true})
+        ;
+        setAttribute.call(this, name, value);
+        e.attrName = name;
+        e.prevValue = had ? old : null;
+        e.newValue = value;
+        if (had) {
+          e[MODIFICATION] = e.attrChange = 1;
+        } else {
+          e[ADDITION] = e.attrChange = 0;
+        }
+        this.dispatchEvent(e);
+      },
+      onPropertyChange = function (e) {
+        // jshint eqnull:true
+        var
+          node = e.currentTarget,
+          superSecret = node[EXPANDO_UID],
+          propertyName = e.propertyName,
+          event
+        ;
+        if (superSecret.hasOwnProperty(propertyName)) {
+          superSecret = superSecret[propertyName];
+          event = new CustomEvent(DOM_ATTR_MODIFIED, {bubles: true});
+          event.attrName = superSecret.name;
+          event.prevValue = superSecret.value || null;
+          event.newValue = (superSecret.value = node[propertyName] || null);
+          if (event.prevValue == null) {
+            event[ADDITION] = event.attrChange = 0;
+          } else {
+            event[MODIFICATION] = event.attrChange = 1;
+          }
+          node.dispatchEvent(event);
+        }
+      }
+    ;
+    descriptor.value = function (type, handler, capture) {
+      if (
+        type === DOM_ATTR_MODIFIED &&
+        this.attributeChangedCallback &&
+        this.setAttribute !== patchedSetAttribute
+      ) {
+        this[EXPANDO_UID] = {
+          className: {
+            name: 'class',
+            value: this.className
+          }
+        };
+        this.setAttribute = patchedSetAttribute;
+        this.removeAttribute = patchedRemoveAttribute;
+        addEventListener.call(this, 'propertychange', onPropertyChange);
+      }
+      addEventListener.call(this, type, handler, capture);
+    };
+    defineProperty(HTMLElementPrototype, 'addEventListener', descriptor);
+  }());
+} else if (!MutationObserver) {
   documentElement.addEventListener(DOM_ATTR_MODIFIED, DOMAttrModified);
   documentElement.setAttribute(EXPANDO_UID, 1);
   documentElement.removeAttribute(EXPANDO_UID);
@@ -219,7 +311,7 @@ if (!MutationObserver) {
               key,
               oldAttributes[key],
               newAttributes[key],
-              'ADDITION'
+              ADDITION
             );
           } else if (newAttributes[key] !== oldAttributes[key]) {
             // attribute was changed
@@ -229,7 +321,7 @@ if (!MutationObserver) {
               key,
               oldAttributes[key],
               newAttributes[key],
-              'MODIFICATION'
+              MODIFICATION
             );
           }
         }
@@ -243,7 +335,7 @@ if (!MutationObserver) {
               key,
               oldAttributes[key],
               newAttributes[key],
-              'REMOVAL'
+              REMOVAL
             );
           }
         }
@@ -301,7 +393,7 @@ function loopAndSetup(list) {
 
 function executeAction(action) {
   return function (node) {
-    if (iPO.call(HTMLElementPrototype, node)) {
+    if (isValidNode(node)) {
       verifyAndSetupAndAction(node, action);
       loopAndVerify(
         node.querySelectorAll(query),
@@ -314,7 +406,7 @@ function executeAction(action) {
 function getTypeIndex(target) {
   var
     is = target.getAttribute('is'),
-    nodeName = target.nodeName,
+    nodeName = target.nodeName.toUpperCase(),
     i = indexOf.call(
       types,
       is ?
@@ -340,8 +432,8 @@ function onDOMAttrModified(e) {
       e.attrName !== 'style') {
     node.attributeChangedCallback(
       e.attrName,
-      attrChange === e.ADDITION ? null : prevValue,
-      attrChange === e.REMOVAL ? null : newValue
+      attrChange === e[ADDITION] ? null : prevValue,
+      attrChange === e[REMOVAL] ? null : newValue
     );
   }
 }
@@ -360,8 +452,9 @@ function onReadyStateChange(e) {
   }
   loopAndVerify(
     (e.target || document).querySelectorAll(query),
-    'attached'
+    e.detail === DETACHED ? DETACHED : ATTACHED
   );
+  if (IE8) purge();
 }
 
 function patchedSetAttribute(name, value) {
@@ -390,23 +483,39 @@ function setupNode(node, proto) {
   }
 }
 
+function purge() {
+  for (var
+    node,
+    i = 0,
+    length = targets.length;
+    i < length; i++
+  ) {
+    node = targets[i];
+    if (!documentElement.contains(node)) {
+      targets.splice(i, 1);
+      verifyAndSetupAndAction(node, DETACHED);
+    }
+  }
+}
+
 function verifyAndSetupAndAction(node, action) {
   var
     fn,
-    i = getTypeIndex(node),
-    attached = 'attached',
-    detached = 'detached'
+    i = getTypeIndex(node)
   ;
   if (-1 < i) {
     patchIfNotAlready(node, protos[i]);
     i = 0;
-    if (action === attached && !node[attached]) {
-      node[detached] = false;
-      node[attached] = true;
+    if (action === ATTACHED && !node[ATTACHED]) {
+      node[DETACHED] = false;
+      node[ATTACHED] = true;
       i = 1;
-    } else if (action === detached && !node[detached]) {
-      node[attached] = false;
-      node[detached] = true;
+      if (IE8 && indexOf.call(targets, node) < 0) {
+        targets.push(node);
+      }
+    } else if (action === DETACHED && !node[DETACHED]) {
+      node[ATTACHED] = false;
+      node[DETACHED] = true;
       i = 1;
     }
     if (i && (fn = node[action + 'Callback'])) fn.call(node);
@@ -448,7 +557,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
             }
           }
         });
-      }(executeAction('attached'), executeAction('detached')));
+      }(executeAction(ATTACHED), executeAction(DETACHED)));
       observer.observe(
         document,
         {
@@ -457,8 +566,8 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         }
       );
     } else {
-      document.addEventListener('DOMNodeInserted', onDOMNode('attached'));
-      document.addEventListener('DOMNodeRemoved', onDOMNode('detached'));
+      document.addEventListener('DOMNodeInserted', onDOMNode(ATTACHED));
+      document.addEventListener('DOMNodeRemoved', onDOMNode(DETACHED));
     }
 
     document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
@@ -531,10 +640,9 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
   loopAndVerify(
     document.querySelectorAll(query),
-    'attached'
+    ATTACHED
   );
 
   return constructor;
 };
-
 });
