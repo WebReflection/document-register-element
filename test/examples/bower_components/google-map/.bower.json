@@ -1,0 +1,45 @@
+{
+  "name": "google-map",
+  "version": "0.4.2",
+  "homepage": "http://googlewebcomponents.github.io/google-map",
+  "description": "Google Maps web components",
+  "main": "google-map.html",
+  "authors": [
+    "Frankie Fu <ffu@google.com>",
+    "Scott Miles <sjmiles@google.com>",
+    "Eric Bidelman <ebidel@gmail.com>"
+  ],
+  "license": "Apache-2",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "../"
+  ],
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "google",
+    "apis",
+    "maps"
+  ],
+  "dependencies": {
+    "google-apis": "GoogleWebComponents/google-apis#^0.4.4"
+  },
+  "devDependencies": {
+    "web-component-tester": "*"
+  },
+  "_release": "0.4.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.4.2",
+    "commit": "cbe9fa6bab57930b59cbbdd9017ea8a92f02a875"
+  },
+  "_source": "git://github.com/Polymer/google-map.git",
+  "_target": "~0.4.2",
+  "_originalSource": "Polymer/google-map",
+  "_direct": true
+}

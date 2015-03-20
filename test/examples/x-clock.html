@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>x-clock</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0,minimal-ui">
+    <!--[if lte IE 9]><script>(function(f){window.setTimeout=f(window.setTimeout);window.setInterval=f(window.setInterval)})(function(f){return function(c,t){var a=[].slice.call(arguments,2);return f(function(){c.apply(this,a)},t)}});</script><![endif]-->
+    <!--[if IE 8]><script src="//cdnjs.cloudflare.com/ajax/libs/ie8/0.2.3/ie8.js"></script><![endif]-->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/dom4/1.3.1/dom4.js"></script>
+    <!--[if IE 8]><script src="js/dre-ie8-upfront-fix.js"></script><![endif]-->
+    <script src="js/document-register-element.js"></script>
+    <!--[if IE 8]>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/es5-shim/4.1.0/es5-shim.js"></script>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/es5-shim/4.1.0/es5-sham.js"></script>
+    <![endif]-->
+    <script src="js/restyle.js"></script>
+    <!-- x-clock Custom Element -->
+    <script src="js/x-clock.js"></script>
+  </head>
+  <body>
+    <h3>dynamic</h3>
+    <x-clock>10:10:30</x-clock>
+    <h3>fixed</h3>
+    <x-clock hour="10" minute="10" second="30">10:10:30</x-clock>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+﻿<!doctype html>
+<!-- Copyright (c) 2014 Google Inc. All rights reserved. -->
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>google-apis Demo</title>
+  <script src="../webcomponentsjs/webcomponents.min.js"></script>
+  <link rel="import" href="google-apis.html">
+</head>
+<body>
+
+  <google-client-api></google-client-api>
+  <google-jsapi></google-jsapi>
+  <google-maps-api></google-maps-api>
+  <google-plusone-api></google-plusone-api>
+  <google-realtime-api></google-realtime-api>
+  <google-youtube-api></google-youtube-api>
+
+  <div></div>
+
+  <script>
+    var msg = document.querySelector('div');
+    window.addEventListener('api-load', function(e) {
+      msg.innerHTML += e.target.localName + ' loaded' + '<br>';
+      console.log(e.target.localName + ' loaded');
+    });
+  </script>
+
+  <google-api-loader id="shortener" name="urlshortener"
+                     version="v1"></google-api-loader>
+  <script>
+    var shortener = document.getElementById('shortener');
+    shortener.addEventListener('google-api-load', function(event) {
+      var request = shortener.api.url.get({
+        shortUrl: 'http://goo.gl/fbsS'
+      })
+      request.execute(function(resp) {
+        console.log(resp);
+      });
+    });
+  </script>
+</body>
+</html>
