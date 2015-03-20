@@ -124,6 +124,7 @@ pages:
 	cp -rf src ~/tmp/$(REPO)
 	cp -rf build ~/tmp/$(REPO)
 	cp -rf test ~/tmp/$(REPO)
+	cp -rf examples ~/tmp/$(REPO)
 	cp index.html ~/tmp/$(REPO)
 	git checkout gh-pages
 	cp ~/tmp/.gitignore ./
