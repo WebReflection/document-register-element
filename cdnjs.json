@@ -25,13 +25,15 @@
   },
   "filename": "document-register-element.js",
   "npmName": "document-register-element",
-  "npmFileMap": [{
-    "basePath": "/build/",
-    "files": [
-      "dre-ie8-upfront-fix.js",
-      "dre-ie8-upfront-fix.max.js",
-      "document-register-element.js",
-      "document-register-element.max.js"
-    ]
-  }]
+  "npmFileMap": [
+    {
+      "basePath": "/build/",
+      "files": [
+        "dre-ie8-upfront-fix.js",
+        "dre-ie8-upfront-fix.max.js",
+        "document-register-element.js",
+        "document-register-element.max.js"
+      ]
+    }
+  ]
 }
