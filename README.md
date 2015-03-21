@@ -26,7 +26,7 @@ Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following 
 ```
 
 ### TL;DR does it work ?
-If you [see the first clock ticking](https://webreflection.github.io/custom-element/), the TL;DR answer is yes.
+If you [see the first clock ticking](https://webreflection.github.io/document-register-element/test/examples/x-clock.html), the TL;DR answer is yes.
 
 
 ### Usage Example
@@ -92,18 +92,12 @@ var MyElement = document.registerElement(
 
 
 ### Why
+There are a [couple](http://webreflection.blogspot.co.uk/2014/07/a-w3c-custom-elements-alternative.html) of blog [posts](http://webreflection.blogspot.co.uk/2015/03/bringing-custom-elements-to-ie8.html) about this polyfill, and following the quick summary:
 
-The Polymer framework has a [CustomElements](https://github.com/Polymer/CustomElements) under the hood that requires other repositories and a build process that will end up creating 15KB of `custom-elements.min.js` that will most likely not even work due a missing [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) that is needed for a big percentage of today browsing users out there.
-
-Adding such polyfill in a reliable way means including [this file](http://code.google.com/p/es-lab/source/browse/trunk/src/ses/WeakMap.js) plus different extra files from SES to make that work and yet you simply wanted to create some reusable DOM element ... so here an alternative!
-
-[document-register-element.js](build/document-register-element.js) is a stand alone polyfill which aim is to support as many browsers as possible, without requiring extra dependencies, without needing a `WeakMap` at all, in about **2KB** minified and gzipped, around 13KB plain as it is ... strawberry on top, feel free to contribute without signing anything :)
+[document-register-element.js](build/document-register-element.js) is a stand alone polyfill which aim is to support as many browsers as possible, without requiring extra dependencies at all, and in about **3KB** minified and gzipped.
 
 Add if you want [dom4](https://github.com/WebReflection/dom4#dom4) normalizer and you'll find yourself in a modern DOM environment that works reliably with today browsers with an eye always open on performance.
 
-- - -
-
-Here also the [dedicate blog post](http://webreflection.blogspot.com/2014/07/a-w3c-custom-elements-alternative.html) to know even more, if interested :-)
 
 
 ### Tested On
@@ -114,7 +108,7 @@ The following list of **desktop** browsers has been successfully tested:
 
   * Chrome
   * Firefox
-  * IE 9 or greater
+  * IE 8 or greater (please read about IE8 caveats)
   * Safari
   * Opera
 
@@ -214,7 +208,7 @@ that will be simply ignored by every browser but downloaded in IE8.
 
 Please check [base.html file](examples/base.html) in order to have a basic model to reuse in case you want to support IE8.
 
-All tests pass and there is a [map component example](examples/x-map.html) that already works in IE8 too.
+All tests pass and there is a [map component example](https://webreflection.github.io/document-register-element/test/examples/x-map.html) that already works in IE8 too.
 
 Remember there are few things to consider when IE8 is a target but since it didn't cost many bytes
 to have it in, I've decided to merge the logic and maintain only one file that will work in IE8 too.
