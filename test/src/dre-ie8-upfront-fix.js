@@ -61,18 +61,20 @@ var
 
 wrapSetter('innerHTML');
 wrapSetter('innerText');
-wrapSetter('textContent');
 wrapSetter('outerHTML');
 wrapSetter('outerText');
+wrapSetter('textContent');
 
+wrapMethod('appendChild');
+wrapMethod('applyElement');
 wrapMethod('insertAdjacentElement');
 wrapMethod('insertAdjacentHTML');
 wrapMethod('insertAdjacentText');
 wrapMethod('insertBefore');
 wrapMethod('insertData');
+wrapMethod('replaceAdjacentText');
 wrapMethod('replaceChild');
 wrapMethod('removeChild');
-wrapMethod('appendChild');
 
 window[HTMLElement] = Element;
 
