@@ -26,7 +26,7 @@ Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following 
 ```
 
 ### TL;DR does it work ?
-If you [see the first clock ticking](https://webreflection.github.io/document-register-element/test/examples/x-clock.html), the TL;DR answer is yes.
+If you [see the first clock ticking](http://webreflection.github.io/document-register-element/test/examples/x-clock.html), the TL;DR answer is yes.
 
 
 ### Usage Example
@@ -208,7 +208,7 @@ that will be simply ignored by every browser but downloaded in IE8.
 
 Please check [base.html file](examples/base.html) in order to have a basic model to reuse in case you want to support IE8.
 
-All tests pass and there is a [map component example](https://webreflection.github.io/document-register-element/test/examples/x-map.html) that already works in IE8 too.
+All tests pass and there is a [map component example](http://webreflection.github.io/document-register-element/test/examples/x-map.html) that already works in IE8 too.
 
 Remember there are few things to consider when IE8 is a target but since it didn't cost many bytes
 to have it in, I've decided to merge the logic and maintain only one file that will work in IE8 too.
