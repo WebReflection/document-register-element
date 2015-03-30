@@ -219,7 +219,7 @@ if (IE8) {
       descriptor = gOPD(HTMLElementPrototype, 'addEventListener'),
       addEventListener = descriptor.value,
       patchedRemoveAttribute = function (name) {
-        var e = new CustomEvent(DOM_ATTR_MODIFIED, {bubles: true});
+        var e = new CustomEvent(DOM_ATTR_MODIFIED, {bubbles: true});
         e.attrName = name;
         e.prevValue = this.getAttribute(name);
         e.newValue = null;
@@ -231,7 +231,7 @@ if (IE8) {
         var
           had = this.hasAttribute(name),
           old = had && this.getAttribute(name),
-          e = new CustomEvent(DOM_ATTR_MODIFIED, {bubles: true})
+          e = new CustomEvent(DOM_ATTR_MODIFIED, {bubbles: true})
         ;
         setAttribute.call(this, name, value);
         e.attrName = name;
@@ -254,7 +254,7 @@ if (IE8) {
         ;
         if (superSecret.hasOwnProperty(propertyName)) {
           superSecret = superSecret[propertyName];
-          event = new CustomEvent(DOM_ATTR_MODIFIED, {bubles: true});
+          event = new CustomEvent(DOM_ATTR_MODIFIED, {bubbles: true});
           event.attrName = superSecret.name;
           event.prevValue = superSecret.value || null;
           event.newValue = (superSecret.value = node[propertyName] || null);
