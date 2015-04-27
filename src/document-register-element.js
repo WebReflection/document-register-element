@@ -97,7 +97,7 @@ var
         return function (o, p) {
           do {
             setProperties(o, p);
-          } while ((p = gPO(p)));
+          } while ((p = gPO(p)) && !iPO.call(p, o));
           return o;
         };
       }()) :
