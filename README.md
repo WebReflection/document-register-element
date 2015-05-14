@@ -191,6 +191,16 @@ var mi = document.createElement('my-input');
 In this case every method that wants to interact with the input will refer `this.el` instead of just `this`.
 
 
+#### Using `innerHTML`
+In order to avoid huge performance impact, native behavior overwrite problems and incompatibilities, there is now a [helper script](https://github.com/WebReflection/document-register-element/blob/master/build/innerHTML.max.js),
+which aim is to make **off-line custom elements creation** possible using template strings instead of needing manual `document.createElement` replacements.
+
+The helper is a simple `innerHTML` function that returns the given node, after setting `innerHTML` and, in case the polyfill is used, initialize nodes.
+
+This helper is needed in order to be aligned with native implementations, but please remember that `createdCallback` could be asynchronous, even if triggered ASAP after injecting HTML through this function.
+
+
+
 #### Changing the `style` property
 
 If you change the style property via `node.style.cssText` or `node.style.backgroundColor = "red"` this change will most likely reflect through `node.getAttribute("style")`.

@@ -15,6 +15,9 @@ NODE = $(VAR)
 # make amd files
 AMD = $(VAR)
 
+# make innerHTML.js file
+INNERHTML = src/innerHTML.js
+
 # README constant
 
 
@@ -22,6 +25,7 @@ AMD = $(VAR)
 build:
 	make clean
 	make var
+	make innerHTML
 #	make ie8
 	make dreie8
 #	make node
@@ -39,6 +43,16 @@ var:
 	cat template/copyright build/no-copy.$(REPO).js >build/$(REPO).js
 	rm build/no-copy.$(REPO).max.js
 	rm build/no-copy.$(REPO).js
+
+# build innerHTML function helper
+innerHTML:
+	mkdir -p build
+	cat $(INNERHTML) >build/no-copy.innerHTML.max.js
+	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.innerHTML.max.js >build/no-copy.innerHTML.js
+	cat template/license.before LICENSE.txt template/license.after build/no-copy.innerHTML.max.js >build/innerHTML.max.js
+	cat template/copyright build/no-copy.innerHTML.js >build/innerHTML.js
+	rm build/no-copy.innerHTML.max.js
+	rm build/no-copy.innerHTML.js
 
 # build IE8 specific version
 ie8:
@@ -95,6 +109,7 @@ size:
 hint:
 	node node_modules/jshint/bin/jshint build/$(REPO).max.js
 	node node_modules/jshint/bin/jshint build/dre-ie8-upfront-fix.max.js
+	node node_modules/jshint/bin/jshint build/innerHTML.max.js
 
 # clean/remove build folder
 clean:

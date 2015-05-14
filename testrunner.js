@@ -17,15 +17,29 @@ page.open(url, function (status) {
           ),
           passed: passed,
           failed: Math.max(0, document.querySelectorAll('.fail').length - 1),
-          errored: Math.max(0, document.querySelectorAll('.error').length - 1)
+          failures: [].map.call(document.querySelectorAll('.fail'), function (node) {
+            return node.textContent;
+          }),
+          errored: Math.max(0, document.querySelectorAll('.error').length - 1),
+          errors: [].map.call(document.querySelectorAll('.error'), function (node) {
+            return node.textContent;
+          })
         };
       });
       console.log('- - - - - - - - - -');
       console.log('total:   ' + results.total);
       console.log('- - - - - - - - - -');
       console.log('passed:  ' + results.passed);
-      console.log('failed:  ' + results.failed);
-      console.log('errored: ' + results.errored);
+      if (results.failed) {
+        console.log('failures: \n' + results.failures.join('\n'));
+      } else {
+        console.log('failed: ' + results.failed);
+      }
+      if (results.errored) {
+        console.log('errors: \n' + results.errors.join('\n'));
+      } else {
+        console.log('errored: ' + results.errored);
+      }
       console.log('- - - - - - - - - -');
       if (0 < results.failed + results.errored) {
         status = 'failed';
