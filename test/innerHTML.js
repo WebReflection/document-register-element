@@ -58,5 +58,55 @@ wru.test(typeof document === 'undefined' ? [] : [
       wru.assert('correct x node',
         div.childNodes[1].createdCallback && div.childNodes[1].nodeName.toLowerCase() === 'inner-html');
     }
-  }//*/
+  }, {
+    name: 'innerHTML with nested elements',
+    test: function () {
+      var times = 0;
+      wru.async(Object);
+      document.registerElement('custom-one', {
+        prototype: Object.create(
+          HTMLElement.prototype, {
+            createdCallback: {
+              value: function () {
+                times++;
+                this.setAttribute('created', 'one');
+              }
+            }
+          }
+        )
+      });
+      document.registerElement('custom-two', {
+        prototype: Object.create(
+          HTMLElement.prototype, {
+            createdCallback: {
+              value: function () {
+                times++;
+                this.setAttribute('created', 'two');
+              }
+            }
+          }
+        )
+      });
+      var div = innerHTML(
+        document.createElement('div'),
+        '<custom-one>' +
+          '<custom-two>' +
+            '<span></span>' +
+          '</custom-two>' +
+        '</custom-one>'
+      );
+      wru.assert('right amount of nodes',
+        div.children.length === 1 &&
+        div.firstElementChild.children.length === 1 &&
+        !!div.querySelector('span')
+      );
+      setTimeout(wru.async(function () {
+        wru.assert('nodes have been notified about creation',
+          div.children[0].getAttribute('created') === 'one' &&
+          div.children[0].children[0].getAttribute('created') === 'two' &&
+          times === 2
+        );
+      }), 250);
+    }
+  }
 ]);

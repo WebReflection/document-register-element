@@ -53,12 +53,13 @@ var innerHTML = (function (document) {
       attributes = el.attributes,
       i = 0,
       length = attributes.length,
-      attr;
+      attr, fc;
       i < length; i++
     ) {
       attr = attributes[i];
       node.setAttribute(attr.name, attr.value);
     }
+    while ((fc = el.firstChild)) node.appendChild(fc);
     el.replaceWith(node);
   };
   // augment the document.registerElement method
@@ -70,12 +71,10 @@ var innerHTML = (function (document) {
     return register.apply(document, arguments);
   }).innerHTML = function (el, html) {
     el.innerHTML = html;
-    registered.forEach.call(
-      el.querySelectorAll(
-          registered.join(',')
-      ),
-      initialize
-    );
+    for (var
+      nodes = el.querySelectorAll(registered.join(',')),
+      i = nodes.length; i--; initialize(nodes[i])
+    ) {}
     return el;
   });
 }(document));
