@@ -65,6 +65,7 @@ var innerHTML = (function (document) {
       'detachedCallback' in el        ||
       'attributeChangedCallback' in el
     ) return;
+    document.createElement.innerHTMLHelper = true;
     for (var
       parentNode = el.parentNode,
       type = el.getAttribute('is'),
@@ -82,7 +83,13 @@ var innerHTML = (function (document) {
       attr = attributes[i];
       node.setAttribute(attr.name, attr.value);
     }
+    if (node.createdCallback) {
+      node.created = true;
+      node.createdCallback();
+      node.created = false;
+    }
     while ((fc = el.firstChild)) node.appendChild(fc);
+    document.createElement.innerHTMLHelper = false;
     if (parentNode) parentNode.replaceChild(node, el);
   };
   // augment the document.registerElement method

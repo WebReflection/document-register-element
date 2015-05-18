@@ -170,7 +170,8 @@ var
   // will check proto or the expando attribute
   // in order to setup the node once
   patchIfNotAlready,
-  patch
+  patch,
+  notFromInnerHTMLHelper
 ;
 
 if (sPO || hasProto) {
@@ -405,7 +406,8 @@ function onDOMAttrModified(e) {
     prevValue = e.prevValue,
     newValue = e.newValue
   ;
-  if (node.attributeChangedCallback &&
+  if (notFromInnerHTMLHelper &&
+      node.attributeChangedCallback &&
       e.attrName !== 'style') {
     node.attributeChangedCallback(
       e.attrName,
@@ -453,7 +455,7 @@ function setupNode(node, proto) {
     }
     node.addEventListener(DOM_ATTR_MODIFIED, onDOMAttrModified);
   }
-  if (node.createdCallback) {
+  if (node.createdCallback && notFromInnerHTMLHelper) {
     node.created = true;
     node.createdCallback();
     node.created = false;
@@ -523,7 +525,8 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
               checkEmAll(current.removedNodes, detached);
             } else {
               node = current.target;
-              if (node.attributeChangedCallback &&
+              if (notFromInnerHTMLHelper &&
+                  node.attributeChangedCallback &&
                   current.attributeName !== 'style') {
                 node.attributeChangedCallback(
                   current.attributeName,
@@ -567,6 +570,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
           setup = isInQSA(name.toUpperCase(), typeExtension);
         }
       }
+      notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
       if (setup) patch(node, protos[i]);
       return node;
     };
