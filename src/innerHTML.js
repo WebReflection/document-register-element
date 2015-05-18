@@ -44,6 +44,7 @@ var innerHTML = (function (document) {
       'attributeChangedCallback' in el
     ) return;
     for (var
+      parentNode = el.parentNode,
       type = el.getAttribute('is'),
       name = el.nodeName,
       node = document.createElement.apply(
@@ -60,7 +61,7 @@ var innerHTML = (function (document) {
       node.setAttribute(attr.name, attr.value);
     }
     while ((fc = el.firstChild)) node.appendChild(fc);
-    el.replaceWith(node);
+    if (parentNode) parentNode.replaceChild(node, el);
   };
   // augment the document.registerElement method
   return ((document.registerElement = function registerElement(type, options) {
