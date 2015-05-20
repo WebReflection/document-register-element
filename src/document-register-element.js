@@ -155,6 +155,14 @@ var
     );
   },
 
+  // will both be used to make DOMNodeInserted asynchronous
+  asapQueue,
+  rAF = window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function (fn) { setTimeout(fn, 10); },
+
   // internal flags
   setListener = false,
   doesNotSupportDOMAttrModified = true,
@@ -420,7 +428,7 @@ function onDOMAttrModified(e) {
 function onDOMNode(action) {
   var executor = executeAction(action);
   return function (e) {
-    executor(e.target);
+    asapQueue.push(executor, e.target);
   };
 }
 
@@ -546,6 +554,15 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         }
       );
     } else {
+      asapQueue = [];
+      rAF(function ASAP() {
+        while (asapQueue.length) {
+          asapQueue.shift().call(
+            null, asapQueue.shift()
+          );
+        }
+        rAF(ASAP);
+      });
       document.addEventListener('DOMNodeInserted', onDOMNode(ATTACHED));
       document.addEventListener('DOMNodeRemoved', onDOMNode(DETACHED));
     }
