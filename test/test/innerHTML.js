@@ -108,5 +108,63 @@ wru.test(typeof document === 'undefined' ? [] : [
         );
       }), 250);
     }
+  }, {
+    name: 'innerHTML attributes present on createdCallback',
+    test: function () {
+      document.registerElement('with-attributes', {
+        prototype: Object.create(
+          HTMLElement.prototype, {
+            createdCallback: {
+              value: wru.async(function () {
+                wru.assert(this.getAttribute('present') === 'yeah');
+              })
+            }
+          }
+        )
+      });
+      var div = innerHTML(
+        document.createElement('div'),
+        '<div>' +
+          '<with-attributes present="yeah">' +
+          '</with-attributes>' +
+        '</div>'
+      );
+    }
+  }, {
+    name: 'innerHTML attributeChangedCallback',
+    test: function () {
+      var order = [];
+      document.registerElement('with-attributes-changes', {
+        prototype: Object.create(
+          HTMLElement.prototype, {
+            createdCallback: {
+              value: function () {
+                order.push('createdCallback');
+              }
+            },
+            attachedCallback: {
+              value: function () {
+                order.push('attachedCallback');
+              }
+            },
+            attributeChangedCallback: {
+              value: function () {
+                order.push('attributeChangedCallback');
+              }
+            }
+          }
+        )
+      });
+      document.body.appendChild(innerHTML(
+        document.createElement('div'),
+        '<div>' +
+          '<with-attributes-changes present="yeah">' +
+          '</with-attributes-changes>' +
+        '</div>'
+      )).style.display = 'none';
+      setTimeout(wru.async(function () {
+        wru.assert('right order', order.join(',') === 'createdCallback,attachedCallback');
+      }), 250);
+    }
   }
 ]);

@@ -65,7 +65,9 @@ var innerHTML = (function (document) {
       'detachedCallback' in el        ||
       'attributeChangedCallback' in el
     ) return;
+    document.createElement.innerHTMLHelper = true;
     for (var
+      parentNode = el.parentNode,
       type = el.getAttribute('is'),
       name = el.nodeName,
       node = document.createElement.apply(
@@ -81,8 +83,14 @@ var innerHTML = (function (document) {
       attr = attributes[i];
       node.setAttribute(attr.name, attr.value);
     }
+    if (node.createdCallback) {
+      node.created = true;
+      node.createdCallback();
+      node.created = false;
+    }
     while ((fc = el.firstChild)) node.appendChild(fc);
-    el.replaceWith(node);
+    document.createElement.innerHTMLHelper = false;
+    if (parentNode) parentNode.replaceChild(node, el);
   };
   // augment the document.registerElement method
   return ((document.registerElement = function registerElement(type, options) {
