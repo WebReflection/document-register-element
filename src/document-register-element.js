@@ -616,7 +616,9 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
   var
     constructor = function () {
-      return document.createElement(nodeName, extending && upperType);
+      return extending ?
+        document.createElement(nodeName, upperType) :
+        document.createElement(nodeName);
     },
     opt = options || OP,
     extending = hOP.call(opt, EXTENDS),
