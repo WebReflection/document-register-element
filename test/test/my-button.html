@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="/build/document-register-element.max.js"></script>
+    <script>
+var MyButton = document.registerElement(
+  'my-button',
+  {
+    extends: 'button',
+    prototype: Object.create(
+      HTMLButtonElement.prototype, {
+      createdCallback: {value: function() {
+        this.textContent = 'button';
+      }}
+    })
+  }
+);
+    </script>
+  </head>
+  <body>
+    <p>
+      There should be a "button" text inside the button.
+    </p>
+    <button is="my-button"></button>
+  </body>
+</html>

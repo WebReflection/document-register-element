@@ -194,6 +194,9 @@ var
   doesNotSupportDOMAttrModified = true,
   dropDomContentLoaded = true,
 
+  // needed for the innerHTML helper
+  notFromInnerHTMLHelper = true,
+
   // optionally defined later on
   onSubtreeModified,
   callDOMAttrModified,
@@ -204,8 +207,7 @@ var
   // will check proto or the expando attribute
   // in order to setup the node once
   patchIfNotAlready,
-  patch,
-  notFromInnerHTMLHelper
+  patch
 ;
 
 if (sPO || hasProto) {
@@ -642,7 +644,9 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
   var
     constructor = function () {
-      return document.createElement(nodeName, extending && upperType);
+      return extending ?
+        document.createElement(nodeName, upperType) :
+        document.createElement(nodeName);
     },
     opt = options || OP,
     extending = hOP.call(opt, EXTENDS),
