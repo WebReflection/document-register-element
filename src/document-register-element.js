@@ -509,6 +509,28 @@ function verifyAndSetupAndAction(node, action) {
   }
 }
 
+document.createElement = function (localName, typeExtension) {
+  var
+    node = createElement.apply(document, arguments),
+    name = '' + localName,
+    i = indexOf.call(
+      types,
+      (typeExtension ? PREFIX_IS : PREFIX_TAG) +
+      (typeExtension || name).toUpperCase()
+    ),
+    setup = -1 < i
+  ;
+  if (typeExtension) {
+    node.setAttribute('is', typeExtension = typeExtension.toLowerCase());
+    if (setup) {
+      setup = isInQSA(name.toUpperCase(), typeExtension);
+    }
+  }
+  notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
+  if (setup) patch(node, protos[i]);
+  return node;
+};
+
 // set as enumerable, writable and configurable
 document[REGISTER_ELEMENT] = function registerElement(type, options) {
   upperType = type.toUpperCase();
@@ -533,13 +555,15 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
               checkEmAll(current.removedNodes, detached);
             } else {
               node = current.target;
+              current.newValue = node.getAttribute(current.attributeName);
               if (notFromInnerHTMLHelper &&
                   node.attributeChangedCallback &&
+                  current.oldValue !== current.newValue &&
                   current.attributeName !== 'style') {
                 node.attributeChangedCallback(
                   current.attributeName,
                   current.oldValue,
-                  node.getAttribute(current.attributeName)
+                  current.newValue
                 );
               }
             }
@@ -569,28 +593,6 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
     document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
     document.addEventListener('readystatechange', onReadyStateChange);
-
-    document.createElement = function (localName, typeExtension) {
-      var
-        node = createElement.apply(document, arguments),
-        name = '' + localName,
-        i = indexOf.call(
-          types,
-          (typeExtension ? PREFIX_IS : PREFIX_TAG) +
-          (typeExtension || name).toUpperCase()
-        ),
-        setup = -1 < i
-      ;
-      if (typeExtension) {
-        node.setAttribute('is', typeExtension = typeExtension.toLowerCase());
-        if (setup) {
-          setup = isInQSA(name.toUpperCase(), typeExtension);
-        }
-      }
-      notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
-      if (setup) patch(node, protos[i]);
-      return node;
-    };
 
     HTMLElementPrototype.cloneNode = function (deep) {
       var
