@@ -2,6 +2,7 @@ src/*
 test/*
 template/*
 node_modules/*
+examples/*
 build/*.amd.js
 Makefile
 index.html
