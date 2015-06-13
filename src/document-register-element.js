@@ -157,11 +157,12 @@ var
 
   // will both be used to make DOMNodeInserted asynchronous
   asapQueue,
-  rAF = window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
-        function (fn) { setTimeout(fn, 10); },
+  setImmediate = window.setImmediate ||
+    function (fn) {
+      var img = new Image();
+      img.onerror = fn;
+      img.src = '';
+    },
 
   // internal flags
   setListener = false,
@@ -557,13 +558,13 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       );
     } else {
       asapQueue = [];
-      rAF(function ASAP() {
+      setImmediate(function ASAP() {
         while (asapQueue.length) {
           asapQueue.shift().call(
             null, asapQueue.shift()
           );
         }
-        rAF(ASAP);
+        setImmediate(ASAP);
       });
       document.addEventListener('DOMNodeInserted', onDOMNode(ATTACHED));
       document.addEventListener('DOMNodeRemoved', onDOMNode(DETACHED));
