@@ -20,7 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-define(function(){
+define(function(){'use strict';
+
+var REGISTER_ELEMENT = 'registerElement';
+
+if (REGISTER_ELEMENT in document) return;
 
 // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
 // THIS IS A PROJECT BASED ON A BUILD SYSTEM
