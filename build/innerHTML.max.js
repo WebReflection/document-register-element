@@ -24,6 +24,7 @@ THE SOFTWARE.
 var innerHTML = (function (document) {
 
   var
+    EXTENDS = 'extends',
     register = document.registerElement,
     div = document.createElement('div'),
     dre = 'document-register-element',
@@ -94,8 +95,8 @@ var innerHTML = (function (document) {
   };
   // augment the document.registerElement method
   return ((document.registerElement = function registerElement(type, options) {
-    var name = (options.extends ?
-      (options.extends + '[is="' + type + '"]') : type
+    var name = (options[EXTENDS] ?
+      (options[EXTENDS] + '[is="' + type + '"]') : type
     ).toLowerCase();
     if (registered.indexOf(name) < 0) registered.push(name);
     return register.apply(document, arguments);
