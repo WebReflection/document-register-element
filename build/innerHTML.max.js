@@ -36,26 +36,30 @@ var innerHTML = (function (document) {
   // avoid duplicated wrappers
   if (innerHTML) return innerHTML;
 
-  // feature detect the problem
-  register.call(
-    document,
-    dre,
-    {prototype: Object.create(
-      HTMLElement.prototype,
-      {createdCallback: {value: Object}}
-    )}
-  );
+  try {
 
-  div.innerHTML = '<' + dre + '></' + dre + '>';
+    // feature detect the problem
+    register.call(
+      document,
+      dre,
+      {prototype: Object.create(
+        HTMLElement.prototype,
+        {createdCallback: {value: Object}}
+      )}
+    );
 
-  // if natively supported, nothing to do
-  if ('createdCallback' in div.querySelector(dre)) {
-    // return just an innerHTML wrap
-    return (register.innerHTML = function (el, html) {
-      el.innerHTML = html;
-      return el;
-    });
-  }
+    div.innerHTML = '<' + dre + '></' + dre + '>';
+
+    // if natively supported, nothing to do
+    if ('createdCallback' in div.querySelector(dre)) {
+      // return just an innerHTML wrap
+      return (register.innerHTML = function (el, html) {
+        el.innerHTML = html;
+        return el;
+      });
+    }
+
+  } catch(meh) {}
 
   // in other cases
   registered = [];
