@@ -8,13 +8,16 @@
         <meta names="apple-mobile-web-app-status-bar-style" content="black"/>
         <!--[if lte IE 9]><script>(function(f){window.setTimeout=f(window.setTimeout);window.setInterval=f(window.setInterval)})(function(f){return function(c,t){var a=[].slice.call(arguments,2);return f(function(){c.apply(this,a)},t)}});</script><![endif]-->
         <!--[if IE 8]><script src="http://cdnjs.cloudflare.com/ajax/libs/ie8/0.2.3/ie8.js"></script><![endif]-->
-        <script src="http://cdnjs.cloudflare.com/ajax/libs/dom4/1.4.3/dom4.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/dom4/1.4.5/dom4.js"></script>
         <!--[if IE 8]><script src="build/dre-ie8-upfront-fix.js"></script><![endif]-->
-        <script src="build/document-register-element.js"></script>
-        <script src="build/innerHTML.js"></script>
+        <script src="build/document-register-element.max.js"></script>
+        <script src="build/innerHTML.max.js"></script>
         <script>
         // here the list of tests to run with wru
         var TESTS = ["document-register-element", "innerHTML"];
+        </script>
+        <!--[if IE 8]><script>TESTS = ["document-register-element"]</script><![endif]-->
+        <script>
         function wru(wru){
           var
             all = [],
