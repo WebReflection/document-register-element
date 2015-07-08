@@ -92,11 +92,11 @@ var MyElement = document.registerElement(
 
 
 ### Why
-There are a [couple](http://webreflection.blogspot.co.uk/2014/07/a-w3c-custom-elements-alternative.html) of blog [posts](http://webreflection.blogspot.co.uk/2015/03/bringing-custom-elements-to-ie8.html) about this polyfill, and following the quick summary:
+I wrote a [couple](http://webreflection.blogspot.co.uk/2014/07/a-w3c-custom-elements-alternative.html) of blog [posts](http://webreflection.blogspot.co.uk/2015/03/bringing-custom-elements-to-ie8.html) about this polyfill, and here's the quick summary:
 
-[document-register-element.js](build/document-register-element.js) is a stand alone polyfill which aim is to support as many browsers as possible, without requiring extra dependencies at all, and in about **3KB** minified and gzipped.
+* [document-register-element.js](build/document-register-element.js) is a stand alone polyfill which aims to support as many browsers as possible, without requiring extra dependencies at all, all in about **3KB** minified and gzipped.
 
-Add if you want [dom4](https://github.com/WebReflection/dom4#dom4) normalizer and you'll find yourself in a modern DOM environment that works reliably with today browsers with an eye always open on performance.
+Add if you want the [dom4](https://github.com/WebReflection/dom4#dom4) normalizer, and you'll find yourself in a modern DOM environment that works reliably with today's browsers, with an eye always open on performance.
 
 
 
