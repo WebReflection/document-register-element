@@ -417,7 +417,7 @@ function onDOMAttrModified(e) {
     newValue = e.newValue
   ;
   if (e.target !== node) {
-    return;
+      return;
   }
   if (notFromInnerHTMLHelper &&
       node.attributeChangedCallback &&
