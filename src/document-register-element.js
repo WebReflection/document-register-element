@@ -416,6 +416,9 @@ function onDOMAttrModified(e) {
     prevValue = e.prevValue,
     newValue = e.newValue
   ;
+  if (e.target !== node) {
+    return;
+  }
   if (notFromInnerHTMLHelper &&
       node.attributeChangedCallback &&
       e.attrName !== 'style') {
