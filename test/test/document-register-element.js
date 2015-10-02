@@ -370,14 +370,16 @@ wru.test(typeof document === 'undefined' ? [] : [
           })
         }
       );
-      wru.assert(xEl.constructor === runtime);
-      // avoid IE8 problems
-      if (!('attachEvent' in xEl)) {
-        wru.assert(xEl instanceof XEL ||
-          // IE9 and IE10 will use HTMLUnknownElement
-          // TODO: features tests/detection and use such prototype instead
-          xEl instanceof HTMLUnknownElement);
-      }
+      setTimeout(wru.async(function () {
+        wru.assert(xEl.constructor === runtime);
+        // avoid IE8 problems
+        if (!('attachEvent' in xEl)) {
+          wru.assert(xEl instanceof XEL ||
+            // IE9 and IE10 will use HTMLUnknownElement
+            // TODO: features tests/detection and use such prototype instead
+            xEl instanceof HTMLUnknownElement);
+        }
+      }), 100);
     }
   },{
     name: 'simulating a table element',
@@ -466,6 +468,28 @@ wru.test(typeof document === 'undefined' ? [] : [
       setTimeout(wru.async(function () {
         wru.assert('it did trigger on div', divTriggered);
         wru.assert('but it did not trigger on span', !spanTriggered);
+      }), 100);
+    }
+  }, {
+    name: 'nested CustomElement',
+    test: function () {
+      var a = new XDirect();
+      var b = new XDirect();
+      var div = document.createElement('div');
+      document.body.appendChild(div);
+      b.appendChild(a);
+      div.appendChild(b);
+      setTimeout(wru.async(function () {
+        wru.assert('there were info', a._info.length && b._info.length);
+        a._info = [];
+        b._info = [];
+        a.setAttribute('what', 'ever');
+        setTimeout(wru.async(function () {
+          wru.assert('attributeChanged triggered on a',
+            a._info[0].type === 'attributeChanged'
+          );
+          wru.assert('but it did not trigger on b', !b._info.length);
+        }), 100);
       }), 100);
     }
   } //*/

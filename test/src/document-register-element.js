@@ -413,16 +413,17 @@ function onDOMAttrModified(e) {
   var
     node = e.currentTarget,
     attrChange = e.attrChange,
-    prevValue = e.prevValue,
-    newValue = e.newValue
+    attrName = e.attrName,
+    target = e.target
   ;
   if (notFromInnerHTMLHelper &&
+      (!target || target === node) &&
       node.attributeChangedCallback &&
-      e.attrName !== 'style') {
+      attrName !== 'style') {
     node.attributeChangedCallback(
-      e.attrName,
-      attrChange === e[ADDITION] ? null : prevValue,
-      attrChange === e[REMOVAL] ? null : newValue
+      attrName,
+      attrChange === e[ADDITION] ? null : e.prevValue,
+      attrChange === e[REMOVAL] ? null : e.newValue
     );
   }
 }
