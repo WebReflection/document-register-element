@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>document-register-element test</title>
+        <meta http-equiv="content-language" content="en-US"/>
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+        <meta names="apple-mobile-web-app-status-bar-style" content="black"/>
+        <!--[if lte IE 9]><script>(function(f){window.setTimeout=f(window.setTimeout);window.setInterval=f(window.setInterval)})(function(f){return function(c,t){var a=[].slice.call(arguments,2);return f(function(){c.apply(this,a)},t)}});</script><![endif]-->
+        <!--[if IE 8]><script src="http://cdnjs.cloudflare.com/ajax/libs/ie8/0.2.3/ie8.js"></script><![endif]-->
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/dom4/1.4.5/dom4.js"></script>
+        <!--[if IE 8]><script src="../build/dre-ie8-upfront-fix.js"></script><![endif]-->
+        <script src="../build/document-register-element.max.js"></script>
+        <script src="../build/innerHTML.max.js"></script>
+        <!--[if IE 8]>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/es5-shim/4.1.0/es5-shim.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/es5-shim/4.1.0/es5-sham.js"></script>
+        <script>
+            document.createElement('x-a');
+        </script>
+        <![endif]-->
+    </head>
+    <body>
+      <x-a></x-a>
+      <x-a></x-a>
+      <x-a></x-a>
+      <script>
+          var MyElement = document.registerElement(
+            'x-a',
+            {
+              prototype: Object.create(
+                HTMLElement.prototype, {
+                createdCallback: {value: function() {
+                  console.log('create I am ^_^ ');
+                }},
+                attachedCallback: {value: function() {
+                  console.log('attached on DOM ;-) ');
+                }},
+                detachedCallback: {value: function() {
+                  console.log('detached the DOM :-( )');
+                }}
+              })
+            }
+          );
+      </script>
+      <script>
+          var els = document.querySelectorAll('x-a');
+          for (var i = 0, len = els.length; i < len; i ++) {
+              document.body.removeChild(els[i]);
+          }
+      </script>
+    </body>
+</html>
