@@ -445,7 +445,8 @@ function onDOMAttrModified(e) {
   if (notFromInnerHTMLHelper &&
       (!target || target === node) &&
       node.attributeChangedCallback &&
-      attrName !== 'style') {
+      attrName !== 'style' &
+      e.prevValue !== e.newValue) {
     node.attributeChangedCallback(
       attrName,
       attrChange === e[ADDITION] ? null : e.prevValue,
@@ -557,7 +558,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         }
         return new MutationObserver(function (records) {
           for (var
-            current, node,
+            current, node, newValue,
             i = 0, length = records.length; i < length; i++
           ) {
             current = records[i];
@@ -569,11 +570,14 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
               if (notFromInnerHTMLHelper &&
                   node.attributeChangedCallback &&
                   current.attributeName !== 'style') {
-                node.attributeChangedCallback(
-                  current.attributeName,
-                  current.oldValue,
-                  node.getAttribute(current.attributeName)
-                );
+                newValue = node.getAttribute(current.attributeName);
+                if (newValue !== current.oldValue) {
+                  node.attributeChangedCallback(
+                    current.attributeName,
+                    current.oldValue,
+                    newValue
+                  );
+                }
               }
             }
           }
