@@ -492,5 +492,53 @@ wru.test(typeof document === 'undefined' ? [] : [
         }), 100);
       }), 100);
     }
+  }, {
+    name: 'cannot extend a registered element',
+    test: function () {
+      var ok = false, ABC1 = document.registerElement('abc-1', {
+        prototype: Object.create(HTMLElement.prototype)
+      });
+      try {
+        document.registerElement('abc-2', {
+          'extends': 'abc-1',
+          prototype: Object.create(ABC1.prototype)
+        });
+      } catch(e) {
+        ok = true;
+      }
+      wru.assert('unable to create an element extending a custom one', ok);
+    }
+  }, {
+    name: 'do not invoke if attribute had same value',
+    test: function () {
+      var
+        info = [],
+        ChangingValue = document.registerElement('changing-value', {
+          prototype: Object.create(HTMLElement.prototype, {
+            attributeChangedCallback: {value: function(
+              name,           // always present
+              previousValue,  // if null, it's a new attribute
+              value           // if null, it's a removed attribute
+            ) {
+              info.push(arguments);
+            }}
+          })
+        }),
+        node = document.body.appendChild(new ChangingValue);
+      ;
+      node.setAttribute('test', 'value');
+      setTimeout(wru.async(function(){
+        node.setAttribute('test', 'value');
+        wru.assert('OK');
+        setTimeout(wru.async(function () {
+          wru.assert('was not called twice with the same value',
+            info.length === 1 &&
+            info[0][0] === 'test' &&
+            info[0][1] === null &&
+            info[0][2] === 'value'
+          );
+        }), 100);
+      }), 100);
+    }
   } //*/
 ]);
