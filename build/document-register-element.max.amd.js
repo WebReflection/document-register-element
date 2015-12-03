@@ -515,6 +515,10 @@ function purge() {
   }
 }
 
+function throwTypeError(type) {
+  throw new Error('A ' + type + ' type is already registered');
+}
+
 function verifyAndSetupAndAction(node, action) {
   var
     fn,
@@ -637,7 +641,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     indexOf.call(types, PREFIX_IS + upperType) +
     indexOf.call(types, PREFIX_TAG + upperType)
   )) {
-    throw new Error('A ' + type + ' type is already registered');
+    throwTypeError(type);
   }
 
   if (!validName.test(upperType) || -1 < indexOf.call(invalidNames, upperType)) {
@@ -653,9 +657,17 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     opt = options || OP,
     extending = hOP.call(opt, EXTENDS),
     nodeName = extending ? options[EXTENDS].toUpperCase() : upperType,
-    i = types.push((extending ? PREFIX_IS : PREFIX_TAG) + upperType) - 1,
-    upperType
+    upperType,
+    i
   ;
+
+  if (extending && -1 < (
+    indexOf.call(types, PREFIX_TAG + nodeName)
+  )) {
+    throwTypeError(nodeName);
+  }
+
+  i = types.push((extending ? PREFIX_IS : PREFIX_TAG) + upperType) - 1;
 
   query = query.concat(
     query.length ? ',' : '',

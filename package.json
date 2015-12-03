@@ -1,5 +1,5 @@
 {
-  "version": "0.5.0",
+  "version": "0.5.1",
   "license": "MIT",
   "name": "document-register-element",
   "description": "A stand-alone working lightweight version of the W3C Custom Elements specification",
@@ -27,13 +27,13 @@
   "main": "./build/document-register-element.js",
   "scripts": {
     "test": "phantomjs testrunner.js",
-    "web": "IP=0.0.0.0 node node_modules/polpetta"
+    "web": "node node_modules/tiny-cdn/tiny-cdn run -p=1337"
   },
   "devDependencies": {
     "wru": "~0.2.x",
     "uglify-js": "1.x",
     "jshint": "~2.x",
-    "polpetta": "~0.3.x",
+    "tiny-cdn": "~0.5.x",
     "phantomjs": "~1.x"
   }
 }

@@ -492,5 +492,21 @@ wru.test(typeof document === 'undefined' ? [] : [
         }), 100);
       }), 100);
     }
+  }, {
+    name: 'cannot extend a registered element',
+    test: function () {
+      var ok = false, ABC1 = document.registerElement('abc-1', {
+        prototype: Object.create(HTMLElement.prototype)
+      });
+      try {
+        document.registerElement('abc-2', {
+          'extends': 'abc-1',
+          prototype: Object.create(ABC1.prototype)
+        });
+      } catch(e) {
+        ok = true;
+      }
+      wru.assert('unable to create an element extending a custom one', ok);
+    }
   } //*/
 ]);
