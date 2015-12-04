@@ -503,16 +503,19 @@ function setupNode(node, proto) {
 function purge() {
   for (var
     node,
+    restTargets = [],
     i = 0,
     length = targets.length;
     i < length; i++
   ) {
     node = targets[i];
     if (!documentElement.contains(node)) {
-      targets.splice(i, 1);
       verifyAndSetupAndAction(node, DETACHED);
+    } else {
+      restTargets.push(node);
     }
   }
+  targets = restTargets;
 }
 
 function throwTypeError(type) {
