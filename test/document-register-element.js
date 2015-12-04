@@ -540,5 +540,32 @@ wru.test(typeof document === 'undefined' ? [] : [
         }), 100);
       }), 100);
     }
+  }, {
+    name: 'remove more than one CustomElement',
+    test: function () {
+      var a = new XDirect();
+      var b = new XDirect();
+
+      document.body.appendChild(a);
+      document.body.appendChild(b);
+
+      setTimeout(wru.async(function () {
+        wru.assert('there were info', a._info.length && b._info.length);
+        a._info = [];
+        b._info = [];
+
+        document.body.removeChild(a);
+        document.body.removeChild(b);
+
+        setTimeout(wru.async(function () {
+          wru.assert('detachedCallback triggered on a',
+            a._info[0].type === 'detached'
+          );
+          wru.assert('detachedCallback triggered on b',
+            b._info[0].type === 'detached'
+          );
+        }), 100);
+      }), 100);
+    }
   } //*/
 ]);

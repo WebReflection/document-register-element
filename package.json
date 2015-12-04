@@ -1,5 +1,5 @@
 {
-  "version": "0.5.2",
+  "version": "0.5.3",
   "license": "MIT",
   "name": "document-register-element",
   "description": "A stand-alone working lightweight version of the W3C Custom Elements specification",
