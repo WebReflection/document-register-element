@@ -472,7 +472,7 @@ function setupNode(node, proto) {
     node.created = false;
   }
 }
-//fix issue #45
+
 function purge() {
   for (var
     node,
