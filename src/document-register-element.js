@@ -419,7 +419,8 @@ function onDOMAttrModified(e) {
   if (notFromInnerHTMLHelper &&
       (!target || target === node) &&
       node.attributeChangedCallback &&
-      attrName !== 'style') {
+      attrName !== 'style' &
+      e.prevValue !== e.newValue) {
     node.attributeChangedCallback(
       attrName,
       attrChange === e[ADDITION] ? null : e.prevValue,
@@ -491,6 +492,10 @@ function purge() {
   targets = restTargets;
 }
 
+function throwTypeError(type) {
+  throw new Error('A ' + type + ' type is already registered');
+}
+
 function verifyAndSetupAndAction(node, action) {
   var
     fn,
@@ -530,7 +535,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
         }
         return new MutationObserver(function (records) {
           for (var
-            current, node,
+            current, node, newValue,
             i = 0, length = records.length; i < length; i++
           ) {
             current = records[i];
@@ -542,11 +547,14 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
               if (notFromInnerHTMLHelper &&
                   node.attributeChangedCallback &&
                   current.attributeName !== 'style') {
-                node.attributeChangedCallback(
-                  current.attributeName,
-                  current.oldValue,
-                  node.getAttribute(current.attributeName)
-                );
+                newValue = node.getAttribute(current.attributeName);
+                if (newValue !== current.oldValue) {
+                  node.attributeChangedCallback(
+                    current.attributeName,
+                    current.oldValue,
+                    newValue
+                  );
+                }
               }
             }
           }
@@ -613,7 +621,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     indexOf.call(types, PREFIX_IS + upperType) +
     indexOf.call(types, PREFIX_TAG + upperType)
   )) {
-    throw new Error('A ' + type + ' type is already registered');
+    throwTypeError(type);
   }
 
   if (!validName.test(upperType) || -1 < indexOf.call(invalidNames, upperType)) {
@@ -629,9 +637,17 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     opt = options || OP,
     extending = hOP.call(opt, EXTENDS),
     nodeName = extending ? options[EXTENDS].toUpperCase() : upperType,
-    i = types.push((extending ? PREFIX_IS : PREFIX_TAG) + upperType) - 1,
-    upperType
+    upperType,
+    i
   ;
+
+  if (extending && -1 < (
+    indexOf.call(types, PREFIX_TAG + nodeName)
+  )) {
+    throwTypeError(nodeName);
+  }
+
+  i = types.push((extending ? PREFIX_IS : PREFIX_TAG) + upperType) - 1;
 
   query = query.concat(
     query.length ? ',' : '',
