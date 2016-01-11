@@ -9,13 +9,28 @@ A stand-alone working lightweight version of the [W3C Custom Elements](http://w3
 
 ### How
 
-`npm install document-register-element` should bring [build/document-register-element.js](build/document-register-element.js) inside the module folder.
+`npm install document-register-element` will put [build/document-register-element.js](build/document-register-element.js) inside `node_modules/document-register-element/` of your project.
 
-Otherwise simply:
-```html
-<script src="build/document-register-element.js"></script>
+If you're working with a tool like Browserify, Webpack, RequireJS, etc, you can
+import the script at some point before you need to use the API.
+
+```js
+import 'document-register-element' // ES2015
+// or
+require('document-register-element') // CommonJS
+// or
+define(['document-register-element'], function() {}) // AMD
 ```
-on your head element and you should be good to go.
+
+If you're not using a module system, just place
+`node_modules/document-register-element/build/document-register-element.js`
+somewhere where it will be served by your server, then put
+
+```html
+<script src="/path/to/document-register-element.js"></script>
+```
+
+in your head element and you should be good to go.
 
 #### via CDN
 Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following an example on how to include it.
