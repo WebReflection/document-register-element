@@ -445,7 +445,7 @@ function onDOMAttrModified(e) {
   if (notFromInnerHTMLHelper &&
       (!target || target === node) &&
       node.attributeChangedCallback &&
-      attrName !== 'style' &
+      attrName !== 'style' &&
       e.prevValue !== e.newValue) {
     node.attributeChangedCallback(
       attrName,
