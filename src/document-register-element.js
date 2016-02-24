@@ -133,6 +133,7 @@ var
   targets = IE8 && [],
 
   cloneNode = HTMLElementPrototype.cloneNode,
+  getAttribute = HTMLElementPrototype.getAttribute,
   setAttribute = HTMLElementPrototype.setAttribute,
   removeAttribute = HTMLElementPrototype.removeAttribute,
 
@@ -209,7 +210,7 @@ if (IE8) {
       patchedRemoveAttribute = function (name) {
         var e = new CustomEvent(DOM_ATTR_MODIFIED, {bubbles: true});
         e.attrName = name;
-        e.prevValue = this.getAttribute(name);
+        e.prevValue = getAttribute.call(this, name);
         e.newValue = null;
         e[REMOVAL] = e.attrChange = 2;
         removeAttribute.call(this, name);
@@ -218,7 +219,7 @@ if (IE8) {
       patchedSetAttribute = function (name, value) {
         var
           had = this.hasAttribute(name),
-          old = had && this.getAttribute(name),
+          old = had && getAttribute.call(this, name);
           e = new CustomEvent(DOM_ATTR_MODIFIED, {bubbles: true})
         ;
         setAttribute.call(this, name, value);
@@ -393,7 +394,7 @@ function executeAction(action) {
 
 function getTypeIndex(target) {
   var
-    is = target.getAttribute('is'),
+    is = getAttribute.call(target, 'is'),
     nodeName = target.nodeName.toUpperCase(),
     i = indexOf.call(
       types,
@@ -545,7 +546,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
               if (notFromInnerHTMLHelper &&
                   node.attributeChangedCallback &&
                   current.attributeName !== 'style') {
-                newValue = node.getAttribute(current.attributeName);
+                newValue = getAttribute.call(node, current.attributeName);
                 if (newValue !== current.oldValue) {
                   node.attributeChangedCallback(
                     current.attributeName,
