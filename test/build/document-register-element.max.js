@@ -159,8 +159,11 @@ var
   targets = IE8 && [],
 
   cloneNode = HTMLElementPrototype.cloneNode,
-  setAttribute = HTMLElementPrototype.setAttribute,
+  dispatchEvent = HTMLElementPrototype.dispatchEvent,
+  getAttribute = HTMLElementPrototype.getAttribute,
+  hasAttribute = HTMLElementPrototype.hasAttribute,
   removeAttribute = HTMLElementPrototype.removeAttribute,
+  setAttribute = HTMLElementPrototype.setAttribute,
 
   // replaced later on
   createElement = document.createElement,
@@ -235,16 +238,16 @@ if (IE8) {
       patchedRemoveAttribute = function (name) {
         var e = new CustomEvent(DOM_ATTR_MODIFIED, {bubbles: true});
         e.attrName = name;
-        e.prevValue = this.getAttribute(name);
+        e.prevValue = getAttribute.call(this, name);
         e.newValue = null;
         e[REMOVAL] = e.attrChange = 2;
         removeAttribute.call(this, name);
-        this.dispatchEvent(e);
+        dispatchEvent.call(this, e);
       },
       patchedSetAttribute = function (name, value) {
         var
-          had = this.hasAttribute(name),
-          old = had && this.getAttribute(name),
+          had = hasAttribute.call(this, name),
+          old = had && getAttribute.call(this, name),
           e = new CustomEvent(DOM_ATTR_MODIFIED, {bubbles: true})
         ;
         setAttribute.call(this, name, value);
@@ -256,7 +259,7 @@ if (IE8) {
         } else {
           e[ADDITION] = e.attrChange = 0;
         }
-        this.dispatchEvent(e);
+        dispatchEvent.call(this, e);
       },
       onPropertyChange = function (e) {
         // jshint eqnull:true
@@ -277,7 +280,7 @@ if (IE8) {
           } else {
             event[MODIFICATION] = event.attrChange = 1;
           }
-          node.dispatchEvent(event);
+          dispatchEvent.call(node, event);
         }
       }
     ;
@@ -419,7 +422,7 @@ function executeAction(action) {
 
 function getTypeIndex(target) {
   var
-    is = target.getAttribute('is'),
+    is = getAttribute.call(target, 'is'),
     nodeName = target.nodeName.toUpperCase(),
     i = indexOf.call(
       types,
@@ -571,7 +574,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
               if (notFromInnerHTMLHelper &&
                   node.attributeChangedCallback &&
                   current.attributeName !== 'style') {
-                newValue = node.getAttribute(current.attributeName);
+                newValue = getAttribute.call(node, current.attributeName);
                 if (newValue !== current.oldValue) {
                   node.attributeChangedCallback(
                     current.attributeName,
