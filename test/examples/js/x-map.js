@@ -113,11 +113,11 @@
       target = xMap.appendChild(
         document.createElement('div')
       ),
-      tiles = '//otile1.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.jpg',
+      tiles = '//b.tile.osm.org/{z}/{x}/{y}.png',
       attribution = ''.concat(
         'Map Tiles <a href="',
-          '//open.mapquest.com/',
-        '">&copy; Open MapQuest</a>'
+          'http://osm.org/copyright',
+        '">&copy; OpenStreetMap</a>'
       ),
       map
     ;
