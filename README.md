@@ -1,7 +1,7 @@
 document-register-element
 =========================
 
-A stand-alone working lightweight version of the [W3C Custom Elements](http://w3c.github.io/webcomponents/spec/custom/) specification.
+A stand-alone lightweight version of the [W3C Custom Elements](http://w3c.github.io/webcomponents/spec/custom/) v0 specification. Note that this has been [obsoleted](https://github.com/w3c/webcomponents/pull/405#issuecomment-191698136) by the v1 specification, which [this polyfill may implement in the future](https://github.com/WebReflection/document-register-element/issues/58).
 
 
 [![build status](https://travis-ci.org/WebReflection/document-register-element.svg)](https://travis-ci.org/WebReflection/document-register-element)
