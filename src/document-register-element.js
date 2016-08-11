@@ -610,10 +610,10 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       return node;
     };
 
-    HTMLElementPrototype.cloneNode = function (deep) {
+    HTMLElementPrototype.cloneNode = DocumentFragment.prototype.cloneNode = function (deep) {
       var
         node = cloneNode.call(this, !!deep),
-        i = getTypeIndex(node)
+        i = node.nodeType === 11 ? -1 : getTypeIndex(node)
       ;
       if (-1 < i) patch(node, protos[i]);
       if (deep) loopAndSetup(node.querySelectorAll(query));
