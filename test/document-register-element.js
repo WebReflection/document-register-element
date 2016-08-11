@@ -567,9 +567,7 @@ wru.test(typeof document === 'undefined' ? [] : [
         }), 100);
       }), 100);
     }
-  }
-  /* actually this would be a V1 only feature
-  , {
+  }, {
     name: 'creating an element with an object as second argument',
     test: function () {
       var OSA = document.registerElement(
@@ -579,7 +577,8 @@ wru.test(typeof document === 'undefined' ? [] : [
         }
       );
       var el = document.createElement('div', {is: 'object-second-arg'});
-      wru.assert(el.getAttribute('is') === 'object-second-arg');
+      wru.assert('no attribute', !el.hasAttribute('is'));
+      wru.assert('ignored extension', /div/i.test(el.nodeName));
     }
-  } //*/
+  }
 ]);
