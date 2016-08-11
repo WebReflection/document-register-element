@@ -567,5 +567,17 @@ wru.test(typeof document === 'undefined' ? [] : [
         }), 100);
       }), 100);
     }
+  }, {
+    name: 'creating an element with an object as second argument',
+    test: function () {
+      var OSA = document.registerElement(
+        'object-second-arg',
+        {
+          'extends': 'div'
+        }
+      );
+      var el = document.createElement('div', {is: 'object-second-arg'});
+      wru.assert(el.getAttribute('is') === 'object-second-arg');
+    }
   } //*/
 ]);

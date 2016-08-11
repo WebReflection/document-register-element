@@ -613,19 +613,23 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
     document.createElement = function (localName, typeExtension) {
       var
-        node = createElement.apply(document, arguments),
+        is = typeof typeExtension === 'string' ?
+          typeExtension : (
+            typeExtension && typeExtension.is || ''
+        ),
+        node = createElement.apply(document, is ? [localName, is] : arguments),
         name = '' + localName,
         i = indexOf.call(
           types,
-          (typeExtension ? PREFIX_IS : PREFIX_TAG) +
-          (typeExtension || name).toUpperCase()
+          (is ? PREFIX_IS : PREFIX_TAG) +
+          (is || name).toUpperCase()
         ),
         setup = -1 < i
       ;
-      if (typeExtension) {
-        node.setAttribute('is', typeExtension = typeExtension.toLowerCase());
+      if (is) {
+        node.setAttribute('is', is = is.toLowerCase());
         if (setup) {
-          setup = isInQSA(name.toUpperCase(), typeExtension);
+          setup = isInQSA(name.toUpperCase(), is);
         }
       }
       notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
