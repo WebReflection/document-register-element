@@ -614,11 +614,10 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
     document.createElement = function (localName, typeExtension) {
       var
-        is = typeof typeExtension === 'string' ?
-          typeExtension : (
-            typeExtension && typeExtension.is || ''
-        ),
-        node = createElement.apply(document, is ? [localName, is] : arguments),
+        is = typeof typeExtension === 'string' ? typeExtension : '',
+        node = is ?
+          createElement.call(document, localName, is) :
+          createElement.call(document, localName),
         name = '' + localName,
         i = indexOf.call(
           types,

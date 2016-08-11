@@ -567,7 +567,9 @@ wru.test(typeof document === 'undefined' ? [] : [
         }), 100);
       }), 100);
     }
-  }, {
+  }
+  /* actually this would be a V1 only feature
+  , {
     name: 'creating an element with an object as second argument',
     test: function () {
       var OSA = document.registerElement(
