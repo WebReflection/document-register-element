@@ -1,10 +1,10 @@
-.PHONY: build duk var node amd size hint clean test web preview pages dependencies
+.PHONY: build htmlclass duk var node amd size hint clean test web preview pages dependencies
 
 # repository name
 REPO = document-register-element
 
 # make var files
-VAR = src/$(REPO).js
+VAR = src/html-class.js src/$(REPO).js
 
 # make var files
 IE8 = src/$(REPO)-ie8.js
@@ -20,10 +20,10 @@ INNERHTML = src/innerHTML.js
 
 # README constant
 
-
 # default build task
 build:
 	make clean
+	make htmlclass
 	make var
 	make innerHTML
 #	make ie8
@@ -33,6 +33,10 @@ build:
 	make test
 	make hint
 	make size
+
+# build clean up htmlClass
+htmlclass:
+	cat node_modules/html-class/index.js | sed -e "s/'use strict';//" | sed -e 's/try { module.exports = htmlClass; } catch(meh) {}//' > src/html-class.js
 
 # build generic version
 var:

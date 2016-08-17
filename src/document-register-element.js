@@ -42,6 +42,9 @@ var
   // to query subnodes
   query = '',
 
+  // original customElements if present
+  customElements = window.customElements,
+
   // html shortcut used to feature detect
   documentElement = document.documentElement,
 
@@ -160,11 +163,7 @@ var
 
   // will both be used to make DOMNodeInserted asynchronous
   asapQueue,
-  rAF = window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
-        function (fn) { setTimeout(fn, 10); },
+  asapTimer = 0,
 
   // internal flags
   setListener = false,
@@ -369,17 +368,61 @@ if (IE8) {
   }
 }
 
-function loopAndVerify(list, action) {
-  for (var i = 0, length = list.length; i < length; i++) {
-    verifyAndSetupAndAction(list[i], action);
+function ASAP() {
+  asapTimer = 0;
+  while (asapQueue.length) {
+    asapQueue.shift().call(
+      null, asapQueue.shift()
+    );
   }
 }
 
-function loopAndSetup(list) {
-  for (var i = 0, length = list.length, node; i < length; i++) {
-    node = list[i];
-    patch(node, protos[getTypeIndex(node)]);
+function createElementV1(localName, options) {
+  var
+    is = options && options.is || '',
+    node = createElement.call(document, localName),
+    name = '' + localName,
+    i = indexOf.call(
+      types,
+      (is ? PREFIX_IS : PREFIX_TAG) +
+      (is || name).toUpperCase()
+    ),
+    setup = -1 < i
+  ;
+  if (is) {
+    node.setAttribute('is', is = is.toLowerCase());
+    if (setup) {
+      setup = isInQSA(name.toUpperCase(), is);
+    }
   }
+  notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
+  if (setup) patchV1(node, protos[i]);
+  return node;
+}
+
+function createElementV0(localName, typeExtension) {
+  var
+    is = typeof typeExtension === 'string' ? typeExtension : '',
+    node = is ?
+      createElement.call(document, localName, is) :
+      createElement.call(document, localName),
+    name = '' + localName,
+    i = indexOf.call(
+      types,
+      (is ? PREFIX_IS : PREFIX_TAG) +
+      (is || name).toUpperCase()
+    ),
+    setup = -1 < i
+  ;
+  if (is) {
+    node.setAttribute('is', is = is.toLowerCase());
+    if (setup) {
+      setup = isInQSA(name.toUpperCase(), is);
+    }
+  }
+  notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
+  if (setup) patch(node, protos[i]);
+  return node;
 }
 
 function executeAction(action) {
@@ -412,6 +455,19 @@ function isInQSA(name, type) {
   return -1 < query.indexOf(name + '[is="' + type + '"]');
 }
 
+function loopAndVerify(list, action) {
+  for (var i = 0, length = list.length; i < length; i++) {
+    verifyAndSetupAndAction(list[i], action);
+  }
+}
+
+function loopAndSetup(list) {
+  for (var i = 0, length = list.length, node; i < length; i++) {
+    node = list[i];
+    patch(node, protos[getTypeIndex(node)]);
+  }
+}
+
 function onDOMAttrModified(e) {
   var
     node = e.currentTarget,
@@ -436,6 +492,8 @@ function onDOMNode(action) {
   var executor = executeAction(action);
   return function (e) {
     asapQueue.push(executor, e.target);
+    if (asapTimer > 0) clearTimeout(asapTimer);
+    asapTimer = setTimeout(ASAP, 1);
   };
 }
 
@@ -456,6 +514,10 @@ function patchedSetAttribute(name, value) {
   var self = this;
   setAttribute.call(self, name, value);
   onSubtreeModified.call(self, {target: self});
+}
+
+function patchV1(node, proto) {
+
 }
 
 function setupNode(node, proto) {
@@ -570,14 +632,6 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
       );
     } else {
       asapQueue = [];
-      rAF(function ASAP() {
-        while (asapQueue.length) {
-          asapQueue.shift().call(
-            null, asapQueue.shift()
-          );
-        }
-        rAF(ASAP);
-      });
       document.addEventListener('DOMNodeInserted', onDOMNode(ATTACHED));
       document.addEventListener('DOMNodeRemoved', onDOMNode(DETACHED));
     }
@@ -585,30 +639,7 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
     document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
     document.addEventListener('readystatechange', onReadyStateChange);
 
-    document.createElement = function (localName, typeExtension) {
-      var
-        is = typeof typeExtension === 'string' ? typeExtension : '',
-        node = is ?
-          createElement.call(document, localName, is) :
-          createElement.call(document, localName),
-        name = '' + localName,
-        i = indexOf.call(
-          types,
-          (is ? PREFIX_IS : PREFIX_TAG) +
-          (is || name).toUpperCase()
-        ),
-        setup = -1 < i
-      ;
-      if (is) {
-        node.setAttribute('is', is = is.toLowerCase());
-        if (setup) {
-          setup = isInQSA(name.toUpperCase(), is);
-        }
-      }
-      notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
-      if (setup) patch(node, protos[i]);
-      return node;
-    };
+    document.createElement = createElementV0;
 
     HTMLElementPrototype.cloneNode = function (deep) {
       var
@@ -671,3 +702,21 @@ document[REGISTER_ELEMENT] = function registerElement(type, options) {
 
   return constructor;
 };
+
+function CustomElementsRegistry() {}
+
+try {
+  (function () {
+    function DRE() {}
+    sPO(DRE.prototype, HTMLAnchorElement.prototype);
+    customElements.define('document-register-element-a', DRE, {extends: 'a'});
+    documentElement.insertBefore(new DRE(), documentElement.firstChild);
+    documentElement.removeChild(documentElement.firstChild);
+  }());
+} catch(/*\_(ツ)_/*/) {
+  delete window.customElements;
+  defineProperty(window, 'customElements', {
+    configurable: true,
+    value: new CustomElementsRegistry()
+  });
+}

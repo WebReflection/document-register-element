@@ -30,6 +30,7 @@
     "web": "node node_modules/tiny-cdn/tiny-cdn run -p=1337"
   },
   "devDependencies": {
+    "html-class": "^1.2.0",
     "jshint": "~2.x",
     "phantomjs-prebuilt": "^2.1.11",
     "tiny-cdn": "~0.5.x",
