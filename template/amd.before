@@ -1,5 +1,3 @@
 define(function(){'use strict';
 
 var REGISTER_ELEMENT = 'registerElement';
-
-if (REGISTER_ELEMENT in document) return;

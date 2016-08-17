@@ -42,9 +42,6 @@ var
   // to query subnodes
   query = '',
 
-  // original customElements if present
-  customElements = window.customElements,
-
   // html shortcut used to feature detect
   documentElement = document.documentElement,
 
@@ -67,6 +64,36 @@ var
 
   // jshint proto: true
   hasProto = !!Object.__proto__,
+
+  // V1 helpers
+  customElements = window.customElements,
+  usableCustomElements = !!(
+    customElements &&
+    customElements.define &&
+    customElements.get &&
+    customElements.whenDefined
+  ),
+  Dict = Object.create || Object,
+  Map = window.Map || function Map() {
+    var K = [], V = [], i;
+    return {
+      get: function (k) {
+        return V[indexOf.call(K, k)];
+      },
+      set: function (k, v) {
+        i = indexOf.call(K, k);
+        if (i < 0) V[K.push(k) - 1] = v;
+        else V[i] = v;
+      }
+    };
+  },
+  constructors = Dict(null),
+  waitingList = Dict(null),
+  nodeNames = new Map(),
+  bind = Object.bind || function () {
+    var fn = this;
+    return function () { return fn.call(this); };
+  },
 
   // used to create unique instances
   create = Object.create || function Bridge(proto) {
@@ -186,6 +213,145 @@ var
   patch
 ;
 
+
+// V1 in da House!
+function CustomElementsRegistry() {}
+
+CustomElementsRegistry.prototype = {
+  constructor: CustomElementsRegistry,
+  // a workaround for the stubborn WebKit
+  define: usableCustomElements ?
+    function (name, Class, options) {
+      if (options) {
+        define(name, Class, options);
+      } else {
+        customElements.define(name, Class);
+      }
+    } :
+    define,
+  get: usableCustomElements ?
+    function (name) {
+      return customElements.get(name) || get(name);
+    } :
+    get,
+  whenDefined: usableCustomElements ?
+    function (name) {
+      return Promise.race(
+        customElements.whenDefined,
+        whenDefined(name)
+      );
+    } :
+    whenDefined
+};
+
+function define(name, Class, options) {
+  var
+    is = options && options[EXTENDS] || '',
+    CProto = Class.prototype,
+    proto = create(CProto),
+    attributes = Class.observedAttributes || Array.prototype,
+    definition = {prototype: proto}
+  ;
+  proto.createdCallback = function () {
+    if (!this['v1' + EXPANDO_UID]) {
+      this['v1' + EXPANDO_UID] = true;
+      new (bind.call(Class, setPrototype(this, CProto)))();
+    }
+  };
+  if (CProto.attributeChangedCallback) {
+    proto.attributeChangedCallback = function (name) {
+      if (-1 < indexOf.call(attributes, name))
+        CProto.attributeChangedCallback.apply(this, arguments);
+    };
+  }
+  if (CProto.connectedCallback) {
+    proto.attachedCallback = CProto.connectedCallback;
+  }
+  if (CProto.disconnectedCallback) {
+    proto.detachedCallback = CProto.disconnectedCallback;
+  }
+  if (is) definition[EXTENDS] = is;
+  document[REGISTER_ELEMENT](name, definition);
+  name = name.toUpperCase();
+  constructors[name] = {
+    constructor: Class,
+    create: is ? [is, name] : [name]
+  };
+  nodeNames.set(Class, name);
+  whenDefined(name);
+}
+
+function get(name) {
+  var info = constructors[name.toUpperCase()];
+  return info && info.constructor;
+}
+
+function whenDefined(name) {
+  name = name.toUpperCase();
+  if (!(name in waitingList)) {
+    waitingList[name] = {};
+    waitingList[name].p = new Promise(function (resolve) {
+      waitingList[name].r = resolve;
+    });
+  }
+  return waitingList[name].p;
+}
+
+try {
+  (function (DRE) {
+    setPrototype(DRE.prototype, HTMLAnchorElement.prototype);
+    customElements.define('document-register-element-a', DRE, {extends: 'a'});
+    documentElement.insertBefore((DRE = new DRE()), documentElement.firstChild);
+    documentElement.removeChild(DRE);
+  }(function () {}));
+} catch(o_O) {
+  delete window.customElements;
+  defineProperty(window, 'customElements', {
+    configurable: true,
+    value: new CustomElementsRegistry()
+  });
+  defineProperty(window, 'CustomElementsRegistry', {
+    configurable: true,
+    value: CustomElementsRegistry
+  });
+  for (var
+    patchClass = function (name) {
+      var Class = window[name];
+      if (Class) {
+        window[name] = function CustomElementsV1() {
+          if (this['v1' + EXPANDO_UID]) return this;
+          var
+            constructor = this.constructor,
+            proto = constructor.prototype,
+            node = setPrototype(
+              document.createElement.apply(
+                document,
+                constructors[nodeNames.get(constructor)].create
+              ),
+              proto
+            )
+          ;
+          node['v1' + EXPANDO_UID] = true;
+          return node;
+        };
+        defineProperty(
+          (window[name].prototype = create(Class.prototype)),
+          'constructor',
+          {configurable: true, writable: true, value: window[name]}
+        );
+      }
+    },
+    Classes = htmlClass.get(/^HTML/),
+    i = Classes.length;
+    i--;
+    patchClass(Classes[i])
+  ) {}
+}
+
+// in case it's there or already patched
+if (REGISTER_ELEMENT in document) return;
+
+
 if (sPO || hasProto) {
     patchIfNotAlready = function (node, proto) {
       if (!iPO.call(proto, node)) {
@@ -202,6 +368,7 @@ if (sPO || hasProto) {
     };
     patch = patchIfNotAlready;
 }
+
 if (IE8) {
   doesNotSupportDOMAttrModified = false;
   (function (){
@@ -368,61 +535,160 @@ if (IE8) {
   }
 }
 
-function ASAP() {
-  asapTimer = 0;
-  while (asapQueue.length) {
-    asapQueue.shift().call(
-      null, asapQueue.shift()
-    );
+// set as enumerable, writable and configurable
+document[REGISTER_ELEMENT] = function registerElement(type, options) {
+  upperType = type.toUpperCase();
+  if (!setListener) {
+    // only first time document.registerElement is used
+    // we need to set this listener
+    // setting it by default might slow down for no reason
+    setListener = true;
+    if (MutationObserver) {
+      observer = (function(attached, detached){
+        function checkEmAll(list, callback) {
+          for (var i = 0, length = list.length; i < length; callback(list[i++])){}
+        }
+        return new MutationObserver(function (records) {
+          for (var
+            current, node, newValue,
+            i = 0, length = records.length; i < length; i++
+          ) {
+            current = records[i];
+            if (current.type === 'childList') {
+              checkEmAll(current.addedNodes, attached);
+              checkEmAll(current.removedNodes, detached);
+            } else {
+              node = current.target;
+              if (notFromInnerHTMLHelper &&
+                  node.attributeChangedCallback &&
+                  current.attributeName !== 'style') {
+                newValue = getAttribute.call(node, current.attributeName);
+                if (newValue !== current.oldValue) {
+                  node.attributeChangedCallback(
+                    current.attributeName,
+                    current.oldValue,
+                    newValue
+                  );
+                }
+              }
+            }
+          }
+        });
+      }(executeAction(ATTACHED), executeAction(DETACHED)));
+      observer.observe(
+        document,
+        {
+          childList: true,
+          subtree: true
+        }
+      );
+    } else {
+      asapQueue = [];
+      document.addEventListener('DOMNodeInserted', onDOMNode(ATTACHED));
+      document.addEventListener('DOMNodeRemoved', onDOMNode(DETACHED));
+    }
+
+    document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
+    document.addEventListener('readystatechange', onReadyStateChange);
+
+    document.createElement = function (localName, typeExtension) {
+      var
+        is = typeof typeExtension === 'string' ? typeExtension : '',
+        node = is ?
+          createElement.call(document, localName, is) :
+          createElement.call(document, localName),
+        name = '' + localName,
+        i = indexOf.call(
+          types,
+          (is ? PREFIX_IS : PREFIX_TAG) +
+          (is || name).toUpperCase()
+        ),
+        setup = -1 < i
+      ;
+      if (is) {
+        node.setAttribute('is', is = is.toLowerCase());
+        if (setup) {
+          setup = isInQSA(name.toUpperCase(), is);
+        }
+      }
+      notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
+      if (setup) patch(node, protos[i]);
+      return node;
+    };
+
+    HTMLElementPrototype.cloneNode = function (deep) {
+      var
+        node = cloneNode.call(this, !!deep),
+        i = getTypeIndex(node)
+      ;
+      if (-1 < i) patch(node, protos[i]);
+      if (deep) loopAndSetup(node.querySelectorAll(query));
+      return node;
+    };
+  }
+
+  if (-2 < (
+    indexOf.call(types, PREFIX_IS + upperType) +
+    indexOf.call(types, PREFIX_TAG + upperType)
+  )) {
+    throwTypeError(type);
+  }
+
+  if (!validName.test(upperType) || -1 < indexOf.call(invalidNames, upperType)) {
+    throw new Error('The type ' + type + ' is invalid');
+  }
+
+  var
+    constructor = function () {
+      return extending ?
+        document.createElement(nodeName, upperType) :
+        document.createElement(nodeName);
+    },
+    opt = options || OP,
+    extending = hOP.call(opt, EXTENDS),
+    nodeName = extending ? options[EXTENDS].toUpperCase() : upperType,
+    upperType,
+    i
+  ;
+
+  if (extending && -1 < (
+    indexOf.call(types, PREFIX_TAG + nodeName)
+  )) {
+    throwTypeError(nodeName);
+  }
+
+  i = types.push((extending ? PREFIX_IS : PREFIX_TAG) + upperType) - 1;
+
+  query = query.concat(
+    query.length ? ',' : '',
+    extending ? nodeName + '[is="' + type.toLowerCase() + '"]' : nodeName
+  );
+
+  constructor.prototype = (
+    protos[i] = hOP.call(opt, 'prototype') ?
+      opt.prototype :
+      create(HTMLElementPrototype)
+  );
+
+  loopAndVerify(
+    document.querySelectorAll(query),
+    ATTACHED
+  );
+
+  return constructor;
+};
+
+function loopAndVerify(list, action) {
+  for (var i = 0, length = list.length; i < length; i++) {
+    verifyAndSetupAndAction(list[i], action);
   }
 }
 
-function createElementV1(localName, options) {
-  var
-    is = options && options.is || '',
-    node = createElement.call(document, localName),
-    name = '' + localName,
-    i = indexOf.call(
-      types,
-      (is ? PREFIX_IS : PREFIX_TAG) +
-      (is || name).toUpperCase()
-    ),
-    setup = -1 < i
-  ;
-  if (is) {
-    node.setAttribute('is', is = is.toLowerCase());
-    if (setup) {
-      setup = isInQSA(name.toUpperCase(), is);
-    }
+function loopAndSetup(list) {
+  for (var i = 0, length = list.length, node; i < length; i++) {
+    node = list[i];
+    patch(node, protos[getTypeIndex(node)]);
   }
-  notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
-  if (setup) patchV1(node, protos[i]);
-  return node;
-}
-
-function createElementV0(localName, typeExtension) {
-  var
-    is = typeof typeExtension === 'string' ? typeExtension : '',
-    node = is ?
-      createElement.call(document, localName, is) :
-      createElement.call(document, localName),
-    name = '' + localName,
-    i = indexOf.call(
-      types,
-      (is ? PREFIX_IS : PREFIX_TAG) +
-      (is || name).toUpperCase()
-    ),
-    setup = -1 < i
-  ;
-  if (is) {
-    node.setAttribute('is', is = is.toLowerCase());
-    if (setup) {
-      setup = isInQSA(name.toUpperCase(), is);
-    }
-  }
-  notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
-  if (setup) patch(node, protos[i]);
-  return node;
 }
 
 function executeAction(action) {
@@ -455,19 +721,6 @@ function isInQSA(name, type) {
   return -1 < query.indexOf(name + '[is="' + type + '"]');
 }
 
-function loopAndVerify(list, action) {
-  for (var i = 0, length = list.length; i < length; i++) {
-    verifyAndSetupAndAction(list[i], action);
-  }
-}
-
-function loopAndSetup(list) {
-  for (var i = 0, length = list.length, node; i < length; i++) {
-    node = list[i];
-    patch(node, protos[getTypeIndex(node)]);
-  }
-}
-
 function onDOMAttrModified(e) {
   var
     node = e.currentTarget,
@@ -492,7 +745,7 @@ function onDOMNode(action) {
   var executor = executeAction(action);
   return function (e) {
     asapQueue.push(executor, e.target);
-    if (asapTimer > 0) clearTimeout(asapTimer);
+    if (asapTimer) clearTimeout(asapTimer);
     asapTimer = setTimeout(ASAP, 1);
   };
 }
@@ -514,10 +767,6 @@ function patchedSetAttribute(name, value) {
   var self = this;
   setAttribute.call(self, name, value);
   onSubtreeModified.call(self, {target: self});
-}
-
-function patchV1(node, proto) {
-
 }
 
 function setupNode(node, proto) {
@@ -583,140 +832,11 @@ function verifyAndSetupAndAction(node, action) {
   }
 }
 
-// set as enumerable, writable and configurable
-document[REGISTER_ELEMENT] = function registerElement(type, options) {
-  upperType = type.toUpperCase();
-  if (!setListener) {
-    // only first time document.registerElement is used
-    // we need to set this listener
-    // setting it by default might slow down for no reason
-    setListener = true;
-    if (MutationObserver) {
-      observer = (function(attached, detached){
-        function checkEmAll(list, callback) {
-          for (var i = 0, length = list.length; i < length; callback(list[i++])){}
-        }
-        return new MutationObserver(function (records) {
-          for (var
-            current, node, newValue,
-            i = 0, length = records.length; i < length; i++
-          ) {
-            current = records[i];
-            if (current.type === 'childList') {
-              checkEmAll(current.addedNodes, attached);
-              checkEmAll(current.removedNodes, detached);
-            } else {
-              node = current.target;
-              if (notFromInnerHTMLHelper &&
-                  node.attributeChangedCallback &&
-                  current.attributeName !== 'style') {
-                newValue = getAttribute.call(node, current.attributeName);
-                if (newValue !== current.oldValue) {
-                  node.attributeChangedCallback(
-                    current.attributeName,
-                    current.oldValue,
-                    newValue
-                  );
-                }
-              }
-            }
-          }
-        });
-      }(executeAction(ATTACHED), executeAction(DETACHED)));
-      observer.observe(
-        document,
-        {
-          childList: true,
-          subtree: true
-        }
-      );
-    } else {
-      asapQueue = [];
-      document.addEventListener('DOMNodeInserted', onDOMNode(ATTACHED));
-      document.addEventListener('DOMNodeRemoved', onDOMNode(DETACHED));
-    }
-
-    document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
-    document.addEventListener('readystatechange', onReadyStateChange);
-
-    document.createElement = createElementV0;
-
-    HTMLElementPrototype.cloneNode = function (deep) {
-      var
-        node = cloneNode.call(this, !!deep),
-        i = getTypeIndex(node)
-      ;
-      if (-1 < i) patch(node, protos[i]);
-      if (deep) loopAndSetup(node.querySelectorAll(query));
-      return node;
-    };
+function ASAP() {
+  asapTimer = 0;
+  while (asapQueue.length) {
+    asapQueue.shift().call(
+      null, asapQueue.shift()
+    );
   }
-
-  if (-2 < (
-    indexOf.call(types, PREFIX_IS + upperType) +
-    indexOf.call(types, PREFIX_TAG + upperType)
-  )) {
-    throwTypeError(type);
-  }
-
-  if (!validName.test(upperType) || -1 < indexOf.call(invalidNames, upperType)) {
-    throw new Error('The type ' + type + ' is invalid');
-  }
-
-  var
-    constructor = function () {
-      return extending ?
-        document.createElement(nodeName, upperType) :
-        document.createElement(nodeName);
-    },
-    opt = options || OP,
-    extending = hOP.call(opt, EXTENDS),
-    nodeName = extending ? options[EXTENDS].toUpperCase() : upperType,
-    upperType,
-    i
-  ;
-
-  if (extending && -1 < (
-    indexOf.call(types, PREFIX_TAG + nodeName)
-  )) {
-    throwTypeError(nodeName);
-  }
-
-  i = types.push((extending ? PREFIX_IS : PREFIX_TAG) + upperType) - 1;
-
-  query = query.concat(
-    query.length ? ',' : '',
-    extending ? nodeName + '[is="' + type.toLowerCase() + '"]' : nodeName
-  );
-
-  constructor.prototype = (
-    protos[i] = hOP.call(opt, 'prototype') ?
-      opt.prototype :
-      create(HTMLElementPrototype)
-  );
-
-  loopAndVerify(
-    document.querySelectorAll(query),
-    ATTACHED
-  );
-
-  return constructor;
-};
-
-function CustomElementsRegistry() {}
-
-try {
-  (function () {
-    function DRE() {}
-    sPO(DRE.prototype, HTMLAnchorElement.prototype);
-    customElements.define('document-register-element-a', DRE, {extends: 'a'});
-    documentElement.insertBefore(new DRE(), documentElement.firstChild);
-    documentElement.removeChild(documentElement.firstChild);
-  }());
-} catch(/*\_(ツ)_/*/) {
-  delete window.customElements;
-  defineProperty(window, 'customElements', {
-    configurable: true,
-    value: new CustomElementsRegistry()
-  });
 }

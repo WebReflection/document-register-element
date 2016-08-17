@@ -568,17 +568,28 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 100);
     }
   }, {
-    name: 'creating an element with an object as second argument',
+    name: 'V1',
     test: function () {
-      var OSA = document.registerElement(
-        'object-second-arg',
-        {
-          'extends': 'div'
-        }
-      );
-      var el = document.createElement('div', {is: 'object-second-arg'});
-      wru.assert('no attribute', !el.hasAttribute('is'));
-      wru.assert('ignored extension', /div/i.test(el.nodeName));
+      wru.assert(typeof customElements === 'object');
+    }
+  }, {
+    name: 'use extended classes to register',
+    test: function () {
+      function MyButton() {
+        var self = HTMLButtonElement.call(this);
+        self.setAttribute('cool', 'true');
+        return self;
+      }
+      function method() {}
+      MyButton.prototype = Object.create(HTMLButtonElement.prototype);
+      MyButton.prototype.constructor = MyButton;
+      MyButton.prototype.method = method;
+      customElements.define('my-button', MyButton, {'extends': 'button'});
+      var myButton = new MyButton();
+      setTimeout(wru.async(function () {
+        wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
+        wru.assert('prototype inherited', myButton.method === method);
+      }), 100);
     }
   }
 ]);
