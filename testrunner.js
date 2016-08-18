@@ -45,7 +45,7 @@ page.open(url, function (status) {
         status = 'failed';
       }
       phantom.exit(0);
-    }, 2000);
+    }, 3000);
   } else {
     phantom.exit(1);
   }
