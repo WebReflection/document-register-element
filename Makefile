@@ -30,7 +30,7 @@ build:
 	make dreie8
 #	make node
 	make amd
-#	make test
+	make test
 	make hint
 	make size
 
