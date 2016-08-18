@@ -39,7 +39,7 @@ Special methods are also slightly different from v0:
   * the `constructor` is invoked instead of the `createdCallback` one
   * `connectedCallback` is the new `attachedCallback`
   * `disconnectedCallback` is the new `detachedCallback`
-  * `attributeChangedCallback` is snsitive the the public static list of attributes to be notified about
+  * `attributeChangedCallback` is sensitive to the public static list of attributes to be notified about
 
 ```js
 class MyDom extends HTMLElement {
@@ -54,7 +54,7 @@ class MyDom extends HTMLElement {
 
 var md = new MyDom();
 md.setAttribute('test', 'nope');
-md.setAttribute('country', 'UK'); // UK
+md.setAttribute('country', 'UK'); // country: UK
 ```
 
 # V1 Caveat
