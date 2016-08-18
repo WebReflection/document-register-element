@@ -596,6 +596,11 @@ var
 
   IE8 = !iPO.call(HTMLElementPrototype, documentElement),
 
+  safeProperty = IE8 ? function (o, k, d) {
+    o[k] = d.value;
+    return o;
+  } : defineProperty,
+
   isValidNode = IE8 ?
     function (node) {
       return node.nodeType === 1;
@@ -1195,7 +1200,7 @@ function define(name, Class, options) {
   ;
   // TODO: is this needed at all since it's inherited?
   // defineProperty(proto, 'constructor', {value: Class});
-  defineProperty(proto, 'createdCallback', {
+  safeProperty(proto, 'createdCallback', {
       value: function () {
         if (justCreated) justCreated = false;
         else if (!this[DRECEV1]) {
@@ -1204,19 +1209,19 @@ function define(name, Class, options) {
         }
     }
   });
-  defineProperty(proto, 'attributeChangedCallback', {
+  safeProperty(proto, 'attributeChangedCallback', {
     value: function (name) {
       if (-1 < indexOf.call(attributes, name))
         CProto.attributeChangedCallback.apply(this, arguments);
     }
   });
   if (CProto.connectedCallback) {
-    defineProperty(proto, 'attachedCallback', {
+    safeProperty(proto, 'attachedCallback', {
       value: CProto.connectedCallback
     });
   }
   if (CProto.disconnectedCallback) {
-    defineProperty(proto, 'detachedCallback', {
+    safeProperty(proto, 'detachedCallback', {
       value: CProto.disconnectedCallback
     });
   }
@@ -1248,16 +1253,8 @@ function whenDefined(name) {
   return waitingList[name].p;
 }
 
-try {
-  (function (DRE, options) {
-    options[EXTENDS] = 'a';
-    setPrototype(DRE.prototype, HTMLAnchorElement.prototype);
-    customElements.define('document-register-element-a', DRE, options);
-    documentElement.insertBefore((DRE = new DRE()), documentElement.firstChild);
-    documentElement.removeChild(DRE);
-  }(function () {}, {}));
-} catch(o_O) {
-  delete window.customElements;
+function polyfillV1() {
+  if (customElements) delete window.customElements;
   defineProperty(window, 'customElements', {
     configurable: true,
     value: new CustomElementsRegistry()
@@ -1283,7 +1280,7 @@ try {
           }
           return self;
         };
-        defineProperty(
+        safeProperty(
           (window[name].prototype = create(Class.prototype)),
           'constructor',
           {configurable: true, writable: true, value: window[name]}
@@ -1302,4 +1299,18 @@ try {
       patchedCreateElement.call(this, name, is) :
       patchedCreateElement.call(this, name);
   });
-}});
+}
+
+if (!customElements) polyfillV1();
+try {
+  (function (DRE, options) {
+    options[EXTENDS] = 'a';
+    setPrototype(DRE.prototype, HTMLAnchorElement.prototype);
+    customElements.define('document-register-element-a', DRE, options);
+    documentElement.insertBefore((DRE = new DRE()), documentElement.firstChild);
+    documentElement.removeChild(DRE);
+  }(function () {}, {}));
+} catch(o_O) {
+  polyfillV1();
+}
+});
