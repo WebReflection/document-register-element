@@ -104,7 +104,7 @@ The following list of **desktop** browsers has been successfully tested:
 
   * Chrome
   * Firefox
-  * IE 8 or greater (please read about IE8 caveats)
+  * IE 8 or greater (please read [about IE8](https://github.com/WebReflection/document-register-element#about-ie8) caveats)
   * Safari
   * Opera
 
