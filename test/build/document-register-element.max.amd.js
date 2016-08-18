@@ -512,16 +512,32 @@ var
       }
     };
   },
+  Promise = window.Promise || function (fn) {
+    var
+      notify = [],
+      done = false,
+      p = {
+        'catch': function () {
+          return p;
+        },
+        'then': function (cb) {
+          notify.push(cb);
+          if (done) setTimeout(resolve, 1);
+          return p;
+        }
+      }
+    ;
+    function resolve(value) {
+      done = true;
+      while (notify.length) notify.shift()(value);
+    }
+    fn(resolve);
+    return p;
+  },
   justCreated = false,
   constructors = Dict(null),
   waitingList = Dict(null),
   nodeNames = new Map(),
-  /*
-  bind = Object.bind || function () {
-    var fn = this;
-    return function () { return fn.call(this); };
-  },
-  */
 
   // used to create unique instances
   create = Object.create || function Bridge(proto) {
@@ -1233,12 +1249,13 @@ function whenDefined(name) {
 }
 
 try {
-  (function (DRE) {
+  (function (DRE, options) {
+    options[EXTENDS] = 'a';
     setPrototype(DRE.prototype, HTMLAnchorElement.prototype);
-    customElements.define('document-register-element-a', DRE, {extends: 'a'});
+    customElements.define('document-register-element-a', DRE, options);
     documentElement.insertBefore((DRE = new DRE()), documentElement.firstChild);
     documentElement.removeChild(DRE);
-  }(function () {}));
+  }(function () {}, {}));
 } catch(o_O) {
   delete window.customElements;
   defineProperty(window, 'customElements', {
