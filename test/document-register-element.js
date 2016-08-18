@@ -575,8 +575,9 @@ wru.test(typeof document === 'undefined' ? [] : [
   }, {
     name: 'use extended classes to register',
     test: function () {
-      function MyButton() {
-        var self = HTMLButtonElement.call(this);
+      function MyButton(self) {
+        // needed to upgrade the element
+        self = HTMLButtonElement.call(self || this);
         self.setAttribute('cool', 'true');
         return self;
       }
@@ -586,10 +587,46 @@ wru.test(typeof document === 'undefined' ? [] : [
       MyButton.prototype.method = method;
       customElements.define('my-button', MyButton, {'extends': 'button'});
       var myButton = new MyButton();
+      wru.assert('prototype inherited', myButton.method === method);
       setTimeout(wru.async(function () {
         wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
-        wru.assert('prototype inherited', myButton.method === method);
       }), 100);
+    }
+  }, {
+    name: 'use extended to register and DOM to initialize',
+    test: function () {
+      var onceCreated = wru.async(function (myButton) {
+        document.body.removeChild(myButton);
+        wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
+        wru.assert('prototype inherited', myButton.method === method);
+      });
+      // no need to reassign self if upgraded via dom
+      function MyOtherButton(self) {
+        HTMLButtonElement.call(self);
+        self.setAttribute('cool', 'true');
+        setTimeout(function () {
+          onceCreated(self);
+        }, 100);
+      }
+      function method() {}
+      MyOtherButton.prototype = Object.create(HTMLButtonElement.prototype);
+      MyOtherButton.prototype.constructor = MyOtherButton;
+      MyOtherButton.prototype.method = method;
+      customElements.define('my-other-button', MyOtherButton, {'extends': 'button'});
+      document.body.appendChild(document.createElement('button', {is: 'my-other-button'}));
+    }
+  }, {
+    name: 'real classes',
+    test: function () {
+      try {
+        Function('wru', [
+          'class MyA extends HTMLAnchorElement { constructor(self) { self = super(self); self.setAttribute("ok", "1"); return self; } }',
+          'customElements.define("my-a", MyA, {"extends": "a"});',
+          'const myA = new MyA();',
+          'setTimeout(wru.async(function(){ wru.assert(myA.getAttribute("ok") === "1"); }), 100);'
+        ].join('\n')).call(this, wru);
+
+      } catch(meh) {}
     }
   }
 ]);
