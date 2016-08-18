@@ -58,7 +58,7 @@ md.setAttribute('country', 'UK'); // UK
 ```
 
 # V1 Caveat
-The current standard cannot possibly be polifilled with vanilla JavaScript because created instances need an upgrade.
+The current standard cannot possibly be polifilled "*1:1*" with vanilla JavaScript because procedurally created instances need an upgrade.
 If the `constructor` is needed to setup nodes, there are two solutions:
 
 ### Upgrading the `constructor` context
@@ -71,7 +71,7 @@ class MyElement extends HTMLElement {
   constructor(self) {
     self = super(self);
     self.addEventListener('click', console.log);
-    // important in case you create instances programmatically:
+    // important in case you create instances procedurally:
     // var me = new MyElement();
     return self;
   }
