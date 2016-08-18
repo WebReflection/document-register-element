@@ -7,9 +7,12 @@
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta names="apple-mobile-web-app-status-bar-style" content="black"/>
         <!--[if lte IE 9]><script>(function(f){window.setTimeout=f(window.setTimeout);window.setInterval=f(window.setInterval)})(function(f){return function(c,t){var a=[].slice.call(arguments,2);return f(function(){c.apply(this,a)},t)}});</script><![endif]-->
-        <!--[if IE 8]><script src="http://cdnjs.cloudflare.com/ajax/libs/ie8/0.2.3/ie8.js"></script><![endif]-->
-        <script src="http://cdnjs.cloudflare.com/ajax/libs/dom4/1.4.5/dom4.js"></script>
+        <!--[if IE 8]><script src="//cdnjs.cloudflare.com/ajax/libs/ie8/0.2.3/ie8.js"></script><![endif]-->
+        <script src="//cdnjs.cloudflare.com/ajax/libs/dom4/1.4.5/dom4.js"></script>
         <!--[if IE 8]><script src="build/dre-ie8-upfront-fix.js"></script><![endif]-->
+        <script>window.module={};</script>
+        <script src="//npmcdn.com/promise-pjs@1.1.2/promise.js"></script>
+        <script>if(!window.Promise)window.Promise=module.exports;delete window.module;</script>
         <script src="build/document-register-element.max.js"></script>
         <script src="build/innerHTML.max.js"></script>
         <script>

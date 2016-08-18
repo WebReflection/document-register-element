@@ -628,5 +628,75 @@ wru.test(typeof document === 'undefined' ? [] : [
 
       } catch(meh) {}
     }
+  }, {
+    name: 'customElements.whenDefined',
+    test: function () {
+      function HereWeGo() {}
+      HereWeGo.prototype = Object.create(HTMLElement.prototype);
+      HereWeGo.prototype.constructor = HereWeGo;
+      customElements.whenDefined('here-we-go').then(wru.async(function () {
+        wru.assert(customElements.get('here-we-go') === HereWeGo);
+      }));
+      setTimeout(function () {
+        customElements.define('here-we-go', HereWeGo);
+      }, 100);
+    }
+  }, {
+    name: 'connectedCallback',
+    test: function () {
+      function OnceAttached() {
+        return HTMLElement.call(this);
+      }
+      OnceAttached.prototype = Object.create(HTMLElement.prototype);
+      OnceAttached.prototype.constructor = OnceAttached;
+      OnceAttached.prototype.connectedCallback = wru.async(function () {
+        document.body.removeChild(this);
+        wru.assert('OK');
+      });
+      customElements.define('once-attached', OnceAttached);
+      var el = new OnceAttached;
+      setTimeout(function () {
+        document.body.appendChild(el);
+      }, 100);
+    }
+  }, {
+    name: 'disconnectedCallback',
+    test: function () {
+      function OnceDetached() {
+        return HTMLElement.call(this);
+      }
+      OnceDetached.prototype = Object.create(HTMLElement.prototype);
+      OnceDetached.prototype.constructor = OnceDetached;
+      OnceDetached.prototype.disconnectedCallback = wru.async(function () {
+        wru.assert('OK');
+      });
+      customElements.define('once-detached', OnceDetached);
+      var el = document.body.appendChild(new OnceDetached);
+      setTimeout(function () {
+        document.body.removeChild(el);
+      }, 100);
+    }
+  }, {
+    name: 'attributeChangedCallback',
+    test: function () {
+      var args = [];
+      function OnAttrModified() {
+        return HTMLElement.call(this);
+      }
+      OnAttrModified.observedAttributes = ['test'];
+      OnAttrModified.prototype = Object.create(HTMLElement.prototype);
+      OnAttrModified.prototype.constructor = OnAttrModified;
+      OnAttrModified.prototype.attributeChangedCallback = function () {
+        args.push(arguments);
+      };
+      customElements.define('on-attr-modified', OnAttrModified);
+      var el = document.body.appendChild(new OnAttrModified);
+      el.setAttribute('nope', 'nope');
+      el.setAttribute('test', 'attr');
+      setTimeout(wru.async(function () {
+        document.body.removeChild(el);
+        wru.assert(args.length === 1 && args[0][0] === 'test' && args[0][1] == null && args[0][2] === 'attr');
+      }), 100);
+    }
   }
 ]);

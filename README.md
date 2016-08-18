@@ -3,6 +3,21 @@ document-register-element
 
 A stand-alone lightweight version of the [W3C Custom Elements](http://w3c.github.io/webcomponents/spec/custom/) v0 specification. Note that this has been [obsoleted](https://github.com/w3c/webcomponents/pull/405#issuecomment-191698136) by the v1 specification, which [this polyfill may implement in the future](https://github.com/WebReflection/document-register-element/issues/58).
 
+```js
+// simplify instance / node upgrade
+class HTMLCustomElement extends HTMLElement {
+    constructor(_) { return (_ = super(_)).init(), _; }
+    init() { /* override as you like */ }
+}
+
+// create any other class like this
+class MyElement extends HTMLCustomElement {
+    init() {
+        // any initialization logic
+        this.setAttribute('test', 'OK');
+    }
+}
+```
 
 [![build status](https://travis-ci.org/WebReflection/document-register-element.svg)](https://travis-ci.org/WebReflection/document-register-element)
 

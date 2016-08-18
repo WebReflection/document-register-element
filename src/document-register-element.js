@@ -460,31 +460,6 @@ if (!(REGISTER_ELEMENT in document)) {
       document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
       document.addEventListener('readystatechange', onReadyStateChange);
 
-      document.createElement = (patchedCreateElement = function (localName, typeExtension) {
-        var
-          is = typeof typeExtension === 'string' ? typeExtension : '',
-          node = is ?
-            createElement.call(document, localName, is) :
-            createElement.call(document, localName),
-          name = '' + localName,
-          i = indexOf.call(
-            types,
-            (is ? PREFIX_IS : PREFIX_TAG) +
-            (is || name).toUpperCase()
-          ),
-          setup = -1 < i
-        ;
-        if (is) {
-          node.setAttribute('is', is = is.toLowerCase());
-          if (setup) {
-            setup = isInQSA(name.toUpperCase(), is);
-          }
-        }
-        notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
-        if (setup) patch(node, protos[i]);
-        return node;
-      });
-
       HTMLElementPrototype.cloneNode = function (deep) {
         var
           node = cloneNode.call(this, !!deep),
@@ -546,6 +521,31 @@ if (!(REGISTER_ELEMENT in document)) {
 
     return constructor;
   };
+
+  document.createElement = (patchedCreateElement = function (localName, typeExtension) {
+    var
+      is = typeof typeExtension === 'string' ? typeExtension : '',
+      node = is ?
+        createElement.call(document, localName, is) :
+        createElement.call(document, localName),
+      name = '' + localName,
+      i = indexOf.call(
+        types,
+        (is ? PREFIX_IS : PREFIX_TAG) +
+        (is || name).toUpperCase()
+      ),
+      setup = -1 < i
+    ;
+    if (is) {
+      node.setAttribute('is', is = is.toLowerCase());
+      if (setup) {
+        setup = isInQSA(name.toUpperCase(), is);
+      }
+    }
+    notFromInnerHTMLHelper = !document.createElement.innerHTMLHelper;
+    if (setup) patch(node, protos[i]);
+    return node;
+  });
 
 }
 
@@ -764,14 +764,12 @@ function define(name, Class, options) {
         }
     }
   });
-  if (CProto.attributeChangedCallback && attributes.length) {
-    defineProperty(proto, 'attributeChangedCallback', {
-      value: function (name) {
-        if (-1 < indexOf.call(attributes, name))
-          CProto.attributeChangedCallback.apply(this, arguments);
-      }
-    });
-  }
+  defineProperty(proto, 'attributeChangedCallback', {
+    value: function (name) {
+      if (-1 < indexOf.call(attributes, name))
+        CProto.attributeChangedCallback.apply(this, arguments);
+    }
+  });
   if (CProto.connectedCallback) {
     defineProperty(proto, 'attachedCallback', {
       value: CProto.connectedCallback
@@ -791,6 +789,7 @@ function define(name, Class, options) {
   };
   nodeNames.set(Class, name);
   whenDefined(name);
+  waitingList[name].r();
 }
 
 function get(name) {
@@ -855,7 +854,6 @@ try {
     i--;
     patchClass(Classes[i])
   ) {}
-  // TODO: innerHTMLHelper ?
   (document.createElement = function (name, options) {
     var is = typeof options === 'string' ?
       options : (options && options.is || '');
