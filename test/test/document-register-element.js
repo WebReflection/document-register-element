@@ -568,17 +568,135 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 100);
     }
   }, {
-    name: 'creating an element with an object as second argument',
+    name: 'V1',
     test: function () {
-      var OSA = document.registerElement(
-        'object-second-arg',
-        {
-          'extends': 'div'
-        }
-      );
-      var el = document.createElement('div', {is: 'object-second-arg'});
-      wru.assert('no attribute', !el.hasAttribute('is'));
-      wru.assert('ignored extension', /div/i.test(el.nodeName));
+      wru.assert(typeof customElements === 'object');
+    }
+  }, {
+    name: 'use extended classes to register',
+    test: function () {
+      function MyButton(self) {
+        // needed to upgrade the element
+        self = HTMLButtonElement.call(self || this);
+        self.setAttribute('cool', 'true');
+        return self;
+      }
+      function method() {}
+      MyButton.prototype = Object.create(HTMLButtonElement.prototype);
+      MyButton.prototype.constructor = MyButton;
+      MyButton.prototype.method = method;
+      customElements.define('my-button', MyButton, {'extends': 'button'});
+      var myButton = new MyButton();
+      wru.assert('prototype inherited', myButton.method === method);
+      setTimeout(wru.async(function () {
+        wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
+      }), 100);
+    }
+  }, {
+    name: 'use extended to register and DOM to initialize',
+    test: function () {
+      var onceCreated = wru.async(function (myButton) {
+        document.body.removeChild(myButton);
+        wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
+        wru.assert('prototype inherited', myButton.method === method);
+      });
+      // no need to reassign self if upgraded via dom
+      function MyOtherButton(self) {
+        HTMLButtonElement.call(self);
+        self.setAttribute('cool', 'true');
+        setTimeout(function () {
+          onceCreated(self);
+        }, 100);
+      }
+      function method() {}
+      MyOtherButton.prototype = Object.create(HTMLButtonElement.prototype);
+      MyOtherButton.prototype.constructor = MyOtherButton;
+      MyOtherButton.prototype.method = method;
+      customElements.define('my-other-button', MyOtherButton, {'extends': 'button'});
+      document.body.appendChild(document.createElement('button', {is: 'my-other-button'}));
+    }
+  }, {
+    name: 'real classes',
+    test: function () {
+      try {
+        Function('wru', [
+          'class MyA extends HTMLAnchorElement { constructor(self) { self = super(self); self.setAttribute("ok", "1"); return self; } }',
+          'customElements.define("my-a", MyA, {"extends": "a"});',
+          'const myA = new MyA();',
+          'setTimeout(wru.async(function(){ wru.assert(myA.getAttribute("ok") === "1"); }), 100);'
+        ].join('\n')).call(this, wru);
+
+      } catch(meh) {}
+    }
+  }, {
+    name: 'customElements.whenDefined',
+    test: function () {
+      function HereWeGo() {}
+      HereWeGo.prototype = Object.create(HTMLElement.prototype);
+      HereWeGo.prototype.constructor = HereWeGo;
+      customElements.whenDefined('here-we-go').then(wru.async(function () {
+        wru.assert(customElements.get('here-we-go') === HereWeGo);
+      }));
+      setTimeout(function () {
+        customElements.define('here-we-go', HereWeGo);
+      }, 100);
+    }
+  }, {
+    name: 'connectedCallback',
+    test: function () {
+      function OnceAttached() {
+        return HTMLElement.call(this);
+      }
+      OnceAttached.prototype = Object.create(HTMLElement.prototype);
+      OnceAttached.prototype.constructor = OnceAttached;
+      OnceAttached.prototype.connectedCallback = wru.async(function () {
+        document.body.removeChild(this);
+        wru.assert('OK');
+      });
+      customElements.define('once-attached', OnceAttached);
+      var el = new OnceAttached;
+      setTimeout(function () {
+        document.body.appendChild(el);
+      }, 100);
+    }
+  }, {
+    name: 'disconnectedCallback',
+    test: function () {
+      function OnceDetached() {
+        return HTMLElement.call(this);
+      }
+      OnceDetached.prototype = Object.create(HTMLElement.prototype);
+      OnceDetached.prototype.constructor = OnceDetached;
+      OnceDetached.prototype.disconnectedCallback = wru.async(function () {
+        wru.assert('OK');
+      });
+      customElements.define('once-detached', OnceDetached);
+      var el = document.body.appendChild(new OnceDetached);
+      setTimeout(function () {
+        document.body.removeChild(el);
+      }, 100);
+    }
+  }, {
+    name: 'attributeChangedCallback',
+    test: function () {
+      var args = [];
+      function OnAttrModified() {
+        return HTMLElement.call(this);
+      }
+      OnAttrModified.observedAttributes = ['test'];
+      OnAttrModified.prototype = Object.create(HTMLElement.prototype);
+      OnAttrModified.prototype.constructor = OnAttrModified;
+      OnAttrModified.prototype.attributeChangedCallback = function () {
+        args.push(arguments);
+      };
+      customElements.define('on-attr-modified', OnAttrModified);
+      var el = document.body.appendChild(new OnAttrModified);
+      el.setAttribute('nope', 'nope');
+      el.setAttribute('test', 'attr');
+      setTimeout(wru.async(function () {
+        document.body.removeChild(el);
+        wru.assert(args.length === 1 && args[0][0] === 'test' && args[0][1] == null && args[0][2] === 'attr');
+      }), 100);
     }
   }
 ]);
