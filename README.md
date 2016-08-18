@@ -1,25 +1,127 @@
-document-register-element
+document-register-element [![build status](https://travis-ci.org/WebReflection/document-register-element.svg)](https://travis-ci.org/WebReflection/document-register-element)
 =========================
 
-A stand-alone lightweight version of the [W3C Custom Elements](http://w3c.github.io/webcomponents/spec/custom/) v0 specification. Note that this has been [obsoleted](https://github.com/w3c/webcomponents/pull/405#issuecomment-191698136) by the v1 specification, which [this polyfill may implement in the future](https://github.com/WebReflection/document-register-element/issues/58).
+A stand-alone lightweight version of [Custom Elements V1](https://html.spec.whatwg.org/multipage/scripting.html#custom-elements)
+based on top, and compatible with, the battle-tested [Custom Elements V0](http://w3c.github.io/webcomponents/spec/custom/),
+already used in production with projects such [Google AMP HTML ⚡](https://github.com/ampproject/amphtml#amp-html-) and others.
 
+# What's new in Custom Elements v1
+The ability to extend by simply defining classes:
 ```js
-// simplify instance / node upgrade
-class HTMLCustomElement extends HTMLElement {
-    constructor(_) { return (_ = super(_)).init(), _; }
-    init() { /* override as you like */ }
+// create a class with custom methods
+// overrides, special behavior
+class MyGreetings extends HTMLElement {
+  show() {
+    alert(this.textContent);
+  }
 }
 
-// create any other class like this
-class MyElement extends HTMLCustomElement {
-    init() {
-        // any initialization logic
-        this.setAttribute('test', 'OK');
-    }
+// define if to the CustomElementsRegistry
+customElements.define('my-greetings', MyGreetings);
+```
+
+It is also possible to extend native components, as written in specs.
+```js
+// exrends some different native constructor
+class MyButton extends HTMLButtonElement {}
+
+// define it specifying what's extending
+customElements.define('my-button', MyButton, {extends: 'button'});
+
+// <button is="my-button">click me</button>
+document.body.appendChild(
+  new MyButton
+).textContent = 'click me';
+```
+
+Special methods are also slightly different from v0:
+
+  * the `constructor` is invoked instead of the `createdCallback` one
+  * `connectedCallback` is the new `attachedCallback`
+  * `disconnectedCallback` is the new `detachedCallback`
+  * `attributeChangedCallback` is snsitive the the public static list of attributes to be notified about
+
+```js
+class MyDom extends HTMLElement {
+  static get observedAttributes() {
+    return ['country'];
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    // react to changes for name
+    alert(name + ':' + newValue);
+  }
+}
+
+var md = new MyDom();
+md.setAttribute('test', 'nope');
+md.setAttribute('country', 'UK'); // UK
+```
+
+# V1 Caveat
+The current standard cannot possibly be polifilled with vanilla JavaScript because created instances need an upgrade.
+If the `constructor` is needed to setup nodes, there are two solutions:
+
+### Upgrading the `constructor` context
+```js
+class MyElement extends HTMLElement {
+  // the self argument might be provided or not
+  // in both cases, the mandatory `super()` call
+  // will return the right context/instance to use
+  // and eventually return
+  constructor(self) {
+    self = super(self);
+    self.addEventListener('click', console.log);
+    // important in case you create instances programmatically:
+    // var me = new MyElement();
+    return self;
+  }
 }
 ```
 
-[![build status](https://travis-ci.org/WebReflection/document-register-element.svg)](https://travis-ci.org/WebReflection/document-register-element)
+### Skipping the caveat through `extends`
+```js
+// base class to extend, same trick as before
+class HTMLCustomElement extends HTMLElement {
+  constructor(_) { return (_ = super(_)).init(), _; }
+  init() { /* override as you like */ }
+}
+
+// create any other class inheriting HTMLCustomElement
+class MyElement extends HTMLCustomElement {
+  init() {
+    // just use `this` as regular
+    this.addEventListener('click', console.log);
+    // no need to return it
+  }
+}
+```
+
+### Tested On
+
+The [live test page](http://webreflection.github.io/document-register-element/test/) is here, containing all tests as listed in [the test file](test/document-register-element.js).
+
+The following list of **desktop** browsers has been successfully tested:
+
+  * Chrome
+  * Firefox
+  * IE 8 or greater (please read about IE8 caveats)
+  * Safari
+  * Opera
+
+The following list of **mobile** OS has been successfully tested:
+
+  * iOS 5.1 or greater
+  * Android 2.2 or greater
+  * FirefoxOS 1.1 or greater
+  * KindleFire 3 or greater
+  * Windows Phone 7 or greater
+  * Opera Mobile 12 or greater
+  * Blackberry OS 7* and OS 10
+  * webOS 2 or LG TV
+  * Samsung Bada OS 2 or greater
+  * NOKIA Asha with Express Browser
+
+The good old [BB OS 7](http://us.blackberry.com/software/smartphones/blackberry-7-os.html) is the only one failing the test with `className` which is not notified as `attributeChanged` when it's changed. This means BB OS 7 will also fail with `id`, however changing `id` at runtime has never been a common or useful pattern.
 
 
 ### How
@@ -51,7 +153,7 @@ in your head element and you should be good to go.
 Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following an example on how to include it.
 ```html
 <script
-  src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/0.6.1/document-register-element.js"
+  src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.0.0/document-register-element.js"
 >/* W3C Custom Elements */</script>
 ```
 
@@ -59,7 +161,7 @@ Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following 
 If you [see the first clock ticking](http://webreflection.github.io/document-register-element/test/examples/x-clock.html), the TL;DR answer is yes.
 
 
-### Usage Example
+### V0 Usage Example
 
 A basic HTML example page
 ```html
@@ -124,40 +226,9 @@ var MyElement = document.registerElement(
 ### Why
 I wrote a [couple](http://webreflection.blogspot.co.uk/2014/07/a-w3c-custom-elements-alternative.html) of blog [posts](http://webreflection.blogspot.co.uk/2015/03/bringing-custom-elements-to-ie8.html) about this polyfill, and here's the quick summary:
 
-* [document-register-element.js](build/document-register-element.js) is a stand alone polyfill which aims to support as many browsers as possible, without requiring extra dependencies at all, all in about **3KB** minified and gzipped.
+* [document-register-element.js](build/document-register-element.js) is a stand alone polyfill which aims to support as many browsers as possible, without requiring extra dependencies at all, all in about **5KB** minified and gzipped.
 
 Add if you want the [dom4](https://github.com/WebReflection/dom4#dom4) normalizer, and you'll find yourself in a modern DOM environment that works reliably with today's browsers, with an eye always open on performance.
-
-
-
-### Tested On
-
-The [live test page](http://webreflection.github.io/document-register-element/test/) is here, containing all tests as listed in [the test file](test/document-register-element.js).
-
-The following list of **desktop** browsers has been successfully tested:
-
-  * Chrome
-  * Firefox
-  * IE 8 or greater (please read about IE8 caveats)
-  * Safari
-  * Opera
-
-The following list of **mobile** OS has been successfully tested:
-
-  * iOS 5.1 or greater
-  * Android 2.2 or greater
-  * FirefoxOS 1.1 or greater
-  * KindleFire 3 or greater
-  * Windows Phone 7 or greater
-  * Opera Mobile 12 or greater
-  * Blackberry OS 7* and OS 10
-  * webOS 2 or LG TV
-  * Samsung Bada OS 2 or greater
-  * NOKIA Asha with Express Browser
-
-The good old [BB OS 7](http://us.blackberry.com/software/smartphones/blackberry-7-os.html) is the only one failing the test with `className` which is not notified as `attributeChanged` when it's changed. This means BB OS 7 will also fail with `id`, however changing `id` at runtime has never been a common or useful pattern.
-
-
 ### Common Issues + Caveat
 Here a list of gotchas you might encounter when developing *CustomElement* components.
 
