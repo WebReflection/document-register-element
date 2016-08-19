@@ -22,7 +22,7 @@ customElements.define('my-greetings', MyGreetings);
 
 It is also possible to extend native components, as written in specs.
 ```js
-// exrends some different native constructor
+// extends some different native constructor
 class MyButton extends HTMLButtonElement {}
 
 // define it specifying what's extending
