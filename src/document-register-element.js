@@ -737,10 +737,10 @@ function verifyAndSetupAndAction(node, action) {
 
 
 // V1 in da House!
-function CustomElementsRegistry() {}
+function CustomElementRegistry() {}
 
-CustomElementsRegistry.prototype = {
-  constructor: CustomElementsRegistry,
+CustomElementRegistry.prototype = {
+  constructor: CustomElementRegistry,
   // a workaround for the stubborn WebKit
   define: usableCustomElements ?
     function (name, Class, options) {
@@ -833,11 +833,11 @@ function polyfillV1() {
   if (customElements) delete window.customElements;
   defineProperty(window, 'customElements', {
     configurable: true,
-    value: new CustomElementsRegistry()
+    value: new CustomElementRegistry()
   });
-  defineProperty(window, 'CustomElementsRegistry', {
+  defineProperty(window, 'CustomElementRegistry', {
     configurable: true,
-    value: CustomElementsRegistry
+    value: CustomElementRegistry
   });
   for (var
     patchClass = function (name) {
