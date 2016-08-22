@@ -16,7 +16,7 @@ class MyGreetings extends HTMLElement {
   }
 }
 
-// define if to the CustomElementsRegistry
+// define it in the CustomElementRegistry
 customElements.define('my-greetings', MyGreetings);
 ```
 
