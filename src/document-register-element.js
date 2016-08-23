@@ -856,11 +856,7 @@ function polyfillV1() {
           }
           return self;
         };
-        safeProperty(
-          (window[name].prototype = create(Class.prototype)),
-          'constructor',
-          {configurable: true, writable: true, value: window[name]}
-        );
+        (window[name].prototype = Class.prototype).constructor = window[name];
       }
     },
     Classes = htmlClass.get(/^HTML/),
