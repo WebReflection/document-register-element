@@ -479,6 +479,7 @@ var
   iPO = OP.isPrototypeOf,
 
   defineProperty = Object.defineProperty,
+  empty = [],
   gOPD = Object.getOwnPropertyDescriptor,
   gOPN = Object.getOwnPropertyNames,
   gPO = Object.getPrototypeOf,
@@ -1199,7 +1200,7 @@ function define(name, Class, options) {
     is = options && options[EXTENDS] || '',
     CProto = Class.prototype,
     proto = create(CProto),
-    attributes = Class.observedAttributes || Array.prototype,
+    attributes = Class.observedAttributes || empty,
     definition = {prototype: proto}
   ;
   // TODO: is this needed at all since it's inherited?
@@ -1210,6 +1211,10 @@ function define(name, Class, options) {
         else if (!this[DRECEV1]) {
           this[DRECEV1] = true;
           new Class(this);
+          var info = constructors[nodeNames.get(Class)];
+          if (!usableCustomElements || info.create.length > 1) {
+            notifyAttributes(this);
+          }
         }
     }
   });
@@ -1246,6 +1251,24 @@ function get(name) {
   return info && info.constructor;
 }
 
+function notifyAttributes(self) {
+  var
+    callback = self.attributeChangedCallback,
+    attributes = callback ? self.attributes : empty,
+    i = attributes.length,
+    attribute
+  ;
+  while (i--) {
+    attribute =  attributes[i]; // || attributes.item(i);
+    callback.call(
+      self,
+      attribute.name || attribute.nodeName,
+      null,
+      attribute.value || attribute.nodeValue
+    );
+  }
+}
+
 function whenDefined(name) {
   name = name.toUpperCase();
   if (!(name in waitingList)) {
@@ -1272,16 +1295,18 @@ function polyfillV1() {
       var Class = window[name];
       if (Class) {
         window[name] = function CustomElementsV1(self) {
-          var info;
+          var info, isNative;
           if (!self) self = this;
           if (!self[DRECEV1]) {
             justCreated = true;
             info = constructors[nodeNames.get(self.constructor)];
-            self = usableCustomElements && info.create.length === 1 ?
-              Reflect.construct(Class, [], info.constructor) :
+            isNative = usableCustomElements && info.create.length === 1;
+            self = isNative ?
+              Reflect.construct(Class, empty, info.constructor) :
               document.createElement.apply(document, info.create);
             self[DRECEV1] = true;
             justCreated = false;
+            if (!isNative) notifyAttributes(self);
           }
           return self;
         };
