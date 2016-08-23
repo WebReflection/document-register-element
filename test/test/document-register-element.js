@@ -192,7 +192,8 @@ wru.test(typeof document === 'undefined' ? [] : [
           node.setAttribute('what', 'else');
           setTimeout(wru.async(function () {
             args = node._info.pop().arguments;
-            wru.assert('correct arguments with old value', args[0] === 'what' && args[1] === 'ever' && args[2] === 'else');
+            wru.assert('correct arguments with old value',
+              args[0] === 'what' && args[1] === 'ever' && args[2] === 'else');
             node.removeAttribute('what');
             setTimeout(wru.async(function () {
               args = node._info.pop().arguments;
@@ -644,8 +645,8 @@ wru.test(typeof document === 'undefined' ? [] : [
   }, {
     name: 'connectedCallback',
     test: function () {
-      function OnceAttached() {
-        return HTMLElement.call(this);
+      function OnceAttached(self) {
+        return HTMLElement.call(this, self);
       }
       OnceAttached.prototype = Object.create(HTMLElement.prototype);
       OnceAttached.prototype.constructor = OnceAttached;
@@ -695,8 +696,18 @@ wru.test(typeof document === 'undefined' ? [] : [
       el.setAttribute('test', 'attr');
       setTimeout(wru.async(function () {
         document.body.removeChild(el);
-        wru.assert(args.length === 1 && args[0][0] === 'test' && args[0][1] == null && args[0][2] === 'attr');
+        wru.assert(
+          args.length === 1 &&
+          args[0][0] === 'test' &&
+          args[0][1] == null &&
+          args[0][2] === 'attr'
+        );
       }), 100);
+    }
+  }, {
+    name: 'preserved instanceof',
+    test: function () {
+      wru.assert(document.createElement('button') instanceof HTMLButtonElement);
     }
   }
 ]);
