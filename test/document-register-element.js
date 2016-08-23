@@ -645,8 +645,8 @@ wru.test(typeof document === 'undefined' ? [] : [
   }, {
     name: 'connectedCallback',
     test: function () {
-      function OnceAttached() {
-        return HTMLElement.call(this);
+      function OnceAttached(self) {
+        return HTMLElement.call(this, self);
       }
       OnceAttached.prototype = Object.create(HTMLElement.prototype);
       OnceAttached.prototype.constructor = OnceAttached;
@@ -696,7 +696,12 @@ wru.test(typeof document === 'undefined' ? [] : [
       el.setAttribute('test', 'attr');
       setTimeout(wru.async(function () {
         document.body.removeChild(el);
-        wru.assert(args.length === 1 && args[0][0] === 'test' && args[0][1] == null && args[0][2] === 'attr');
+        wru.assert(
+          args.length === 1 &&
+          args[0][0] === 'test' &&
+          args[0][1] == null &&
+          args[0][2] === 'attr'
+        );
       }), 100);
     }
   }, {

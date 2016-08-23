@@ -748,6 +748,12 @@ CustomElementRegistry.prototype = {
         define(name, Class, options);
       } else {
         customElements.define(name, Class);
+        name = name.toUpperCase();
+        constructors[name] = {
+          constructor: Class,
+          create: [name]
+        };
+        nodeNames.set(Class, name);
       }
     } :
     define,
@@ -758,10 +764,10 @@ CustomElementRegistry.prototype = {
     get,
   whenDefined: usableCustomElements ?
     function (name) {
-      return Promise.race(
-        customElements.whenDefined,
+      return Promise.race([
+        customElements.whenDefined(name),
         whenDefined(name)
-      );
+      ]);
     } :
     whenDefined
 };
@@ -844,15 +850,16 @@ function polyfillV1() {
       var Class = window[name];
       if (Class) {
         window[name] = function CustomElementsV1(self) {
+          var info;
           if (!self) self = this;
           if (!self[DRECEV1]) {
             justCreated = true;
-            self = document.createElement.apply(
-              document,
-              constructors[nodeNames.get(self.constructor)].create
-            );
-            justCreated = false;
+            info = constructors[nodeNames.get(self.constructor)];
+            self = usableCustomElements && info.create.length === 1 ?
+              Reflect.construct(Class, [], info.constructor) :
+              document.createElement.apply(document, info.create);
             self[DRECEV1] = true;
+            justCreated = false;
           }
           return self;
         };
@@ -875,13 +882,20 @@ function polyfillV1() {
 
 if (!customElements) polyfillV1();
 try {
-  (function (DRE, options) {
+  (function (DRE, options, name) {
     options[EXTENDS] = 'a';
-    setPrototype(DRE.prototype, HTMLAnchorElement.prototype);
-    customElements.define('document-register-element-a', DRE, options);
-    documentElement.insertBefore((DRE = new DRE()), documentElement.firstChild);
-    documentElement.removeChild(DRE);
-  }(function () {}, {}));
+    DRE.prototype = HTMLAnchorElement.prototype;
+    customElements.define(name, DRE, options);
+    if (document.createElement(name).getAttribute('is') !== name) {
+      throw options;
+    }
+  }(
+    function DRE() {
+      return Reflect.construct(HTMLAnchorElement, [], DRE);
+    },
+    {},
+    'document-register-element-a'
+  ));
 } catch(o_O) {
   polyfillV1();
 }
