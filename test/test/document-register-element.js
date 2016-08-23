@@ -709,5 +709,36 @@ wru.test(typeof document === 'undefined' ? [] : [
     test: function () {
       wru.assert(document.createElement('button') instanceof HTMLButtonElement);
     }
+  }, {
+    name: 'attributes notified on bootstrap',
+    test: function () {
+      var notification;
+      function AttributesNotified(self) {
+        return HTMLElement.call(this, self);
+      }
+      AttributesNotified.observedAttributes = ['some'];
+      AttributesNotified.prototype = Object.create(HTMLElement.prototype);
+      AttributesNotified.prototype.constructor = AttributesNotified;
+      AttributesNotified.prototype.attributeChangedCallback = function (name, oldValue, newValue) {
+        notification = {
+          name: name,
+          oldValue: oldValue,
+          newValue: newValue
+        };
+      };
+      AttributesNotified.prototype.connectedCallback = wru.async(function () {
+        this.parentNode.removeChild(this);
+        wru.assert(
+          notification.name === 'some' &&
+          notification.oldValue === null &&
+          notification.newValue === 'thing'
+        );
+      });
+      setTimeout(function () {
+        var div = document.body.appendChild(document.createElement('div'));
+        div.innerHTML = '<attributes-modified some="thing">test</attributes-modified>';
+        customElements.define('attributes-modified', AttributesNotified);
+      });
+    }
   }
 ]);
