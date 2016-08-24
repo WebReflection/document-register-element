@@ -1,3 +1,14 @@
+function setProto(A, B) {
+  A.prototype = Object.create(
+    B.prototype,
+    {constructor: {
+      configurable: true,
+      writable: true,
+      value: A
+    }}
+  );
+}
+
 wru.test(typeof document === 'undefined' ? [] : [
   {
     name: "main",
@@ -583,8 +594,7 @@ wru.test(typeof document === 'undefined' ? [] : [
         return self;
       }
       function method() {}
-      MyButton.prototype = Object.create(HTMLButtonElement.prototype);
-      MyButton.prototype.constructor = MyButton;
+      setProto(MyButton, HTMLButtonElement);
       MyButton.prototype.method = method;
       customElements.define('my-button', MyButton, {'extends': 'button'});
       var myButton = new MyButton();
@@ -610,8 +620,7 @@ wru.test(typeof document === 'undefined' ? [] : [
         }, 100);
       }
       function method() {}
-      MyOtherButton.prototype = Object.create(HTMLButtonElement.prototype);
-      MyOtherButton.prototype.constructor = MyOtherButton;
+      setProto(MyOtherButton, HTMLButtonElement);
       MyOtherButton.prototype.method = method;
       customElements.define('my-other-button', MyOtherButton, {'extends': 'button'});
       document.body.appendChild(document.createElement('button', {is: 'my-other-button'}));
@@ -633,8 +642,7 @@ wru.test(typeof document === 'undefined' ? [] : [
     name: 'customElements.whenDefined',
     test: function () {
       function HereWeGo() {}
-      HereWeGo.prototype = Object.create(HTMLElement.prototype);
-      HereWeGo.prototype.constructor = HereWeGo;
+      setProto(HereWeGo, HTMLElement);
       customElements.whenDefined('here-we-go').then(wru.async(function () {
         wru.assert(customElements.get('here-we-go') === HereWeGo);
       }));
@@ -648,8 +656,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       function OnceAttached(self) {
         return HTMLElement.call(this, self);
       }
-      OnceAttached.prototype = Object.create(HTMLElement.prototype);
-      OnceAttached.prototype.constructor = OnceAttached;
+      setProto(OnceAttached, HTMLElement);
       OnceAttached.prototype.connectedCallback = wru.async(function () {
         document.body.removeChild(this);
         wru.assert('OK');
@@ -666,8 +673,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       function OnceDetached() {
         return HTMLElement.call(this);
       }
-      OnceDetached.prototype = Object.create(HTMLElement.prototype);
-      OnceDetached.prototype.constructor = OnceDetached;
+      setProto(OnceDetached, HTMLElement);
       OnceDetached.prototype.disconnectedCallback = wru.async(function () {
         wru.assert('OK');
       });
@@ -685,8 +691,7 @@ wru.test(typeof document === 'undefined' ? [] : [
         return HTMLElement.call(this);
       }
       OnAttrModified.observedAttributes = ['test'];
-      OnAttrModified.prototype = Object.create(HTMLElement.prototype);
-      OnAttrModified.prototype.constructor = OnAttrModified;
+      setProto(OnAttrModified, HTMLElement);
       OnAttrModified.prototype.attributeChangedCallback = function () {
         args.push(arguments);
       };
@@ -717,8 +722,7 @@ wru.test(typeof document === 'undefined' ? [] : [
         return HTMLElement.call(this, self);
       }
       AttributesNotified.observedAttributes = ['some'];
-      AttributesNotified.prototype = Object.create(HTMLElement.prototype);
-      AttributesNotified.prototype.constructor = AttributesNotified;
+      setProto(AttributesNotified, HTMLElement);
       AttributesNotified.prototype.attributeChangedCallback = function (name, oldValue, newValue) {
         notification = {
           name: name,
