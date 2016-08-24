@@ -24,7 +24,7 @@
     "type": "git",
     "url": "git://github.com/WebReflection/document-register-element.git"
   },
-  "main": "./build/document-register-element.js",
+  "main": "./build/document-register-element.max.js",
   "scripts": {
     "test": "phantomjs testrunner.js",
     "web": "node node_modules/tiny-cdn/tiny-cdn run -p=1337"

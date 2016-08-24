@@ -1,5 +1,6 @@
 /*!
-Copyright (C) 2014-2015 by WebReflection
+
+Copyright (C) 2014-2016 by Andrea Giammarchi - @WebReflection
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -550,6 +551,7 @@ var
   constructors = Dict(null),
   waitingList = Dict(null),
   nodeNames = new Map(),
+  secondArgument = String,
 
   // used to create unique instances
   create = Object.create || function Bridge(proto) {
@@ -983,7 +985,7 @@ if (!(REGISTER_ELEMENT in document)) {
     var
       is = typeof typeExtension === 'string' ? typeExtension : '',
       node = is ?
-        createElement.call(document, localName, is) :
+        createElement.call(document, localName, secondArgument(is)) :
         createElement.call(document, localName),
       name = '' + localName,
       i = indexOf.call(
@@ -1181,7 +1183,7 @@ CustomElementRegistry.prototype = {
   define: usableCustomElements ?
     function (name, Class, options) {
       if (options) {
-        define(name, Class, options);
+        CERDefine(name, Class, options);
       } else {
         customElements.define(name, Class);
         name = name.toUpperCase();
@@ -1192,7 +1194,7 @@ CustomElementRegistry.prototype = {
         nodeNames.set(Class, name);
       }
     } :
-    define,
+    CERDefine,
   get: usableCustomElements ?
     function (name) {
       return customElements.get(name) || get(name);
@@ -1208,7 +1210,7 @@ CustomElementRegistry.prototype = {
     whenDefined
 };
 
-function define(name, Class, options) {
+function CERDefine(name, Class, options) {
   var
     is = options && options[EXTENDS] || '',
     CProto = Class.prototype,
@@ -1254,7 +1256,7 @@ function define(name, Class, options) {
   name = name.toUpperCase();
   constructors[name] = {
     constructor: Class,
-    create: is ? [is, name] : [name]
+    create: is ? [is, secondArgument(name)] : [name]
   };
   nodeNames.set(Class, name);
   whenDefined(name);
@@ -1343,7 +1345,7 @@ function polyfillV1() {
     var is = typeof options === 'string' ?
       options : (options && options.is || '');
     return is ?
-      patchedCreateElement.call(this, name, is) :
+      patchedCreateElement.call(this, name, secondArgument(is)) :
       patchedCreateElement.call(this, name);
   });
 }
@@ -1366,6 +1368,14 @@ try {
   ));
 } catch(o_O) {
   polyfillV1();
+}
+
+try {
+  createElement.call(document, 'a', 'a');
+} catch(FireFox) {
+  secondArgument = function (is) {
+    return {is: is};
+  };
 }
 
 }(window, document, Object, 'registerElement'));

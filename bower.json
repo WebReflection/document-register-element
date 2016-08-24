@@ -1,7 +1,7 @@
 {
     "name": "document-register-element",
     "description": "A stand-alone working lightweight version of the W3C Custom Elements specification",
-    "main": "./build/document-register-element.js",
+    "main": "./build/document-register-element.max.js",
     "ignore": [
         "test",
         ".jshintrc",
