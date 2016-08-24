@@ -1,5 +1,6 @@
 /*!
-Copyright (C) 2014-2015 by WebReflection
+
+Copyright (C) 2014-2016 by Andrea Giammarchi - @WebReflection
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -434,15 +435,27 @@ var
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
 
   // shortcuts and costants
+  ADD_EVENT_LISTENER = 'addEventListener',
   ATTACHED = 'attached',
+  CALLBACK = 'Callback',
   DETACHED = 'detached',
   EXTENDS = 'extends',
+
+  ATTRIBUTE_CHANGED_CALLBACK = 'attributeChanged' + CALLBACK,
+  ATTACHED_CALLBACK = ATTACHED + CALLBACK,
+  CONNECTED_CALLBACK = 'connected' + CALLBACK,
+  DISCONNECTED_CALLBACK = 'disconnected' + CALLBACK,
+  CREATED_CALLBACK = 'created' + CALLBACK,
+  DETACHED_CALLBACK = DETACHED + CALLBACK,
+
   ADDITION = 'ADDITION',
   MODIFICATION = 'MODIFICATION',
   REMOVAL = 'REMOVAL',
+
   DOM_ATTR_MODIFIED = 'DOMAttrModified',
   DOM_CONTENT_LOADED = 'DOMContentLoaded',
   DOM_SUBTREE_MODIFIED = 'DOMSubtreeModified',
+
   PREFIX_TAG = '<',
   PREFIX_IS = '=',
 
@@ -491,6 +504,7 @@ var
   hasProto = !!Object.__proto__,
 
   // V1 helpers
+  fixGetClass = false,
   DRECEV1 = '__dreCEv1',
   customElements = window.customElements,
   usableCustomElements = !!(
@@ -539,6 +553,7 @@ var
   constructors = Dict(null),
   waitingList = Dict(null),
   nodeNames = new Map(),
+  secondArgument = String,
 
   // used to create unique instances
   create = Object.create || function Bridge(proto) {
@@ -688,7 +703,7 @@ if (!(REGISTER_ELEMENT in document)) {
     doesNotSupportDOMAttrModified = false;
     (function (){
       var
-        descriptor = gOPD(HTMLElementPrototype, 'addEventListener'),
+        descriptor = gOPD(HTMLElementPrototype, ADD_EVENT_LISTENER),
         addEventListener = descriptor.value,
         patchedRemoveAttribute = function (name) {
           var e = new CustomEvent(DOM_ATTR_MODIFIED, {bubbles: true});
@@ -742,7 +757,7 @@ if (!(REGISTER_ELEMENT in document)) {
       descriptor.value = function (type, handler, capture) {
         if (
           type === DOM_ATTR_MODIFIED &&
-          this.attributeChangedCallback &&
+          this[ATTRIBUTE_CHANGED_CALLBACK] &&
           this.setAttribute !== patchedSetAttribute
         ) {
           this[EXPANDO_UID] = {
@@ -757,10 +772,10 @@ if (!(REGISTER_ELEMENT in document)) {
         }
         addEventListener.call(this, type, handler, capture);
       };
-      defineProperty(HTMLElementPrototype, 'addEventListener', descriptor);
+      defineProperty(HTMLElementPrototype, ADD_EVENT_LISTENER, descriptor);
     }());
   } else if (!MutationObserver) {
-    documentElement.addEventListener(DOM_ATTR_MODIFIED, DOMAttrModified);
+    documentElement[ADD_EVENT_LISTENER](DOM_ATTR_MODIFIED, DOMAttrModified);
     documentElement.setAttribute(EXPANDO_UID, 1);
     documentElement.removeAttribute(EXPANDO_UID);
     if (doesNotSupportDOMAttrModified) {
@@ -875,11 +890,11 @@ if (!(REGISTER_ELEMENT in document)) {
               } else {
                 node = current.target;
                 if (notFromInnerHTMLHelper &&
-                    node.attributeChangedCallback &&
+                    node[ATTRIBUTE_CHANGED_CALLBACK] &&
                     current.attributeName !== 'style') {
                   newValue = getAttribute.call(node, current.attributeName);
                   if (newValue !== current.oldValue) {
-                    node.attributeChangedCallback(
+                    node[ATTRIBUTE_CHANGED_CALLBACK](
                       current.attributeName,
                       current.oldValue,
                       newValue
@@ -899,12 +914,12 @@ if (!(REGISTER_ELEMENT in document)) {
         );
       } else {
         asapQueue = [];
-        document.addEventListener('DOMNodeInserted', onDOMNode(ATTACHED));
-        document.addEventListener('DOMNodeRemoved', onDOMNode(DETACHED));
+        document[ADD_EVENT_LISTENER]('DOMNodeInserted', onDOMNode(ATTACHED));
+        document[ADD_EVENT_LISTENER]('DOMNodeRemoved', onDOMNode(DETACHED));
       }
 
-      document.addEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
-      document.addEventListener('readystatechange', onReadyStateChange);
+      document[ADD_EVENT_LISTENER](DOM_CONTENT_LOADED, onReadyStateChange);
+      document[ADD_EVENT_LISTENER]('readystatechange', onReadyStateChange);
 
       HTMLElementPrototype.cloneNode = function (deep) {
         var
@@ -972,7 +987,7 @@ if (!(REGISTER_ELEMENT in document)) {
     var
       is = typeof typeExtension === 'string' ? typeExtension : '',
       node = is ?
-        createElement.call(document, localName, is) :
+        createElement.call(document, localName, secondArgument(is)) :
         createElement.call(document, localName),
       name = '' + localName,
       i = indexOf.call(
@@ -1057,10 +1072,10 @@ function onDOMAttrModified(e) {
   ;
   if (notFromInnerHTMLHelper &&
       (!target || target === node) &&
-      node.attributeChangedCallback &&
+      node[ATTRIBUTE_CHANGED_CALLBACK] &&
       attrName !== 'style' &&
       e.prevValue !== e.newValue) {
-    node.attributeChangedCallback(
+    node[ATTRIBUTE_CHANGED_CALLBACK](
       attrName,
       attrChange === e[ADDITION] ? null : e.prevValue,
       attrChange === e[REMOVAL] ? null : e.newValue
@@ -1104,13 +1119,13 @@ function setupNode(node, proto) {
     if (doesNotSupportDOMAttrModified) {
       node.setAttribute = patchedSetAttribute;
       node[EXPANDO_UID] = getAttributesMirror(node);
-      node.addEventListener(DOM_SUBTREE_MODIFIED, onSubtreeModified);
+      node[ADD_EVENT_LISTENER](DOM_SUBTREE_MODIFIED, onSubtreeModified);
     }
-    node.addEventListener(DOM_ATTR_MODIFIED, onDOMAttrModified);
+    node[ADD_EVENT_LISTENER](DOM_ATTR_MODIFIED, onDOMAttrModified);
   }
-  if (node.createdCallback && notFromInnerHTMLHelper) {
+  if (node[CREATED_CALLBACK] && notFromInnerHTMLHelper) {
     node.created = true;
-    node.createdCallback();
+    node[CREATED_CALLBACK]();
     node.created = false;
   }
 }
@@ -1155,7 +1170,7 @@ function verifyAndSetupAndAction(node, action) {
       node[DETACHED] = true;
       i = 1;
     }
-    if (i && (fn = node[action + 'Callback'])) fn.call(node);
+    if (i && (fn = node[action + CALLBACK])) fn.call(node);
   }
 }
 
@@ -1170,7 +1185,7 @@ CustomElementRegistry.prototype = {
   define: usableCustomElements ?
     function (name, Class, options) {
       if (options) {
-        define(name, Class, options);
+        CERDefine(name, Class, options);
       } else {
         customElements.define(name, Class);
         name = name.toUpperCase();
@@ -1181,7 +1196,7 @@ CustomElementRegistry.prototype = {
         nodeNames.set(Class, name);
       }
     } :
-    define,
+    CERDefine,
   get: usableCustomElements ?
     function (name) {
       return customElements.get(name) || get(name);
@@ -1197,7 +1212,7 @@ CustomElementRegistry.prototype = {
     whenDefined
 };
 
-function define(name, Class, options) {
+function CERDefine(name, Class, options) {
   var
     is = options && options[EXTENDS] || '',
     CProto = Class.prototype,
@@ -1207,12 +1222,14 @@ function define(name, Class, options) {
   ;
   // TODO: is this needed at all since it's inherited?
   // defineProperty(proto, 'constructor', {value: Class});
-  safeProperty(proto, 'createdCallback', {
+  safeProperty(proto, CREATED_CALLBACK, {
       value: function () {
         if (justCreated) justCreated = false;
         else if (!this[DRECEV1]) {
           this[DRECEV1] = true;
           new Class(this);
+          if (CProto[CREATED_CALLBACK])
+            CProto[CREATED_CALLBACK].call(this);
           var info = constructors[nodeNames.get(Class)];
           if (!usableCustomElements || info.create.length > 1) {
             notifyAttributes(this);
@@ -1220,20 +1237,20 @@ function define(name, Class, options) {
         }
     }
   });
-  safeProperty(proto, 'attributeChangedCallback', {
+  safeProperty(proto, ATTRIBUTE_CHANGED_CALLBACK, {
     value: function (name) {
       if (-1 < indexOf.call(attributes, name))
-        CProto.attributeChangedCallback.apply(this, arguments);
+        CProto[ATTRIBUTE_CHANGED_CALLBACK].apply(this, arguments);
     }
   });
-  if (CProto.connectedCallback) {
-    safeProperty(proto, 'attachedCallback', {
-      value: CProto.connectedCallback
+  if (CProto[CONNECTED_CALLBACK]) {
+    safeProperty(proto, ATTACHED_CALLBACK, {
+      value: CProto[CONNECTED_CALLBACK]
     });
   }
-  if (CProto.disconnectedCallback) {
-    safeProperty(proto, 'detachedCallback', {
-      value: CProto.disconnectedCallback
+  if (CProto[DISCONNECTED_CALLBACK]) {
+    safeProperty(proto, DETACHED_CALLBACK, {
+      value: CProto[DISCONNECTED_CALLBACK]
     });
   }
   if (is) definition[EXTENDS] = is;
@@ -1241,7 +1258,7 @@ function define(name, Class, options) {
   name = name.toUpperCase();
   constructors[name] = {
     constructor: Class,
-    create: is ? [is, name] : [name]
+    create: is ? [is, secondArgument(name)] : [name]
   };
   nodeNames.set(Class, name);
   whenDefined(name);
@@ -1255,7 +1272,7 @@ function get(name) {
 
 function notifyAttributes(self) {
   var
-    callback = self.attributeChangedCallback,
+    callback = self[ATTRIBUTE_CHANGED_CALLBACK],
     attributes = callback ? self.attributes : empty,
     i = attributes.length,
     attribute
@@ -1312,7 +1329,13 @@ function polyfillV1() {
           }
           return self;
         };
-        (window[name].prototype = Class.prototype).constructor = window[name];
+        window[name].prototype = Class.prototype;
+        try {
+          Class.prototype.constructor = window[name];
+        } catch(WebKit) {
+          fixGetClass = true;
+          defineProperty(Class, DRECEV1, {value: window[name]});
+        }
       }
     },
     Classes = htmlClass.get(/^HTML/),
@@ -1324,7 +1347,7 @@ function polyfillV1() {
     var is = typeof options === 'string' ?
       options : (options && options.is || '');
     return is ?
-      patchedCreateElement.call(this, name, is) :
+      patchedCreateElement.call(this, name, secondArgument(is)) :
       patchedCreateElement.call(this, name);
   });
 }
@@ -1347,5 +1370,13 @@ try {
   ));
 } catch(o_O) {
   polyfillV1();
+}
+
+try {
+  createElement.call(document, 'a', 'a');
+} catch(FireFox) {
+  secondArgument = function (is) {
+    return {is: is};
+  };
 }
 });

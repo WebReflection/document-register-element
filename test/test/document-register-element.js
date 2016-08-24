@@ -1,6 +1,183 @@
+function setProto(A, B) {
+  A.prototype = Object.create(
+    B.prototype,
+    {constructor: {
+      configurable: true,
+      writable: true,
+      value: A
+    }}
+  );
+}
+
 wru.test(typeof document === 'undefined' ? [] : [
   {
-    name: "main",
+    name: 'V1: main',
+    test: function () {
+      wru.assert(typeof customElements === 'object');
+    }
+  }, {
+    name: 'V1: use extended classes to register',
+    test: function () {
+      function MyButton(self) {
+        // needed to upgrade the element
+        self = HTMLButtonElement.call(self || this);
+        self.setAttribute('cool', 'true');
+        return self;
+      }
+      function method() {}
+      setProto(MyButton, HTMLButtonElement);
+      MyButton.prototype.method = method;
+      customElements.define('my-button', MyButton, {'extends': 'button'});
+      var myButton = new MyButton();
+      wru.assert('prototype inherited', myButton.method === method);
+      setTimeout(wru.async(function () {
+        wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
+      }), 100);
+    }
+  }, {
+    name: 'V1: use extended to register and DOM to initialize',
+    test: function () {
+      var onceCreated = wru.async(function (myButton) {
+        document.body.removeChild(myButton);
+        wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
+        wru.assert('prototype inherited', myButton.method === method);
+      });
+      // no need to reassign self if upgraded via dom
+      function MyOtherButton(self) {
+        HTMLButtonElement.call(self);
+        self.setAttribute('cool', 'true');
+        setTimeout(function () {
+          onceCreated(self);
+        }, 100);
+      }
+      function method() {}
+      setProto(MyOtherButton, HTMLButtonElement);
+      MyOtherButton.prototype.method = method;
+      customElements.define('my-other-button', MyOtherButton, {'extends': 'button'});
+      document.body.appendChild(document.createElement('button', {is: 'my-other-button'}));
+    }
+  }, {
+    name: 'V1: real classes',
+    test: function () {
+      try {
+        Function('wru', [
+          'class MyA extends HTMLAnchorElement { constructor(self) { self = super(self); self.setAttribute("ok", "1"); return self; } }',
+          'customElements.define("my-a", MyA, {"extends": "a"});',
+          'const myA = new MyA();',
+          'setTimeout(wru.async(function(){ wru.assert(myA.getAttribute("ok") === "1"); }), 100);'
+        ].join('\n')).call(this, wru);
+
+      } catch(meh) {}
+    }
+  }, {
+    name: 'V1: customElements.whenDefined',
+    test: function () {
+      function HereWeGo() {}
+      setProto(HereWeGo, HTMLElement);
+      customElements.whenDefined('here-we-go').then(wru.async(function () {
+        wru.assert(customElements.get('here-we-go') === HereWeGo);
+      }));
+      setTimeout(function () {
+        customElements.define('here-we-go', HereWeGo);
+      }, 100);
+    }
+  }, {
+    name: 'V1: connectedCallback',
+    test: function () {
+      function OnceAttached(self) {
+        return HTMLElement.call(this, self);
+      }
+      setProto(OnceAttached, HTMLElement);
+      OnceAttached.prototype.connectedCallback = wru.async(function () {
+        document.body.removeChild(this);
+        wru.assert('OK');
+      });
+      customElements.define('once-attached', OnceAttached);
+      var el = new OnceAttached;
+      setTimeout(function () {
+        document.body.appendChild(el);
+      }, 100);
+    }
+  }, {
+    name: 'V1: disconnectedCallback',
+    test: function () {
+      function OnceDetached() {
+        return HTMLElement.call(this);
+      }
+      setProto(OnceDetached, HTMLElement);
+      OnceDetached.prototype.disconnectedCallback = wru.async(function () {
+        wru.assert('OK');
+      });
+      customElements.define('once-detached', OnceDetached);
+      var el = document.body.appendChild(new OnceDetached);
+      setTimeout(function () {
+        document.body.removeChild(el);
+      }, 100);
+    }
+  }, {
+    name: 'V1: attributeChangedCallback',
+    test: function () {
+      var args = [];
+      function OnAttrModified() {
+        return HTMLElement.call(this);
+      }
+      OnAttrModified.observedAttributes = ['test'];
+      setProto(OnAttrModified, HTMLElement);
+      OnAttrModified.prototype.attributeChangedCallback = function () {
+        args.push(arguments);
+      };
+      customElements.define('on-attr-modified', OnAttrModified);
+      var el = document.body.appendChild(new OnAttrModified);
+      el.setAttribute('nope', 'nope');
+      el.setAttribute('test', 'attr');
+      setTimeout(wru.async(function () {
+        document.body.removeChild(el);
+        wru.assert(
+          args.length === 1 &&
+          args[0][0] === 'test' &&
+          args[0][1] == null &&
+          args[0][2] === 'attr'
+        );
+      }), 100);
+    }
+  }, {
+    name: 'V1: preserved instanceof',
+    test: function () {
+      wru.assert(document.createElement('button') instanceof HTMLButtonElement);
+    }
+  }, {
+    name: 'V1: attributes notified on bootstrap',
+    test: function () {
+      var notification;
+      function AttributesNotified(self) {
+        return HTMLElement.call(this, self);
+      }
+      AttributesNotified.observedAttributes = ['some'];
+      setProto(AttributesNotified, HTMLElement);
+      AttributesNotified.prototype.attributeChangedCallback = function (name, oldValue, newValue) {
+        notification = {
+          name: name,
+          oldValue: oldValue,
+          newValue: newValue
+        };
+      };
+      AttributesNotified.prototype.connectedCallback = wru.async(function () {
+        this.parentNode.removeChild(this);
+        wru.assert(
+          notification.name === 'some' &&
+          notification.oldValue === null &&
+          notification.newValue === 'thing'
+        );
+      });
+      setTimeout(function () {
+        var div = document.body.appendChild(document.createElement('div'));
+        div.innerHTML = '<attributes-modified some="thing">test</attributes-modified>';
+        customElements.define('attributes-modified', AttributesNotified);
+      });
+    }
+  },
+  {
+    name: "V0: main",
     test: function () {
       wru.assert('registerElement exists', document.registerElement);
       var XDirect = window.XDirect = document.registerElement(
@@ -85,7 +262,7 @@ wru.test(typeof document === 'undefined' ? [] : [
 
     }
   },{
-    name: 'as XDirect constructor',
+    name: 'V0: as XDirect constructor',
     test: function () {
       var node = document.body.appendChild(new XDirect);
       wru.assert('right name', node.nodeName.toUpperCase() === 'X-DIRECT');
@@ -97,7 +274,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       );
     }
   },{
-    name: 'as XIndirect constructor',
+    name: 'V0: as XIndirect constructor',
     test: function () {
       var node = document.body.appendChild(new XIndirect);
       wru.assert('right name', node.nodeName.toUpperCase() === 'DIV');
@@ -110,7 +287,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       );
     }
   },{
-    name: 'as &lt;x-direct&gt; innerHTML',
+    name: 'V0: as &lt;x-direct&gt; innerHTML',
     test: function () {
       var node = document.body.appendChild(document.createElement('div'));
       node.innerHTML = '<x-direct></x-direct>';
@@ -126,7 +303,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 20);
     }
   },{
-    name: 'as &lt;div is="x-indirect"&gt; innerHTML',
+    name: 'V0: as &lt;div is="x-indirect"&gt; innerHTML',
     test: function () {
       var node = document.body.appendChild(document.createElement('div'));
       node.innerHTML = '<div is="x-indirect"></div>';
@@ -143,7 +320,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 20);
     }
   },{
-    name: 'as createElement(x-direct)',
+    name: 'V0: as createElement(x-direct)',
     test: function () {
       var node = document.body.appendChild(document.createElement('div')).appendChild(
         document.createElement('x-direct')
@@ -159,7 +336,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 20);
     }
   },{
-    name: 'as createElement(div, x-indirect)',
+    name: 'V0: as createElement(div, x-indirect)',
     test: function () {
       var node = document.body.appendChild(document.createElement('div')).appendChild(
         document.createElement('div', 'x-indirect')
@@ -176,7 +353,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 20);
     }
   },{
-    name: 'attributes',
+    name: 'V0: attributes',
     test: function () {
       var args, info;
       var node = document.createElement('x-direct');
@@ -210,7 +387,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 20);
     }
   },{
-    name: 'offline',
+    name: 'V0: offline',
     test: function () {
       var node = document.createElement('x-direct');
       node.setAttribute('what', 'ever');
@@ -237,7 +414,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 20);
     }
   },{
-    name: 'nested',
+    name: 'V0: nested',
     test: function () {
       var
         args,
@@ -267,7 +444,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 20);
     }
   },{
-    name: 'className',
+    name: 'V0: className',
     test: function () {
       // online for className, needed by IE8
       var args, info, node = document.body.appendChild(document.createElement('x-direct'));
@@ -291,7 +468,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 20);
     }
   },{
-    name: 'registered after',
+    name: 'V0: registered after',
     test: function () {
       var
         node = document.body.appendChild(
@@ -355,7 +532,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 100);
     }
   },{
-    name: 'constructor',
+    name: 'V0: constructor',
     test: function () {
       var XEL, runtime, xEl = document.body.appendChild(
         document.createElement('x-el-created')
@@ -383,7 +560,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 100);
     }
   },{
-    name: 'simulating a table element',
+    name: 'V0: simulating a table element',
     test: function () {
       if (window.HTMLTableElement && 'createCaption' in HTMLTableElement.prototype) {
         var HiTable = document.registerElement(
@@ -400,7 +577,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }
     }
   },{
-    name: 'if registered one way, cannot be registered another way',
+    name: 'V0: if registered one way, cannot be registered another way',
     test: function () {
       var failed = false;
       document.registerElement(
@@ -436,7 +613,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       wru.assert('unable to register TAG after IS', failed);
     }
   },{
-    name: 'is="type" is a setup for known extends only',
+    name: 'V0: is="type" is a setup for known extends only',
     test: function () {
       var divTriggered = false;
       var spanTriggered = false;
@@ -472,7 +649,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 100);
     }
   }, {
-    name: 'nested CustomElement',
+    name: 'V0: nested CustomElement',
     test: function () {
       var a = new XDirect();
       var b = new XDirect();
@@ -494,7 +671,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 100);
     }
   }, {
-    name: 'cannot extend a registered element',
+    name: 'V0: cannot extend a registered element',
     test: function () {
       var ok = false, ABC1 = document.registerElement('abc-1', {
         prototype: Object.create(HTMLElement.prototype)
@@ -510,7 +687,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       wru.assert('unable to create an element extending a custom one', ok);
     }
   }, {
-    name: 'do not invoke if attribute had same value',
+    name: 'V0: do not invoke if attribute had same value',
     test: function () {
       var
         info = [],
@@ -542,7 +719,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       }), 100);
     }
   }, {
-    name: 'remove more than one CustomElement',
+    name: 'V0: remove more than one CustomElement',
     test: function () {
       var a = new XDirect();
       var b = new XDirect();
@@ -567,178 +744,6 @@ wru.test(typeof document === 'undefined' ? [] : [
           );
         }), 100);
       }), 100);
-    }
-  }, {
-    name: 'V1',
-    test: function () {
-      wru.assert(typeof customElements === 'object');
-    }
-  }, {
-    name: 'use extended classes to register',
-    test: function () {
-      function MyButton(self) {
-        // needed to upgrade the element
-        self = HTMLButtonElement.call(self || this);
-        self.setAttribute('cool', 'true');
-        return self;
-      }
-      function method() {}
-      MyButton.prototype = Object.create(HTMLButtonElement.prototype);
-      MyButton.prototype.constructor = MyButton;
-      MyButton.prototype.method = method;
-      customElements.define('my-button', MyButton, {'extends': 'button'});
-      var myButton = new MyButton();
-      wru.assert('prototype inherited', myButton.method === method);
-      setTimeout(wru.async(function () {
-        wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
-      }), 100);
-    }
-  }, {
-    name: 'use extended to register and DOM to initialize',
-    test: function () {
-      var onceCreated = wru.async(function (myButton) {
-        document.body.removeChild(myButton);
-        wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
-        wru.assert('prototype inherited', myButton.method === method);
-      });
-      // no need to reassign self if upgraded via dom
-      function MyOtherButton(self) {
-        HTMLButtonElement.call(self);
-        self.setAttribute('cool', 'true');
-        setTimeout(function () {
-          onceCreated(self);
-        }, 100);
-      }
-      function method() {}
-      MyOtherButton.prototype = Object.create(HTMLButtonElement.prototype);
-      MyOtherButton.prototype.constructor = MyOtherButton;
-      MyOtherButton.prototype.method = method;
-      customElements.define('my-other-button', MyOtherButton, {'extends': 'button'});
-      document.body.appendChild(document.createElement('button', {is: 'my-other-button'}));
-    }
-  }, {
-    name: 'real classes',
-    test: function () {
-      try {
-        Function('wru', [
-          'class MyA extends HTMLAnchorElement { constructor(self) { self = super(self); self.setAttribute("ok", "1"); return self; } }',
-          'customElements.define("my-a", MyA, {"extends": "a"});',
-          'const myA = new MyA();',
-          'setTimeout(wru.async(function(){ wru.assert(myA.getAttribute("ok") === "1"); }), 100);'
-        ].join('\n')).call(this, wru);
-
-      } catch(meh) {}
-    }
-  }, {
-    name: 'customElements.whenDefined',
-    test: function () {
-      function HereWeGo() {}
-      HereWeGo.prototype = Object.create(HTMLElement.prototype);
-      HereWeGo.prototype.constructor = HereWeGo;
-      customElements.whenDefined('here-we-go').then(wru.async(function () {
-        wru.assert(customElements.get('here-we-go') === HereWeGo);
-      }));
-      setTimeout(function () {
-        customElements.define('here-we-go', HereWeGo);
-      }, 100);
-    }
-  }, {
-    name: 'connectedCallback',
-    test: function () {
-      function OnceAttached(self) {
-        return HTMLElement.call(this, self);
-      }
-      OnceAttached.prototype = Object.create(HTMLElement.prototype);
-      OnceAttached.prototype.constructor = OnceAttached;
-      OnceAttached.prototype.connectedCallback = wru.async(function () {
-        document.body.removeChild(this);
-        wru.assert('OK');
-      });
-      customElements.define('once-attached', OnceAttached);
-      var el = new OnceAttached;
-      setTimeout(function () {
-        document.body.appendChild(el);
-      }, 100);
-    }
-  }, {
-    name: 'disconnectedCallback',
-    test: function () {
-      function OnceDetached() {
-        return HTMLElement.call(this);
-      }
-      OnceDetached.prototype = Object.create(HTMLElement.prototype);
-      OnceDetached.prototype.constructor = OnceDetached;
-      OnceDetached.prototype.disconnectedCallback = wru.async(function () {
-        wru.assert('OK');
-      });
-      customElements.define('once-detached', OnceDetached);
-      var el = document.body.appendChild(new OnceDetached);
-      setTimeout(function () {
-        document.body.removeChild(el);
-      }, 100);
-    }
-  }, {
-    name: 'attributeChangedCallback',
-    test: function () {
-      var args = [];
-      function OnAttrModified() {
-        return HTMLElement.call(this);
-      }
-      OnAttrModified.observedAttributes = ['test'];
-      OnAttrModified.prototype = Object.create(HTMLElement.prototype);
-      OnAttrModified.prototype.constructor = OnAttrModified;
-      OnAttrModified.prototype.attributeChangedCallback = function () {
-        args.push(arguments);
-      };
-      customElements.define('on-attr-modified', OnAttrModified);
-      var el = document.body.appendChild(new OnAttrModified);
-      el.setAttribute('nope', 'nope');
-      el.setAttribute('test', 'attr');
-      setTimeout(wru.async(function () {
-        document.body.removeChild(el);
-        wru.assert(
-          args.length === 1 &&
-          args[0][0] === 'test' &&
-          args[0][1] == null &&
-          args[0][2] === 'attr'
-        );
-      }), 100);
-    }
-  }, {
-    name: 'preserved instanceof',
-    test: function () {
-      wru.assert(document.createElement('button') instanceof HTMLButtonElement);
-    }
-  }, {
-    name: 'attributes notified on bootstrap',
-    test: function () {
-      var notification;
-      function AttributesNotified(self) {
-        return HTMLElement.call(this, self);
-      }
-      AttributesNotified.observedAttributes = ['some'];
-      AttributesNotified.prototype = Object.create(HTMLElement.prototype);
-      AttributesNotified.prototype.constructor = AttributesNotified;
-      AttributesNotified.prototype.attributeChangedCallback = function (name, oldValue, newValue) {
-        notification = {
-          name: name,
-          oldValue: oldValue,
-          newValue: newValue
-        };
-      };
-      AttributesNotified.prototype.connectedCallback = wru.async(function () {
-        this.parentNode.removeChild(this);
-        wru.assert(
-          notification.name === 'some' &&
-          notification.oldValue === null &&
-          notification.newValue === 'thing'
-        );
-      });
-      setTimeout(function () {
-        var div = document.body.appendChild(document.createElement('div'));
-        div.innerHTML = '<attributes-modified some="thing">test</attributes-modified>';
-        customElements.define('attributes-modified', AttributesNotified);
-      });
     }
   }
 ]);
