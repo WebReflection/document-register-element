@@ -746,7 +746,7 @@ CustomElementRegistry.prototype = {
   define: usableCustomElements ?
     function (name, Class, options) {
       if (options) {
-        define(name, Class, options);
+        defineElement(name, Class, options);
       } else {
         customElements.define(name, Class);
         name = name.toUpperCase();
@@ -757,7 +757,7 @@ CustomElementRegistry.prototype = {
         nodeNames.set(Class, name);
       }
     } :
-    define,
+    defineElement,
   get: usableCustomElements ?
     function (name) {
       return customElements.get(name) || get(name);
@@ -773,7 +773,7 @@ CustomElementRegistry.prototype = {
     whenDefined
 };
 
-function define(name, Class, options) {
+function defineElement(name, Class, options) {
   var
     is = options && options[EXTENDS] || '',
     CProto = Class.prototype,
