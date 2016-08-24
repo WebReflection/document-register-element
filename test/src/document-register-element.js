@@ -560,7 +560,7 @@ if (!(REGISTER_ELEMENT in document)) {
 
   document.createElement = (patchedCreateElement = function (localName, typeExtension) {
     var
-      is = typeof typeExtension === 'string' ? typeExtension : '',
+      is = getIs(typeExtension),
       node = is ?
         createElement.call(document, localName, secondArgument(is)) :
         createElement.call(document, localName),
@@ -845,6 +845,11 @@ function get(name) {
   return info && info.constructor;
 }
 
+function getIs(options) {
+  return typeof options === 'string' ?
+      options : (options && options.is || '');
+}
+
 function notifyAttributes(self) {
   var
     callback = self[ATTRIBUTE_CHANGED_CALLBACK],
@@ -919,8 +924,7 @@ function polyfillV1() {
     patchClass(Classes[i])
   ) {}
   (document.createElement = function (name, options) {
-    var is = typeof options === 'string' ?
-      options : (options && options.is || '');
+    var is = getIs(options);
     return is ?
       patchedCreateElement.call(this, name, secondArgument(is)) :
       patchedCreateElement.call(this, name);
