@@ -1071,8 +1071,14 @@ function onDOMAttrModified(e) {
   if (notFromInnerHTMLHelper &&
       (!target || target === node) &&
       node[ATTRIBUTE_CHANGED_CALLBACK] &&
-      attrName !== 'style' &&
-      e.prevValue !== e.newValue) {
+      attrName !== 'style' && (
+        e.prevValue !== e.newValue ||
+        // IE9 and IE10 gotcha
+        e.newValue === '' && (
+          attrChange === e[ADDITION] ||
+          attrChange === e[REMOVAL]
+        )
+  )) {
     node[ATTRIBUTE_CHANGED_CALLBACK](
       attrName,
       attrChange === e[ADDITION] ? null : e.prevValue,
