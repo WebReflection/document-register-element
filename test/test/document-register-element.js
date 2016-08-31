@@ -175,8 +175,34 @@ wru.test(typeof document === 'undefined' ? [] : [
         customElements.define('attributes-modified', AttributesNotified);
       });
     }
-  },
-  {
+  }, {
+    name: "V0: attributeChangedCallback with empty values",
+    test: function () {
+      var done = wru.async(function (condition) {
+        wru.assert(condition);
+      });
+      document.registerElement(
+        'attr-changed', {
+        prototype: Object.create(
+          HTMLElement.prototype, {
+            attributeChangedCallback: {value: function(
+              name,           // always present
+              previousValue,  // if null, it's a new attribute
+              value           // if null, it's a removed attribute
+            ) {
+              done(
+                name === 'test' &&
+                previousValue === null &&
+                value === ''
+              );
+            }}
+          }
+        )
+      });
+      var el = document.createElement('attr-changed');
+      document.body.appendChild(el).setAttribute('test', '');
+    }
+  }, {
     name: "V0: main",
     test: function () {
       wru.assert('registerElement exists', document.registerElement);
