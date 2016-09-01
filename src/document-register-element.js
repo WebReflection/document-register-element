@@ -643,23 +643,25 @@ function onDOMAttrModified(e) {
     node = e.currentTarget,
     attrChange = e.attrChange,
     attrName = e.attrName,
-    target = e.target
+    target = e.target,
+    addition = e[ADDITION] || 2,
+    removal = e[REMOVAL] || 3
   ;
   if (notFromInnerHTMLHelper &&
       (!target || target === node) &&
       node[ATTRIBUTE_CHANGED_CALLBACK] &&
       attrName !== 'style' && (
         e.prevValue !== e.newValue ||
-        // IE9 and IE10 gotcha
+        // IE9, IE10, and Opera 12 gotcha
         e.newValue === '' && (
-          attrChange === e[ADDITION] ||
-          attrChange === e[REMOVAL]
+          attrChange === addition ||
+          attrChange === removal
         )
   )) {
     node[ATTRIBUTE_CHANGED_CALLBACK](
       attrName,
-      attrChange === e[ADDITION] ? null : e.prevValue,
-      attrChange === e[REMOVAL] ? null : e.newValue
+      attrChange === addition ? null : e.prevValue,
+      attrChange === removal ? null : e.newValue
     );
   }
 }
