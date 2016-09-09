@@ -1,0 +1,1 @@
+function installCustomElements(window, document, Object){'use strict';

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-define(function(){'use strict';
+function installCustomElements(window, document, Object){'use strict';
 var htmlClass = (function (info) {
   // (C) Andrea Giammarchi - @WebReflection - MIT Style
   var
@@ -1390,4 +1390,5 @@ try {
     return {is: is};
   };
 }
-});
+
+}

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-(function(window, document, Object, REGISTER_ELEMENT){'use strict';
+(function(window, document, Object){'use strict';
 var htmlClass = (function (info) {
   // (C) Andrea Giammarchi - @WebReflection - MIT Style
   var
@@ -429,6 +429,7 @@ var htmlClass = (function (info) {
 // and its .max.js counter part
 
 var
+  REGISTER_ELEMENT = 'registerElement',
   // IE < 11 only + old WebKit for attributes + feature detection
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
 
@@ -1390,4 +1391,4 @@ try {
   };
 }
 
-}(window, document, Object, 'registerElement'));
+}(window, document, Object));

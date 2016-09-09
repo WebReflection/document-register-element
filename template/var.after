@@ -1,2 +1,2 @@
 
-}(window, document, Object, 'registerElement'));
+}(window, document, Object));

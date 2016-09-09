@@ -1,7 +1,9 @@
-.PHONY: build htmlclass duk var node amd size hint clean test web preview pages dependencies
+.PHONY: build htmlclass duk var installable node amd size hint clean test web preview pages dependencies
 
 # repository name
 REPO = document-register-element
+
+INSTALLABLE = install-custom-elements
 
 # make var files
 VAR = src/html-class.js src/$(REPO).js
@@ -25,6 +27,7 @@ build:
 	make clean
 	make htmlclass
 	make var
+	make installable
 	make innerHTML
 #	make ie8
 	make dreie8
@@ -47,6 +50,15 @@ var:
 	cat template/copyright build/no-copy.$(REPO).js >build/$(REPO).js
 	rm build/no-copy.$(REPO).max.js
 	rm build/no-copy.$(REPO).js
+
+installable:
+	mkdir -p build
+	cat template/install.before $(VAR) template/install.after >build/no-copy.$(INSTALLABLE).max.js
+	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.$(INSTALLABLE).max.js >build/no-copy.$(INSTALLABLE).js
+	cat template/license.before LICENSE.txt template/license.after build/no-copy.$(INSTALLABLE).max.js >build/$(INSTALLABLE).max.js
+	cat template/copyright build/no-copy.$(INSTALLABLE).js >build/$(INSTALLABLE).js
+	rm build/no-copy.$(INSTALLABLE).max.js
+	rm build/no-copy.$(INSTALLABLE).js
 
 # build innerHTML function helper
 innerHTML:

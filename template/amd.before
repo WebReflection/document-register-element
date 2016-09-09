@@ -1,3 +1,1 @@
 define(function(){'use strict';
-
-var REGISTER_ELEMENT = 'registerElement';

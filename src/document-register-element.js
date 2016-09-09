@@ -6,6 +6,7 @@
 // and its .max.js counter part
 
 var
+  REGISTER_ELEMENT = 'registerElement',
   // IE < 11 only + old WebKit for attributes + feature detection
   EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
 
