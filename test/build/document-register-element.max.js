@@ -1193,13 +1193,13 @@ CustomElementRegistry.prototype = {
       if (options) {
         CERDefine(name, Class, options);
       } else {
-        customElements.define(name, Class);
-        name = name.toUpperCase();
-        constructors[name] = {
+        var NAME = name.toUpperCase();
+        constructors[NAME] = {
           constructor: Class,
-          create: [name]
+          create: [NAME]
         };
-        nodeNames.set(Class, name);
+        nodeNames.set(Class, NAME);
+        customElements.define(name, Class);
       }
     } :
     CERDefine,
@@ -1349,7 +1349,7 @@ function polyfillV1() {
         }
       }
     },
-    Classes = htmlClass.get(/^HTML/),
+    Classes = htmlClass.get(/^HTML[A-Z]*[a-z]/),
     i = Classes.length;
     i--;
     patchClass(Classes[i])
@@ -1362,24 +1362,34 @@ function polyfillV1() {
   });
 }
 
+// if customElements is not there at all
 if (!customElements) polyfillV1();
-try {
-  (function (DRE, options, name) {
-    options[EXTENDS] = 'a';
-    DRE.prototype = HTMLAnchorElement.prototype;
-    customElements.define(name, DRE, options);
-    if (document.createElement(name).getAttribute('is') !== name) {
-      throw options;
-    }
-  }(
-    function DRE() {
-      return Reflect.construct(HTMLAnchorElement, [], DRE);
-    },
-    {},
-    'document-register-element-a'
-  ));
-} catch(o_O) {
-  polyfillV1();
+else {
+  // if available test extends work as expected
+  try {
+    (function (DRE, options, name) {
+      options[EXTENDS] = 'a';
+      DRE.prototype = create(HTMLAnchorElement.prototype);
+      DRE.prototype.constructor = DRE;
+      window.customElements.define(name, DRE, options);
+      if (
+        getAttribute.call(document.createElement('a', {is: name}), 'is') !== name ||
+        (usableCustomElements && getAttribute.call(new DRE(), 'is') !== name)
+      ) {
+        throw options;
+      }
+    }(
+      function DRE() {
+        return Reflect.construct(HTMLAnchorElement, [], DRE);
+      },
+      {},
+      'document-register-element-a'
+    ));
+  } catch(o_O) {
+    // or force the polyfill if not
+    // and keep internal original reference
+    polyfillV1();
+  }
 }
 
 try {
