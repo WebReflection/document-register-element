@@ -1,13 +1,9 @@
-
-// DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
-// THIS IS A PROJECT BASED ON A BUILD SYSTEM
-// THIS FILE IS JUST WRAPPED UP RESULTING IN
-// build/document-register-element.js
-// and its .max.js counter part
-
 var
+  // V0 polyfill entry
+  REGISTER_ELEMENT = 'registerElement',
+
   // IE < 11 only + old WebKit for attributes + feature detection
-  EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
+  EXPANDO_UID = '__' + REGISTER_ELEMENT + (window.Math.random() * 10e4 >> 0),
 
   // shortcuts and costants
   ADD_EVENT_LISTENER = 'addEventListener',

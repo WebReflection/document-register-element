@@ -1,1 +1,6 @@
-;
+
+}
+
+installCustomElements(global);
+
+module.exports = installCustomElements;

@@ -1,10 +1,10 @@
-.PHONY: build htmlclass duk var node amd size hint clean test web preview pages dependencies
+.PHONY: build indentation htmlclass duk var node amd size hint clean test web preview pages dependencies
 
 # repository name
 REPO = document-register-element
 
 # make var files
-VAR = src/html-class.js src/$(REPO).js
+VAR = tmp/html-class.js tmp/$(REPO).js
 
 # make var files
 IE8 = src/$(REPO)-ie8.js
@@ -24,19 +24,27 @@ INNERHTML = src/innerHTML.js
 build:
 	make clean
 	make htmlclass
+	make indentation
 	make var
 	make innerHTML
 #	make ie8
 	make dreie8
-#	make node
+	make node
 	make amd
 	make test
 	make hint
 	make size
+	rm -rf ./tmp
 
 # build clean up htmlClass
 htmlclass:
 	cat node_modules/html-class/index.js | sed -e "s/'use strict';//" | sed -e 's/try { module.exports = htmlClass; } catch(meh) {}//' > src/html-class.js
+
+# build clean up htmlClass
+indentation:
+	mkdir -p tmp
+	node -e 'require("fs").writeFileSync("tmp/html-class.js", require("fs").readFileSync("src/html-class.js").toString().replace(/^/mg,"  "))'
+	node -e 'require("fs").writeFileSync("tmp/document-register-element.js", require("fs").readFileSync("src/document-register-element.js").toString().replace(/^/mg,"  "))'
 
 # build generic version
 var:

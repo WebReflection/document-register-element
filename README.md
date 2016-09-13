@@ -96,6 +96,9 @@ class MyElement extends HTMLCustomElement {
 }
 ```
 
+#### Inherited V0 Caveats
+Please keep in mind old gotchas with [innerHTML](https://github.com/WebReflection/document-register-element#using-innerhtml) or [other caveats](https://github.com/WebReflection/document-register-element#common-issues--caveat) are still valid.
+
 ### Tested On
 
 The [live test page](http://webreflection.github.io/document-register-element/test/) is here, containing all tests as listed in [the test file](test/document-register-element.js).

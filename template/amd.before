@@ -1,3 +1,13 @@
 define(function(){'use strict';
 
-var REGISTER_ELEMENT = 'registerElement';
+  // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
+  // THIS IS A PROJECT BASED ON A BUILD SYSTEM
+  // THIS FILE IS JUST WRAPPED UP RESULTING IN
+  // build/document-register-element.amd.js
+  // and its .max.amd.js counter part
+
+  var
+    document = window.document,
+    Object = window.Object
+  ;
+
