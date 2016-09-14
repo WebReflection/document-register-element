@@ -5,6 +5,7 @@ A stand-alone lightweight version of [Custom Elements V1](https://html.spec.what
 based on top, and compatible with, the battle-tested [Custom Elements V0](http://w3c.github.io/webcomponents/spec/custom/),
 already used in production with projects such [Google AMP HTML ⚡](https://github.com/ampproject/amphtml#amp-html-) and others.
 
+
 # What's new in Custom Elements v1
 The ability to extend by simply defining classes:
 ```js
@@ -57,6 +58,7 @@ md.setAttribute('test', 'nope');
 md.setAttribute('country', 'UK'); // country: UK
 ```
 
+
 # V1 Caveat
 The current standard cannot possibly be polifilled "*1:1*" with vanilla JavaScript because procedurally created instances need an upgrade.
 If the `constructor` is needed to setup nodes, there are two solutions:
@@ -78,6 +80,7 @@ class MyElement extends HTMLElement {
 }
 ```
 
+
 ### Skipping the caveat through `extends`
 ```js
 // base class to extend, same trick as before
@@ -96,8 +99,45 @@ class MyElement extends HTMLCustomElement {
 }
 ```
 
+
 #### Inherited V0 Caveats
 Please keep in mind old gotchas with [innerHTML](https://github.com/WebReflection/document-register-element#using-innerhtml) or [other caveats](https://github.com/WebReflection/document-register-element#common-issues--caveat) are still valid.
+
+
+### How
+
+`npm install document-register-element` will put [build/document-register-element.js](build/document-register-element.js) inside `node_modules/document-register-element/` of your project.
+
+If you're working with a tool like Browserify, Webpack, RequireJS, etc, you can
+import the script at some point before you need to use the API.
+
+```js
+import 'document-register-element' // ES2015
+// or
+require('document-register-element') // CommonJS
+// or
+define(['document-register-element'], function() {}) // AMD
+```
+
+If you're not using a module system, just place
+`node_modules/document-register-element/build/document-register-element.js`
+somewhere where it will be served by your server, then put
+
+```html
+<script src="/path/to/document-register-element.js"></script>
+```
+
+in your head element and you should be good to go.
+
+
+#### via CDN
+Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following an example on how to include it.
+```html
+<script
+  src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.1.1/document-register-element.js"
+>/* W3C Custom Elements */</script>
+```
+
 
 ### Tested On
 
@@ -126,39 +166,6 @@ The following list of **mobile** OS has been successfully tested:
 
 The good old [BB OS 7](http://us.blackberry.com/software/smartphones/blackberry-7-os.html) is the only one failing the test with `className` which is not notified as `attributeChanged` when it's changed. This means BB OS 7 will also fail with `id`, however changing `id` at runtime has never been a common or useful pattern.
 
-
-### How
-
-`npm install document-register-element` will put [build/document-register-element.js](build/document-register-element.js) inside `node_modules/document-register-element/` of your project.
-
-If you're working with a tool like Browserify, Webpack, RequireJS, etc, you can
-import the script at some point before you need to use the API.
-
-```js
-import 'document-register-element' // ES2015
-// or
-require('document-register-element') // CommonJS
-// or
-define(['document-register-element'], function() {}) // AMD
-```
-
-If you're not using a module system, just place
-`node_modules/document-register-element/build/document-register-element.js`
-somewhere where it will be served by your server, then put
-
-```html
-<script src="/path/to/document-register-element.js"></script>
-```
-
-in your head element and you should be good to go.
-
-#### via CDN
-Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following an example on how to include it.
-```html
-<script
-  src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.0.7/document-register-element.js"
->/* W3C Custom Elements */</script>
-```
 
 ### TL;DR does it work ?
 If you [see the first clock ticking](http://webreflection.github.io/document-register-element/test/examples/x-clock.html), the TL;DR answer is yes.
@@ -302,7 +309,6 @@ which aim is to make **off-line custom elements creation** possible using templa
 The helper is a simple `innerHTML` function that returns the given node, after setting `innerHTML` and, in case the polyfill is used, initialize nodes.
 
 This helper is needed in order to be aligned with native implementations, but please remember that `createdCallback` could be asynchronous, even if triggered ASAP after injecting HTML through this function.
-
 
 
 #### Changing the `style` property

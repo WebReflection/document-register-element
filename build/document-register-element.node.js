@@ -1267,13 +1267,13 @@ function installCustomElements(window) {'use strict';
       });
     }
     if (is) definition[EXTENDS] = is;
-    document[REGISTER_ELEMENT](name, definition);
     name = name.toUpperCase();
     constructors[name] = {
       constructor: Class,
       create: is ? [is, secondArgument(name)] : [name]
     };
     nodeNames.set(Class, name);
+    document[REGISTER_ELEMENT](name.toLowerCase(), definition);
     whenDefined(name);
     waitingList[name].r();
   }
