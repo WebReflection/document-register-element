@@ -145,7 +145,10 @@ preview:
 
 pages:
 	git pull --rebase
+	make htmlclass
+	make indentation
 	make var
+	make innerHTML
 	mkdir -p ~/tmp
 	mkdir -p ~/tmp/$(REPO)
 	cp .gitignore ~/tmp/
@@ -166,6 +169,7 @@ pages:
 	git push
 	git checkout master
 	rm -r ~/tmp/$(REPO)
+	rm -rf ./tmp
 
 # modules used in this repo
 dependencies:
