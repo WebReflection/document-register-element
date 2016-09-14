@@ -833,13 +833,20 @@ function CERDefine(name, Class, options) {
     });
   }
   if (is) definition[EXTENDS] = is;
+<<<<<<< HEAD
+=======
+  document[REGISTER_ELEMENT](name, definition);
+>>>>>>> c989a2feecb80ba9e7396b9e215978eb5c64385d
   name = name.toUpperCase();
   constructors[name] = {
     constructor: Class,
     create: is ? [is, secondArgument(name)] : [name]
   };
   nodeNames.set(Class, name);
+<<<<<<< HEAD
   document[REGISTER_ELEMENT](name.toLowerCase(), definition);
+=======
+>>>>>>> c989a2feecb80ba9e7396b9e215978eb5c64385d
   whenDefined(name);
   waitingList[name].r();
 }
