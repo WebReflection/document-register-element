@@ -21,13 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-define(function(){'use strict';
+function installCustomElements(window) {'use strict';
 
   // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
   // THIS IS A PROJECT BASED ON A BUILD SYSTEM
   // THIS FILE IS JUST WRAPPED UP RESULTING IN
-  // build/document-register-element.amd.js
-  // and its .max.amd.js counter part
+  // build/document-register-element.node.js
 
   var
     document = window.document,
@@ -1407,4 +1406,9 @@ define(function(){'use strict';
       return {is: is};
     };
   }
-  });
+  
+}
+
+installCustomElements(global);
+
+module.exports = installCustomElements;

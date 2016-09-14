@@ -1,13 +1,9 @@
-
-// DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
-// THIS IS A PROJECT BASED ON A BUILD SYSTEM
-// THIS FILE IS JUST WRAPPED UP RESULTING IN
-// build/document-register-element.js
-// and its .max.js counter part
-
 var
+  // V0 polyfill entry
+  REGISTER_ELEMENT = 'registerElement',
+
   // IE < 11 only + old WebKit for attributes + feature detection
-  EXPANDO_UID = '__' + REGISTER_ELEMENT + (Math.random() * 10e4 >> 0),
+  EXPANDO_UID = '__' + REGISTER_ELEMENT + (window.Math.random() * 10e4 >> 0),
 
   // shortcuts and costants
   ADD_EVENT_LISTENER = 'addEventListener',
@@ -560,7 +556,7 @@ if (!(REGISTER_ELEMENT in document)) {
 
   document.createElement = (patchedCreateElement = function (localName, typeExtension) {
     var
-      is = typeof typeExtension === 'string' ? typeExtension : '',
+      is = getIs(typeExtension),
       node = is ?
         createElement.call(document, localName, secondArgument(is)) :
         createElement.call(document, localName),
@@ -643,17 +639,25 @@ function onDOMAttrModified(e) {
     node = e.currentTarget,
     attrChange = e.attrChange,
     attrName = e.attrName,
-    target = e.target
+    target = e.target,
+    addition = e[ADDITION] || 2,
+    removal = e[REMOVAL] || 3
   ;
   if (notFromInnerHTMLHelper &&
       (!target || target === node) &&
       node[ATTRIBUTE_CHANGED_CALLBACK] &&
-      attrName !== 'style' &&
-      e.prevValue !== e.newValue) {
+      attrName !== 'style' && (
+        e.prevValue !== e.newValue ||
+        // IE9, IE10, and Opera 12 gotcha
+        e.newValue === '' && (
+          attrChange === addition ||
+          attrChange === removal
+        )
+  )) {
     node[ATTRIBUTE_CHANGED_CALLBACK](
       attrName,
-      attrChange === e[ADDITION] ? null : e.prevValue,
-      attrChange === e[REMOVAL] ? null : e.newValue
+      attrChange === addition ? null : e.prevValue,
+      attrChange === removal ? null : e.newValue
     );
   }
 }
@@ -762,13 +766,13 @@ CustomElementRegistry.prototype = {
       if (options) {
         CERDefine(name, Class, options);
       } else {
-        customElements.define(name, Class);
-        name = name.toUpperCase();
-        constructors[name] = {
+        var NAME = name.toUpperCase();
+        constructors[NAME] = {
           constructor: Class,
-          create: [name]
+          create: [NAME]
         };
-        nodeNames.set(Class, name);
+        nodeNames.set(Class, NAME);
+        customElements.define(name, Class);
       }
     } :
     CERDefine,
@@ -829,13 +833,13 @@ function CERDefine(name, Class, options) {
     });
   }
   if (is) definition[EXTENDS] = is;
-  document[REGISTER_ELEMENT](name, definition);
   name = name.toUpperCase();
   constructors[name] = {
     constructor: Class,
     create: is ? [is, secondArgument(name)] : [name]
   };
   nodeNames.set(Class, name);
+  document[REGISTER_ELEMENT](name.toLowerCase(), definition);
   whenDefined(name);
   waitingList[name].r();
 }
@@ -843,6 +847,11 @@ function CERDefine(name, Class, options) {
 function get(name) {
   var info = constructors[name.toUpperCase()];
   return info && info.constructor;
+}
+
+function getIs(options) {
+  return typeof options === 'string' ?
+      options : (options && options.is || '');
 }
 
 function notifyAttributes(self) {
@@ -913,38 +922,47 @@ function polyfillV1() {
         }
       }
     },
-    Classes = htmlClass.get(/^HTML/),
+    Classes = htmlClass.get(/^HTML[A-Z]*[a-z]/),
     i = Classes.length;
     i--;
     patchClass(Classes[i])
   ) {}
   (document.createElement = function (name, options) {
-    var is = typeof options === 'string' ?
-      options : (options && options.is || '');
+    var is = getIs(options);
     return is ?
       patchedCreateElement.call(this, name, secondArgument(is)) :
       patchedCreateElement.call(this, name);
   });
 }
 
+// if customElements is not there at all
 if (!customElements) polyfillV1();
-try {
-  (function (DRE, options, name) {
-    options[EXTENDS] = 'a';
-    DRE.prototype = HTMLAnchorElement.prototype;
-    customElements.define(name, DRE, options);
-    if (document.createElement(name).getAttribute('is') !== name) {
-      throw options;
-    }
-  }(
-    function DRE() {
-      return Reflect.construct(HTMLAnchorElement, [], DRE);
-    },
-    {},
-    'document-register-element-a'
-  ));
-} catch(o_O) {
-  polyfillV1();
+else {
+  // if available test extends work as expected
+  try {
+    (function (DRE, options, name) {
+      options[EXTENDS] = 'a';
+      DRE.prototype = create(HTMLAnchorElement.prototype);
+      DRE.prototype.constructor = DRE;
+      window.customElements.define(name, DRE, options);
+      if (
+        getAttribute.call(document.createElement('a', {is: name}), 'is') !== name ||
+        (usableCustomElements && getAttribute.call(new DRE(), 'is') !== name)
+      ) {
+        throw options;
+      }
+    }(
+      function DRE() {
+        return Reflect.construct(HTMLAnchorElement, [], DRE);
+      },
+      {},
+      'document-register-element-a'
+    ));
+  } catch(o_O) {
+    // or force the polyfill if not
+    // and keep internal original reference
+    polyfillV1();
+  }
 }
 
 try {

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SorTable Component</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lte IE 9]><script>(function(f){window.setTimeout=f(window.setTimeout);window.setInterval=f(window.setInterval)})(function(f){return function(c,t){var a=[].slice.call(arguments,2);return f(function(){c.apply(this,a)},t)}});</script><![endif]-->
+    <!--[if IE 8]><script src="//cdnjs.cloudflare.com/ajax/libs/ie8/0.2.9/ie8.js"></script><![endif]-->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/dom4/1.8.3/dom4.js"></script>
+    <!--[if IE 8]><script src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.1.0/dre-ie8-upfront-fix.js"></script><![endif]-->
+    <script src="js/document-register-element.js"></script>
+    <!--[if IE 8]>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-sham.min.js"></script>
+    <![endif]-->
+    <style>
+      table {
+        min-width: 300px;
+        font-family: sans-serif;
+      }
+      table [data-sort-by] {
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      table tr td:last-child {
+        text-align: right;
+      }
+    </style>
+    <script>
+      var utils = {
+        sortByNameLength: function (a, b) {
+          if (window.console) console.log(a, b);
+          return a.length - b.length;
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <table is="sor-table">
+      <caption><small>Some generic table data</small></caption>
+      <tr>
+        <th data-sort-by="utils.sortByNameLength">Name</th>
+        <th data-sort-by data-sort-order="desc">Age</th>
+      </tr>
+      <tr>
+        <td>Tybalt</td>
+        <td>23</td>
+      </tr>
+      <tr>
+        <td>Rosaline</td>
+        <td>27</td>
+      </tr>
+      <tr>
+        <td>Benvolio</td>
+        <td>21</td>
+      </tr>
+      <tr>
+        <td>Juliet</td>
+        <td>20</td>
+      </tr>
+      <tr>
+        <td>Romeo</td>
+        <td>23</td>
+      </tr>
+    </table>
+    <script async src="js/sor-table.js"></script>
+  </body>
+</html>
