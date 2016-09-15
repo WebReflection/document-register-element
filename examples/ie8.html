@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>IE8 shim/sham test</title>
+    <!--[if IE 8]>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.js"></script>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-sham.js"></script>
+    <![endif]-->
+    <script>
+    this.onload = function () {
+      Array.prototype.slice.call(document.querySelectorAll('*'));
+    };
+    </script>
+  </head>
+  <body></body>
+</html>
