@@ -8,6 +8,14 @@
         this.appendChild(row);
     }
 
+    // es5 shim is broken
+    function slice(what, start) {
+        for (var j = 0, i = start || 0, arr = []; i < what.length; i++) {
+            arr[j++] = what[i];
+        }
+        return arr;
+    }
+
     function SorTable(self) {
         self = HTMLTableElement.call(this, self);
         for (var
@@ -47,10 +55,7 @@
                             return a === b ? 0 :(a < b ? -1 : 1);
                         }
                 ;
-                arr.sort.call(
-                    arr.slice.call(
-                        tbody.querySelectorAll('tr'), 1
-                    ),
+                slice(tbody.querySelectorAll('tr'), 1).sort(
                     function (a, b) {
                         return direction * method.call(
                             self,
