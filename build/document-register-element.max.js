@@ -918,6 +918,23 @@ THE SOFTWARE.
               subtree: true
             }
           );
+          // patch attachShadow to list for mutations in shadow dom
+          var _origAttachShadow = Element.prototype.attachShadow;
+          if (_origAttachShadow) {
+            Object.defineProperty(Element.prototype, 'attachShadow', {
+              value: function(options) {
+                var root = _origAttachShadow.call(this, options);
+                observer.observe(
+                  root,
+                  {
+                    childList: true,
+                    subtree: true
+                  }
+                );
+                return root;
+              },
+            });
+          }
         } else {
           asapQueue = [];
           document[ADD_EVENT_LISTENER]('DOMNodeInserted', onDOMNode(ATTACHED));
