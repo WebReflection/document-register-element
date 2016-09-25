@@ -209,6 +209,8 @@ var
   createElement = document.createElement,
   patchedCreateElement = createElement,
 
+  attachShadow = HTMLElementPrototype.attachShadow,
+
   // shared observer for all attributes
   attributesObserver = MutationObserver && {
     attributes: true,
@@ -483,6 +485,20 @@ if (!(REGISTER_ELEMENT in document)) {
             subtree: true
           }
         );
+        // patch attachShadow to list for mutations in shadow dom
+        if (attachShadow) {
+          HTMLElementPrototype.attachShadow = function(options) {
+            var root = attachShadow.call(this, options);
+            observer.observe(
+              root,
+              {
+                childList: true,
+                subtree: true
+              }
+            );
+            return root;
+          };
+        }
       } else {
         asapQueue = [];
         document[ADD_EVENT_LISTENER]('DOMNodeInserted', onDOMNode(ATTACHED));
