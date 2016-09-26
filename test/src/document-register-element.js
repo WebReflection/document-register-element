@@ -198,6 +198,7 @@ var
 
   targets = IE8 && [],
 
+  attachShadow = HTMLElementPrototype.attachShadow,
   cloneNode = HTMLElementPrototype.cloneNode,
   dispatchEvent = HTMLElementPrototype.dispatchEvent,
   getAttribute = HTMLElementPrototype.getAttribute,
@@ -242,6 +243,7 @@ var
   callDOMAttrModified,
   getAttributesMirror,
   observer,
+  observe,
 
   // based on setting prototype capability
   // will check proto or the expando attribute
@@ -476,13 +478,22 @@ if (!(REGISTER_ELEMENT in document)) {
             }
           });
         }(executeAction(ATTACHED), executeAction(DETACHED)));
-        observer.observe(
-          document,
-          {
-            childList: true,
-            subtree: true
-          }
-        );
+        observe = function (node) {
+          observer.observe(
+            node,
+            {
+              childList: true,
+              subtree: true
+            }
+          );
+          return node;
+        };
+        observe(document);
+        if (attachShadow) {
+          HTMLElementPrototype.attachShadow = function () {
+            return observe(attachShadow.apply(this, arguments));
+          };
+        }
       } else {
         asapQueue = [];
         document[ADD_EVENT_LISTENER]('DOMNodeInserted', onDOMNode(ATTACHED));
