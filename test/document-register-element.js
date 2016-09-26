@@ -287,7 +287,22 @@ wru.test(typeof document === 'undefined' ? [] : [
       );
 
     }
-  },{
+  }, {
+    name: 'V0: Observe changes when attached to V1 Shadow Root',
+    test: function () {
+      if(!HTMLElement.prototype.attachShadow) return;
+      var
+        a = new XDirect(),
+        parentNode = document.createElement('div'),
+        root = parentNode.attachShadow({ mode: 'open' })
+      ;
+      root.appendChild(a);
+      setTimeout(wru.async(function () {
+        wru.assert('node created', a._info[0].type === 'created');
+        wru.assert('node attached', a._info[1].type === 'attached');
+      }), 100);
+    }
+  }, {
     name: 'V0: as XDirect constructor',
     test: function () {
       var node = document.body.appendChild(new XDirect);
