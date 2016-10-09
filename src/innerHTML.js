@@ -90,4 +90,4 @@ var innerHTML = (function (document) {
     ) {}
     return el;
   });
-}(document));
+}(this.document));
