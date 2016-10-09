@@ -78,4 +78,4 @@ wrapMethod('removeChild');
 
 window[HTMLElement] = Element;
 
-}(window, Object, 'HTMLElement'));
+}(this, this.Object, 'HTMLElement'));

@@ -1419,4 +1419,4 @@ THE SOFTWARE.
     };
   }
   
-}(window));
+}(this));
