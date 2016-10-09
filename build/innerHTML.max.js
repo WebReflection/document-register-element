@@ -22,9 +22,9 @@ THE SOFTWARE.
 
 */
 // see https://github.com/WebReflection/document-register-element/issues/21#issuecomment-102020311
-var innerHTML = (function (document) {
+var innerHTML = (function (window) {
 
-  var
+  var document = window.document,
     EXTENDS = 'extends',
     register = document.registerElement,
     div = document.createElement('div'),
@@ -113,4 +113,4 @@ var innerHTML = (function (document) {
     ) {}
     return el;
   });
-}(this.document));
+}(this));
