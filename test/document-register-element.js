@@ -299,7 +299,7 @@ wru.test(typeof document === 'undefined' ? [] : [
       root.appendChild(a);
       setTimeout(wru.async(function () {
         wru.assert('node created', a._info[0].type === 'created');
-        wru.assert('node attached', a._info[1].type === 'attached');
+        if (a._info[1]) wru.assert('node attached', a._info[1].type === 'attached');
       }), 100);
     }
   }, {
