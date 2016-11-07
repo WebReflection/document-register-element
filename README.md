@@ -16,7 +16,7 @@ should be force-patched, the `pony` version of the module
 will not attempt to feature detect anything and it will only
 enrich the environment once invoked.
 
-```
+```js
 const installCE = require('document-register-element/pony');
 
 // by default, the second argument is 'auto'
