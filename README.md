@@ -6,6 +6,27 @@ based on top, and compatible with, the battle-tested [Custom Elements V0](http:/
 already used in production with projects such [Google AMP HTML ⚡](https://github.com/ampproject/amphtml#amp-html-) and others.
 
 
+### New Ponyfill in 1.3
+As discussed in issue #86 there is currently no way to require
+document-register-element polyfill without automatic
+feature detection and possible global context pollution.
+
+Since there could be some very specific case when the browser
+should be force-patched, the `pony` version of the module
+will not attempt to feature detect anything and it will only
+enrich the environment once invoked.
+
+```
+const installCE = require('document-register-element/pony');
+
+// by default, the second argument is 'auto'
+// but it could be also 'force'
+// which ignores feature detection and force
+// the polyfill version of CustomElements
+installCE(global, 'force');
+```
+
+
 # What's new in Custom Elements v1
 The ability to extend by simply defining classes:
 ```js
