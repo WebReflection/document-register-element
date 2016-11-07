@@ -21,7 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-function installCustomElements(window) {'use strict';
+// global window Object
+// optional polyfill info
+//    'auto' used by default, everything is feature detected
+//    'force' use the polyfill even if not fully needed
+function installCustomElements(window, polyfill) {'use strict';
 
   // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
   // THIS IS A PROJECT BASED ON A BUILD SYSTEM
@@ -432,7 +436,12 @@ function installCustomElements(window) {'use strict';
   }));
   
   
-    var
+    
+  // passed at runtime, configurable
+  // via nodejs module
+  if (!polyfill) polyfill = 'auto';
+  
+  var
     // V0 polyfill entry
     REGISTER_ELEMENT = 'registerElement',
   
@@ -512,7 +521,7 @@ function installCustomElements(window) {'use strict';
     fixGetClass = false,
     DRECEV1 = '__dreCEv1',
     customElements = window.customElements,
-    usableCustomElements = !!(
+    usableCustomElements = polyfill !== 'force' && !!(
       customElements &&
       customElements.define &&
       customElements.get &&
@@ -1381,7 +1390,7 @@ function installCustomElements(window) {'use strict';
   }
   
   // if customElements is not there at all
-  if (!customElements) polyfillV1();
+  if (!customElements || polyfill === 'force') polyfillV1();
   else {
     // if available test extends work as expected
     try {
@@ -1420,6 +1429,5 @@ function installCustomElements(window) {'use strict';
   
 }
 
-installCustomElements(global);
-
 module.exports = installCustomElements;
+installCustomElements(global);

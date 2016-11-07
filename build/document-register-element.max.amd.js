@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-define(function(){'use strict';
+define(function(polyfill){'use strict';
 
   // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
   // THIS IS A PROJECT BASED ON A BUILD SYSTEM
@@ -433,7 +433,12 @@ define(function(){'use strict';
   }));
   
   
-    var
+    
+  // passed at runtime, configurable
+  // via nodejs module
+  if (!polyfill) polyfill = 'auto';
+  
+  var
     // V0 polyfill entry
     REGISTER_ELEMENT = 'registerElement',
   
@@ -513,7 +518,7 @@ define(function(){'use strict';
     fixGetClass = false,
     DRECEV1 = '__dreCEv1',
     customElements = window.customElements,
-    usableCustomElements = !!(
+    usableCustomElements = polyfill !== 'force' && !!(
       customElements &&
       customElements.define &&
       customElements.get &&
@@ -1382,7 +1387,7 @@ define(function(){'use strict';
   }
   
   // if customElements is not there at all
-  if (!customElements) polyfillV1();
+  if (!customElements || polyfill === 'force') polyfillV1();
   else {
     // if available test extends work as expected
     try {

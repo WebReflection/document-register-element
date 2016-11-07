@@ -1,4 +1,8 @@
-function installCustomElements(window) {'use strict';
+// global window Object
+// optional polyfill info
+//    'auto' used by default, everything is feature detected
+//    'force' use the polyfill even if not fully needed
+function installCustomElements(window, polyfill) {'use strict';
 
   // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
   // THIS IS A PROJECT BASED ON A BUILD SYSTEM

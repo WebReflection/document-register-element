@@ -1,4 +1,4 @@
-(function(window){'use strict';
+(function(window, polyfill){'use strict';
 
   // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
   // THIS IS A PROJECT BASED ON A BUILD SYSTEM

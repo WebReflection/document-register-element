@@ -88,7 +88,10 @@ dreie8:
 # build node.js version
 node:
 	mkdir -p build
+	mkdir -p pony
 	cat template/license.before LICENSE.txt template/license.after template/node.before $(NODE) template/node.after >build/$(REPO).node.js
+	cp build/$(REPO).node.js pony/index.js
+	echo 'installCustomElements(global);'>>build/$(REPO).node.js
 
 # build AMD version
 amd:

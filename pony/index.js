@@ -21,13 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-(function(window, polyfill){'use strict';
+// global window Object
+// optional polyfill info
+//    'auto' used by default, everything is feature detected
+//    'force' use the polyfill even if not fully needed
+function installCustomElements(window, polyfill) {'use strict';
 
   // DO NOT USE THIS FILE DIRECTLY, IT WON'T WORK
   // THIS IS A PROJECT BASED ON A BUILD SYSTEM
   // THIS FILE IS JUST WRAPPED UP RESULTING IN
-  // build/document-register-element.js
-  // and its .max.js counter part
+  // build/document-register-element.node.js
 
   var
     document = window.document,
@@ -1424,4 +1427,6 @@ THE SOFTWARE.
     };
   }
   
-}(window));
+}
+
+module.exports = installCustomElements;
