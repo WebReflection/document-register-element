@@ -73,7 +73,7 @@ class MyDom extends HTMLElement {
     alert(name + ':' + newValue);
   }
 }
-
+customElements.define('my-dom', MyDom);
 var md = new MyDom();
 md.setAttribute('test', 'nope');
 md.setAttribute('country', 'UK'); // country: UK
