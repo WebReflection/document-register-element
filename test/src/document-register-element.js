@@ -1,3 +1,8 @@
+
+// passed at runtime, configurable
+// via nodejs module
+if (!polyfill) polyfill = 'auto';
+
 var
   // V0 polyfill entry
   REGISTER_ELEMENT = 'registerElement',
@@ -78,7 +83,7 @@ var
   fixGetClass = false,
   DRECEV1 = '__dreCEv1',
   customElements = window.customElements,
-  usableCustomElements = !!(
+  usableCustomElements = polyfill !== 'force' && !!(
     customElements &&
     customElements.define &&
     customElements.get &&
@@ -231,7 +236,8 @@ var
   asapTimer = 0,
 
   // internal flags
-  setListener = false,
+  setListener = true,
+  justSetup = false,
   doesNotSupportDOMAttrModified = true,
   dropDomContentLoaded = true,
 
@@ -441,11 +447,11 @@ if (!(REGISTER_ELEMENT in document)) {
   // set as enumerable, writable and configurable
   document[REGISTER_ELEMENT] = function registerElement(type, options) {
     upperType = type.toUpperCase();
-    if (!setListener) {
+    if (setListener) {
       // only first time document.registerElement is used
       // we need to set this listener
       // setting it by default might slow down for no reason
-      setListener = true;
+      setListener = false;
       if (MutationObserver) {
         observer = (function(attached, detached){
           function checkEmAll(list, callback) {
@@ -509,10 +515,12 @@ if (!(REGISTER_ELEMENT in document)) {
           i = getTypeIndex(node)
         ;
         if (-1 < i) patch(node, protos[i]);
-        if (deep) loopAndSetup(node.querySelectorAll(query));
+        if (deep && query.length) loopAndSetup(node.querySelectorAll(query));
         return node;
       };
     }
+
+    if (justSetup) return (justSetup = false);
 
     if (-2 < (
       indexOf.call(types, PREFIX_IS + upperType) +
@@ -557,7 +565,7 @@ if (!(REGISTER_ELEMENT in document)) {
         create(HTMLElementPrototype)
     );
 
-    loopAndVerify(
+    if (query.length) loopAndVerify(
       document.querySelectorAll(query),
       ATTACHED
     );
@@ -619,7 +627,7 @@ function executeAction(action) {
   return function (node) {
     if (isValidNode(node)) {
       verifyAndSetupAndAction(node, action);
-      loopAndVerify(
+      if (query.length) loopAndVerify(
         node.querySelectorAll(query),
         action
       );
@@ -687,7 +695,7 @@ function onReadyStateChange(e) {
     dropDomContentLoaded = false;
     e.currentTarget.removeEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
   }
-  loopAndVerify(
+  if (query.length) loopAndVerify(
     (e.target || document).querySelectorAll(query),
     e.detail === DETACHED ? DETACHED : ATTACHED
   );
@@ -944,10 +952,12 @@ function polyfillV1() {
       patchedCreateElement.call(this, name, secondArgument(is)) :
       patchedCreateElement.call(this, name);
   });
+  justSetup = true;
+  document[REGISTER_ELEMENT]('');
 }
 
 // if customElements is not there at all
-if (!customElements) polyfillV1();
+if (!customElements || polyfill === 'force') polyfillV1();
 else {
   // if available test extends work as expected
   try {
