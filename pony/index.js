@@ -674,6 +674,7 @@ function installCustomElements(window, polyfill) {'use strict';
     asapTimer = 0,
   
     // internal flags
+    V0 = REGISTER_ELEMENT in document,
     setListener = true,
     justSetup = false,
     doesNotSupportDOMAttrModified = true,
@@ -697,7 +698,7 @@ function installCustomElements(window, polyfill) {'use strict';
   ;
   
   // only if needed
-  if (!(REGISTER_ELEMENT in document)) {
+  if (!V0) {
   
     if (sPO || hasProto) {
         patchIfNotAlready = function (node, proto) {
@@ -1390,8 +1391,10 @@ function installCustomElements(window, polyfill) {'use strict';
         patchedCreateElement.call(this, name, secondArgument(is)) :
         patchedCreateElement.call(this, name);
     });
-    justSetup = true;
-    document[REGISTER_ELEMENT]('');
+    if (!V0) {
+      justSetup = true;
+      document[REGISTER_ELEMENT]('');
+    }
   }
   
   // if customElements is not there at all
