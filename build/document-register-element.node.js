@@ -674,7 +674,8 @@ function installCustomElements(window, polyfill) {'use strict';
     asapTimer = 0,
   
     // internal flags
-    setListener = false,
+    setListener = true,
+    justSetup = false,
     doesNotSupportDOMAttrModified = true,
     dropDomContentLoaded = true,
   
@@ -884,11 +885,11 @@ function installCustomElements(window, polyfill) {'use strict';
     // set as enumerable, writable and configurable
     document[REGISTER_ELEMENT] = function registerElement(type, options) {
       upperType = type.toUpperCase();
-      if (!setListener) {
+      if (setListener) {
         // only first time document.registerElement is used
         // we need to set this listener
         // setting it by default might slow down for no reason
-        setListener = true;
+        setListener = false;
         if (MutationObserver) {
           observer = (function(attached, detached){
             function checkEmAll(list, callback) {
@@ -952,10 +953,12 @@ function installCustomElements(window, polyfill) {'use strict';
             i = getTypeIndex(node)
           ;
           if (-1 < i) patch(node, protos[i]);
-          if (deep) loopAndSetup(node.querySelectorAll(query));
+          if (deep && query.length) loopAndSetup(node.querySelectorAll(query));
           return node;
         };
       }
+  
+      if (justSetup) return (justSetup = false);
   
       if (-2 < (
         indexOf.call(types, PREFIX_IS + upperType) +
@@ -1000,7 +1003,7 @@ function installCustomElements(window, polyfill) {'use strict';
           create(HTMLElementPrototype)
       );
   
-      loopAndVerify(
+      if (query.length) loopAndVerify(
         document.querySelectorAll(query),
         ATTACHED
       );
@@ -1062,7 +1065,7 @@ function installCustomElements(window, polyfill) {'use strict';
     return function (node) {
       if (isValidNode(node)) {
         verifyAndSetupAndAction(node, action);
-        loopAndVerify(
+        if (query.length) loopAndVerify(
           node.querySelectorAll(query),
           action
         );
@@ -1130,7 +1133,7 @@ function installCustomElements(window, polyfill) {'use strict';
       dropDomContentLoaded = false;
       e.currentTarget.removeEventListener(DOM_CONTENT_LOADED, onReadyStateChange);
     }
-    loopAndVerify(
+    if (query.length) loopAndVerify(
       (e.target || document).querySelectorAll(query),
       e.detail === DETACHED ? DETACHED : ATTACHED
     );
@@ -1387,6 +1390,8 @@ function installCustomElements(window, polyfill) {'use strict';
         patchedCreateElement.call(this, name, secondArgument(is)) :
         patchedCreateElement.call(this, name);
     });
+    justSetup = true;
+    document[REGISTER_ELEMENT]('');
   }
   
   // if customElements is not there at all
