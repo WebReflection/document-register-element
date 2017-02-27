@@ -281,7 +281,7 @@ var mi = document.createElement('my-input');
 
 The correct way to properly implement a custom input that will be also backward compatible is the following one:
 ```js
-// This will NOT work as expected
+// This will work as expected
 document.registerElement(
   'my-input',
   {
