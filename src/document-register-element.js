@@ -663,6 +663,9 @@ function onDOMAttrModified(e) {
     addition = e[ADDITION] || 2,
     removal = e[REMOVAL] || 3
   ;
+  if (e.target !== node) {
+      return;
+  }
   if (notFromInnerHTMLHelper &&
       (!target || target === node) &&
       node[ATTRIBUTE_CHANGED_CALLBACK] &&
