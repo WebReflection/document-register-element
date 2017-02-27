@@ -253,6 +253,16 @@ var MyElement = document.registerElement(
 );
 ```
 
+Alternately you may use ES6 constructors to define your custom elements
+```es6
+class MyElement extends HTMLElement {
+  createdCallback() {
+    console.log('live on DOM ;-)');
+  }
+}
+document.registerElement('my-element', MyElement);
+```
+
 
 ### Why
 I wrote a [couple](http://webreflection.blogspot.co.uk/2014/07/a-w3c-custom-elements-alternative.html) of blog [posts](http://webreflection.blogspot.co.uk/2015/03/bringing-custom-elements-to-ie8.html) about this polyfill, and here's the quick summary:
@@ -263,8 +273,8 @@ Add if you want the [dom4](https://github.com/WebReflection/dom4#dom4) normalize
 ### Common Issues + Caveat
 Here a list of gotchas you might encounter when developing *CustomElement* components.
 
-#### HTML{TABLE|ROW|INPUT|SELECT|others...}Element
-As described in [issue 6](https://github.com/WebReflection/document-register-element/issues/6) it's not possible to fully inherit a table, input, select, or other special element behaviors.
+#### Type Extension Semantics
+As described in [issue 6](https://github.com/WebReflection/document-register-element/issues/6) it's not possible to fully inherit a table, input, select, or other special element behaviors. This is because [some reason which an astute reader might be able to discern by reading #6]
 ```js
 // This will NOT work as expected
 document.registerElement(
@@ -281,7 +291,7 @@ var mi = document.createElement('my-input');
 
 The correct way to properly implement a custom input that will be also backward compatible is the following one:
 ```js
-// This will NOT work as expected
+// This will work as expected
 document.registerElement(
   'my-input',
   {
@@ -297,6 +307,17 @@ var mi = document.createElement(
   'input',    // the extend
   'my-input'  // the enriched custom definition
 );
+```
+
+ES6 constructors (do||don't) work as well
+
+```es6
+class MyInput extends HTMLInputElement {
+   createdCallback(){
+      this.value = 'my input created';
+   }
+}
+document.registerElement('my-input', MyInput);
 ```
 
 Another approach is to use just a basic `HTMLElement` component and initialize its content at runtime.
