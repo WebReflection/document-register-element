@@ -564,7 +564,9 @@ define(function(polyfill){'use strict';
     constructors = Dict(null),
     waitingList = Dict(null),
     nodeNames = new Map(),
-    secondArgument = String,
+    secondArgument = function (is) {
+      return is.toLowerCase();
+    },
   
     // used to create unique instances
     create = Object.create || function Bridge(proto) {
@@ -1428,7 +1430,7 @@ define(function(polyfill){'use strict';
     createElement.call(document, 'a', 'a');
   } catch(FireFox) {
     secondArgument = function (is) {
-      return {is: is};
+      return {is: is.toLowerCase()};
     };
   }
   });

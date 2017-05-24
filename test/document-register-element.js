@@ -16,6 +16,20 @@ wru.test(typeof document === 'undefined' ? [] : [
       wru.assert(typeof customElements === 'object');
     }
   }, {
+    name: 'V1: is="x-name" is lower case',
+    test: function () {
+      function MyParagraph(self) {
+        self = HTMLParagraphElement.call(self || this);
+        return self;
+      }
+      setProto(MyParagraph, HTMLParagraphElement);
+      customElements.define('my-paragraph', MyParagraph, {extends: 'p'});
+      var elem = new MyParagraph();
+      setTimeout(wru.async(function () {
+        wru.assert('correct attribute', elem.getAttribute('is') === 'my-paragraph');
+      }), 50);
+    }
+  }, {
     name: 'V1: attributes are correctly notified',
     test: function () {
       function XTag(self) {
@@ -39,7 +53,7 @@ wru.test(typeof document === 'undefined' ? [] : [
         wru.assert('correct calls', calls.length === 2);
         wru.assert('correct first call', calls[0][0] == 'x' && calls[0][1] == null && calls[0][2] == '1');
         wru.assert('correct second call', calls[1][0] == 'x' && calls[1][1] == '1' && calls[1][2] == '2');
-      }), 100);
+      }), 50);
     }
   }, {
     name: 'V1: use extended classes to register',
