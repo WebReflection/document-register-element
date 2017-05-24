@@ -16,6 +16,32 @@ wru.test(typeof document === 'undefined' ? [] : [
       wru.assert(typeof customElements === 'object');
     }
   }, {
+    name: 'V1: attributes are correctly notified',
+    test: function () {
+      function XTag(self) {
+        self = HTMLElement.call(self || this);
+        return self;
+      }
+      setProto(XTag, HTMLElement);
+      XTag.observedAttributes = ['x'];
+      var calls = [];
+      XTag.prototype.attributeChangedCallback =
+        function (attr, old, value) {
+          calls.push([attr, old, value]);
+        };
+      document.body.appendChild(
+        document.createElement('x-tag')
+      ).setAttribute('x','1');
+      customElements.define('x-tag', XTag);
+      var xtag = document.body.lastChild;
+      xtag.setAttribute('x','2');
+      setTimeout(wru.async(function () {
+        wru.assert('correct calls', calls.length === 2);
+        wru.assert('correct first call', calls[0][0] == 'x' && calls[0][1] == null && calls[0][2] == '1');
+        wru.assert('correct second call', calls[1][0] == 'x' && calls[1][1] == '1' && calls[1][2] == '2');
+      }), 100);
+    }
+  }, {
     name: 'V1: use extended classes to register',
     test: function () {
       function MyButton(self) {
