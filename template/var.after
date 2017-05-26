@@ -1,2 +1,3 @@
 
+var evt=document.createEvent("HTMLEvents");evt.initEvent("WebComponentsReady", true, true);window.dispatchEvent(evt);
 }(window));
