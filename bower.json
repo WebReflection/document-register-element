@@ -19,6 +19,8 @@
         "index.html",
         "testrhino.js",
         "Makefile",
-        "basic.html"
+        "basic.html",
+        "testrunner.js",
+        "examples"
     ]
 }
