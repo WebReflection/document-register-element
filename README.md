@@ -7,6 +7,24 @@ A stand-alone lightweight version of [Custom Elements V1](https://html.spec.what
 based on top, and compatible with, the battle-tested [Custom Elements V0](http://w3c.github.io/webcomponents/spec/custom/),
 already used in production with projects such [Google AMP HTML ⚡](https://github.com/ampproject/amphtml#amp-html-) and others.
 
+### Avoiding CE Built In
+Since version `1.6` the **ponyfill** flag can be either a `string`,
+representing the ponyfill `type` such `"auto"` or `"force"`,
+or an `object`, with the following shape:
+```js
+installCE(global, {
+  type: 'force' || 'auto' (default),
+  noBuiltIn: true (default undefined / false)
+});
+```
+
+If you specify `noBuiltIn` property as true,
+the `V1` API will be polyfilled where needed,
+but no extra checks and patches will be applied
+to make custom elements built-in working,
+since no browser is currently shipping
+[this part of the specification](https://html.spec.whatwg.org/multipage/custom-elements.html#custom-elements-customized-builtin-example).
+
 
 ### New Ponyfill in 1.3
 As discussed in issue #86 there is currently no way to require
