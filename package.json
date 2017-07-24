@@ -27,14 +27,14 @@
   "main": "./build/document-register-element.node.js",
   "scripts": {
     "test": "phantomjs testrunner.js",
-    "web": "node node_modules/tiny-cdn/tiny-cdn run -p=1337"
+    "web": "tiny-cdn run -p=1337"
   },
   "devDependencies": {
     "html-class": "^1.2.0",
-    "jshint": "~2.x",
-    "phantomjs-prebuilt": "^2.1.11",
-    "tiny-cdn": "~0.5.x",
-    "uglify-js": "1.x",
-    "wru": "~0.2.x"
+    "jshint": "^2.9.5",
+    "phantomjs-prebuilt": "^2.1.14",
+    "tiny-cdn": "^0.7.0",
+    "uglify-js": "^1.3.5",
+    "wru": "^0.3.0"
   }
 }

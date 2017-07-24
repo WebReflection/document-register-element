@@ -437,9 +437,8 @@ function installCustomElements(window, polyfill) {'use strict';
   
   
     
-  // passed at runtime, configurable
-  // via nodejs module
-  if (!polyfill) polyfill = 'auto';
+  // passed at runtime, configurable via nodejs module
+  if (typeof polyfill !== 'object') polyfill = {type: polyfill || 'auto'};
   
   var
     // V0 polyfill entry
@@ -521,7 +520,7 @@ function installCustomElements(window, polyfill) {'use strict';
     fixGetClass = false,
     DRECEV1 = '__dreCEv1',
     customElements = window.customElements,
-    usableCustomElements = polyfill !== 'force' && !!(
+    usableCustomElements = polyfill.type !== 'force' && !!(
       customElements &&
       customElements.define &&
       customElements.get &&
@@ -1400,8 +1399,8 @@ function installCustomElements(window, polyfill) {'use strict';
   }
   
   // if customElements is not there at all
-  if (!customElements || polyfill === 'force') polyfillV1();
-  else {
+  if (!customElements || polyfill.type === 'force') polyfillV1();
+  else if(!polyfill.noBuiltIn) {
     // if available test extends work as expected
     try {
       (function (DRE, options, name) {
@@ -1429,12 +1428,15 @@ function installCustomElements(window, polyfill) {'use strict';
     }
   }
   
-  try {
-    createElement.call(document, 'a', 'a');
-  } catch(FireFox) {
-    secondArgument = function (is) {
-      return {is: is.toLowerCase()};
-    };
+  // FireFox only issue
+  if(!polyfill.noBuiltIn) {
+    try {
+      createElement.call(document, 'a', 'a');
+    } catch(FireFox) {
+      secondArgument = function (is) {
+        return {is: is.toLowerCase()};
+      };
+    }
   }
   
 }
