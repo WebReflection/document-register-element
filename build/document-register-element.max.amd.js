@@ -517,7 +517,7 @@ define(function(polyfill){'use strict';
     fixGetClass = false,
     DRECEV1 = '__dreCEv1',
     customElements = window.customElements,
-    usableCustomElements = polyfill.type !== 'force' && !!(
+    usableCustomElements = !/^force/.test(polyfill.type) && !!(
       customElements &&
       customElements.define &&
       customElements.get &&
@@ -672,7 +672,8 @@ define(function(polyfill){'use strict';
     asapTimer = 0,
   
     // internal flags
-    V0 = REGISTER_ELEMENT in document,
+    V0 = REGISTER_ELEMENT in document &&
+         !/^force-all/.test(polyfill.type),
     setListener = true,
     justSetup = false,
     doesNotSupportDOMAttrModified = true,
@@ -1396,7 +1397,7 @@ define(function(polyfill){'use strict';
   }
   
   // if customElements is not there at all
-  if (!customElements || polyfill.type === 'force') polyfillV1();
+  if (!customElements || /^force/.test(polyfill.type)) polyfillV1();
   else if(!polyfill.noBuiltIn) {
     // if available test extends work as expected
     try {
