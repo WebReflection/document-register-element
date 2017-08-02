@@ -1192,7 +1192,8 @@ function installCustomElements(window, polyfill) {'use strict';
   function verifyAndSetupAndAction(node, action) {
     var
       fn,
-      i = getTypeIndex(node)
+      i = getTypeIndex(node),
+      counterAction
     ;
     if (-1 < i) {
       patchIfNotAlready(node, protos[i]);
@@ -1200,6 +1201,7 @@ function installCustomElements(window, polyfill) {'use strict';
       if (action === ATTACHED && !node[ATTACHED]) {
         node[DETACHED] = false;
         node[ATTACHED] = true;
+        counterAction = 'connected';
         i = 1;
         if (IE8 && indexOf.call(targets, node) < 0) {
           targets.push(node);
@@ -1207,9 +1209,13 @@ function installCustomElements(window, polyfill) {'use strict';
       } else if (action === DETACHED && !node[DETACHED]) {
         node[ATTACHED] = false;
         node[DETACHED] = true;
+        counterAction = 'disconnected';
         i = 1;
       }
-      if (i && (fn = node[action + CALLBACK])) fn.call(node);
+      if (i && (fn = (
+        node[action + CALLBACK] ||
+        node[counterAction + CALLBACK]
+      ))) fn.call(node);
     }
   }
   
