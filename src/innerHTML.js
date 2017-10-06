@@ -85,7 +85,7 @@ var innerHTML = (function (document) {
   }).innerHTML = function (el, html) {
     el.innerHTML = html;
     for (var
-      nodes = el.querySelectorAll(registered.join(',')),
+      nodes = registered.length ? el.querySelectorAll(registered.join(',')) : [],
       i = nodes.length; i--; initialize(nodes[i])
     ) {}
     return el;
