@@ -89,14 +89,14 @@ var innerHTML = (function (document) {
       attr = attributes[i];
       node.setAttribute(attr.name, attr.value);
     }
+    while ((fc = el.firstChild)) node.appendChild(fc);
+    document.createElement.innerHTMLHelper = false;
+    if (parentNode) parentNode.replaceChild(node, el);
     if (node.createdCallback) {
       node.created = true;
       node.createdCallback();
       node.created = false;
     }
-    while ((fc = el.firstChild)) node.appendChild(fc);
-    document.createElement.innerHTMLHelper = false;
-    if (parentNode) parentNode.replaceChild(node, el);
   };
   // augment the document.registerElement method
   return ((document.registerElement = function registerElement(type, options) {
@@ -108,7 +108,7 @@ var innerHTML = (function (document) {
   }).innerHTML = function (el, html) {
     el.innerHTML = html;
     for (var
-      nodes = el.querySelectorAll(registered.join(',')),
+      nodes = registered.length ? el.querySelectorAll(registered.join(',')) : [],
       i = nodes.length; i--; initialize(nodes[i])
     ) {}
     return el;
