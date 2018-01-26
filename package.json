@@ -29,7 +29,7 @@
   "scripts": {
     "test": "phantomjs testrunner.js",
     "web": "tiny-cdn run -p=1337",
-    "postinstall": "opencollective postinstall"
+    "postinstall": "lightercollective && sleep 1"
   },
   "devDependencies": {
     "html-class": "^1.2.0",
@@ -40,7 +40,7 @@
     "wru": "^0.3.0"
   },
   "dependencies": {
-    "opencollective": "^1.0.3"
+    "lightercollective": "^0.0.0"
   },
   "collective": {
     "type": "opencollective",
