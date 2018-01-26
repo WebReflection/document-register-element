@@ -1,6 +1,6 @@
 document-register-element
 
-[![build status](https://travis-ci.org/WebReflection/document-register-element.svg)](https://travis-ci.org/WebReflection/document-register-element) [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/WebReflection/donate)
+ [![build status](https://travis-ci.org/WebReflection/document-register-element.svg)](https://travis-ci.org/WebReflection/document-register-element) [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/WebReflection/donate) [![Backers on Open Collective](https://opencollective.com/document-register-element/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/document-register-element/sponsors/badge.svg)](#sponsors)
 =========================
 
 A stand-alone lightweight version of [Custom Elements V1](https://html.spec.whatwg.org/multipage/scripting.html#custom-elements)
@@ -382,4 +382,34 @@ to have it in, I've decided to merge the logic and maintain only one file that w
   * `className` is right now the only special attribute that reacts. Others might be implemented in the [dre-ie8-upfront-fix.js](src/dre-ie8-upfront-fix.js) file.
   * in order to have node reacting to attributes changes, these must be live on the DOM
   * if you are using `extends` when create a custom element, remember to minify the production code or wrap such reserved word in quotes
+
+
+## Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="graphs/contributors"><img src="https://opencollective.com/document-register-element/contributors.svg?width=890" /></a>
+
+
+## Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/document-register-element#backer)]
+
+<a href="https://opencollective.com/document-register-element#backers" target="_blank"><img src="https://opencollective.com/document-register-element/backers.svg?width=890"></a>
+
+
+## Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/document-register-element#sponsor)]
+
+<a href="https://opencollective.com/document-register-element/sponsor/0/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/document-register-element/sponsor/1/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/document-register-element/sponsor/2/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/document-register-element/sponsor/3/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/document-register-element/sponsor/4/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/document-register-element/sponsor/5/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/document-register-element/sponsor/6/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/document-register-element/sponsor/7/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/document-register-element/sponsor/8/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/document-register-element/sponsor/9/website" target="_blank"><img src="https://opencollective.com/document-register-element/sponsor/9/avatar.svg"></a>
+
 
