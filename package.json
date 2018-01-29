@@ -29,7 +29,7 @@
   "scripts": {
     "test": "phantomjs testrunner.js",
     "web": "tiny-cdn run -p=1337",
-    "postinstall": "lightercollective && sleep 1"
+    "postinstall": "lightercollective"
   },
   "devDependencies": {
     "html-class": "^1.2.0",
