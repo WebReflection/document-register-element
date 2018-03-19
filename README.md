@@ -5,12 +5,13 @@ document-register-element
 
 A stand-alone lightweight version of [Custom Elements V1](https://html.spec.whatwg.org/multipage/scripting.html#custom-elements)
 based on top, and compatible with, the battle-tested [Custom Elements V0](http://w3c.github.io/webcomponents/spec/custom/),
-already used in production with projects such [Google AMP HTML ⚡](https://github.com/ampproject/amphtml#amp-html-) and others.
+already used in production with projects such as [Google AMP HTML ⚡](https://github.com/ampproject/amphtml#amp-html-) and others.
 
 ### Avoiding CE Built In
 Since version `1.6` the **ponyfill** flag can be either a `string`,
 representing the ponyfill `type` such `"auto"` or `"force"`,
 or an `object`, with the following shape:
+
 ```js
 installCE(global, {
   type: 'force' || 'auto' (default),
@@ -18,11 +19,11 @@ installCE(global, {
 });
 ```
 
-If you specify `noBuiltIn` property as true,
-the `V1` API will be polyfilled where needed,
-but no extra checks and patches will be applied
-to make custom elements built-in working,
-since no browser is currently shipping
+If you set `noBuiltIn` to true,
+the `V1` API will be polyfilled where needed.
+No extra checks and patches will be applied
+to make custom elements built-in work,
+since no browser currently ships
 [this part of the specification](https://html.spec.whatwg.org/multipage/custom-elements.html#custom-elements-customized-builtin-example).
 
 
