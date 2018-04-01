@@ -258,8 +258,41 @@ var
   // will check proto or the expando attribute
   // in order to setup the node once
   patchIfNotAlready,
-  patch
+  patch,
+
+  // used for tests
+  tmp
 ;
+
+// IE11 disconnectedCallback issue #
+// to be tested before any createElement patch
+if (MutationObserver) {
+  // original fix:
+  // https://github.com/javan/mutation-observer-inner-html-shim
+  tmp = document.createElement('div');
+  tmp.innerHTML = '<div><div></div></div>';
+  new MutationObserver(function (mutations, observer) {
+    if (
+      mutations[0] &&
+      mutations[0].type == 'childList' &&
+      !mutations[0].removedNodes[0].childNodes.length
+    ) {
+      tmp = gOPD(HTMLElementPrototype, 'innerHTML');
+      var set = tmp && tmp.set;
+      if (set)
+        defineProperty(HTMLElementPrototype, 'innerHTML', {
+          set: function (value) {
+            while (this.lastChild)
+              this.removeChild(this.lastChild);
+            set.call(this, value);
+          }
+        });
+    }
+    observer.disconnect();
+    tmp = null;
+  }).observe(tmp, {childList: true, subtree: true});
+  tmp.innerHTML = "";
+}
 
 // only if needed
 if (!V0) {
