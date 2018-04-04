@@ -1,6 +1,6 @@
 {
   "version": "1.8.0",
-  "license": "MIT",
+  "license": "ISC",
   "name": "document-register-element",
   "description": "A stand-alone working lightweight version of the W3C Custom Elements specification",
   "homepage": "https://github.com/WebReflection/document-register-element",
