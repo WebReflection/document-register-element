@@ -19,21 +19,32 @@ wru.test(typeof document === 'undefined' ? [] : [
     name: 'V1: is="x-name" is lower case',
     test: function () {
       function MyParagraph(self) {
-        self = HTMLParagraphElement.call(self || this);
+        try {
+          self = HTMLParagraphElement.call(self || this);
+        } catch(e) {
+          self = Reflect.construct(HTMLParagraphElement, [], MyParagraph);
+        }
         return self;
       }
       setProto(MyParagraph, HTMLParagraphElement);
       customElements.define('my-paragraph', MyParagraph, {extends: 'p'});
       var elem = new MyParagraph();
       setTimeout(wru.async(function () {
-        wru.assert('correct attribute', elem.getAttribute('is') === 'my-paragraph');
+        wru.assert('correct attribute',
+          elem.getAttribute('is') === 'my-paragraph' ||
+          /^<p\s+is=('|")my-paragraph\1><\/p>$/i.test(elem.outerHTML)
+        );
       }), 50);
     }
   }, {
     name: 'V1: attributes are correctly notified',
     test: function () {
       function XTag(self) {
-        self = HTMLElement.call(self || this);
+        try {
+          self = HTMLElement.call(self || this);
+        } catch(e) {
+          self = Reflect.construct(HTMLElement, [], XTag);
+        }
         return self;
       }
       setProto(XTag, HTMLElement);
@@ -60,7 +71,11 @@ wru.test(typeof document === 'undefined' ? [] : [
     test: function () {
       function MyButton(self) {
         // needed to upgrade the element
-        self = HTMLButtonElement.call(self || this);
+        try {
+          self = HTMLButtonElement.call(self || this);
+        } catch(e) {
+          self = Reflect.construct(HTMLButtonElement, [], MyButton);
+        }
         self.setAttribute('cool', 'true');
         return self;
       }
@@ -82,13 +97,17 @@ wru.test(typeof document === 'undefined' ? [] : [
         wru.assert('constructor called', myButton.getAttribute('cool') === 'true');
         wru.assert('prototype inherited', myButton.method === method);
       });
-      // no need to reassign self if upgraded via dom
       function MyOtherButton(self) {
-        HTMLButtonElement.call(self);
+        try {
+          self = HTMLButtonElement.call(this, self);
+        } catch(e) {
+          self = Reflect.construct(HTMLButtonElement, [], MyOtherButton);
+        }
         self.setAttribute('cool', 'true');
         setTimeout(function () {
           onceCreated(self);
         }, 100);
+        return self;
       }
       function method() {}
       setProto(MyOtherButton, HTMLButtonElement);
@@ -125,7 +144,11 @@ wru.test(typeof document === 'undefined' ? [] : [
     name: 'V1: connectedCallback',
     test: function () {
       function OnceAttached(self) {
-        return HTMLElement.call(this, self);
+        try {
+          return HTMLElement.call(this, self);
+        } catch(e) {
+          return Reflect.construct(HTMLElement, [], OnceAttached);
+        }
       }
       setProto(OnceAttached, HTMLElement);
       OnceAttached.prototype.connectedCallback = wru.async(function () {
@@ -141,8 +164,12 @@ wru.test(typeof document === 'undefined' ? [] : [
   }, {
     name: 'V1: disconnectedCallback',
     test: function () {
-      function OnceDetached() {
-        return HTMLElement.call(this);
+      function OnceDetached(self) {
+        try {
+          return HTMLElement.call(this, self);
+        } catch(e) {
+          return Reflect.construct(HTMLElement, [], OnceDetached);
+        }
       }
       setProto(OnceDetached, HTMLElement);
       OnceDetached.prototype.disconnectedCallback = wru.async(function () {
@@ -158,8 +185,12 @@ wru.test(typeof document === 'undefined' ? [] : [
     name: 'V1: attributeChangedCallback',
     test: function () {
       var args = [];
-      function OnAttrModified() {
-        return HTMLElement.call(this);
+      function OnAttrModified(self) {
+        try {
+          return HTMLElement.call(this, self);
+        } catch(e) {
+          return Reflect.construct(HTMLElement, [], OnAttrModified);
+        }
       }
       OnAttrModified.observedAttributes = ['test'];
       setProto(OnAttrModified, HTMLElement);
@@ -190,7 +221,11 @@ wru.test(typeof document === 'undefined' ? [] : [
     test: function () {
       var notification;
       function AttributesNotified(self) {
-        return HTMLElement.call(this, self);
+        try {
+          return HTMLElement.call(this, self);
+        } catch(e) {
+          return Reflect.construct(HTMLElement, [], AttributesNotified);
+        }
       }
       AttributesNotified.observedAttributes = ['some'];
       setProto(AttributesNotified, HTMLElement);

@@ -1006,13 +1006,14 @@ else if(!polyfill.noBuiltIn) {
   // if available test extends work as expected
   try {
     (function (DRE, options, name) {
+      var re = new RegExp('^<a\\s+is=(\'|")' + name + '\\1></a>$');
       options[EXTENDS] = 'a';
       DRE.prototype = create(HTMLAnchorElement.prototype);
       DRE.prototype.constructor = DRE;
       window.customElements.define(name, DRE, options);
       if (
-        getAttribute.call(document.createElement('a', {is: name}), 'is') !== name ||
-        (usableCustomElements && getAttribute.call(new DRE(), 'is') !== name)
+        !re.test(document.createElement('a', {is: name}).outerHTML) ||
+        !re.test((new DRE()).outerHTML)
       ) {
         throw options;
       }
