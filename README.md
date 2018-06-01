@@ -176,7 +176,7 @@ in your head element and you should be good to go.
 Many thanks to [cdnjs](http://www.cdnjs.com) for hosting this script. Following an example on how to include it.
 ```html
 <script
-  src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.5.0/document-register-element.js"
+  src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.8.0/document-register-element.js"
 >/* W3C Custom Elements */</script>
 ```
 
