@@ -7,6 +7,16 @@ A stand-alone lightweight version of [Custom Elements V1](https://html.spec.what
 based on top, and compatible with, the battle-tested [Custom Elements V0](http://w3c.github.io/webcomponents/spec/custom/),
 already used in production with projects such as [Google AMP HTML ⚡](https://github.com/ampproject/amphtml#amp-html-) and others.
 
+## Transpilers VS 1.9
+
+The version 1.9 of this polyfill does **not** patch browsers with full native support for Custom Elements,
+as anyone would expect from a polyfill based on features detection.
+
+However, if your transpiler transforms native ES2015 classes into something incompatible, like [TypeScript does in this case](http://www.typescriptlang.org/play/index.html#src=class%20AFailure%20extends%20HTMLElement%20%7B%7D%0D%0AcustomElements.define('a-failure'%2C%20AFailure)%3B%0D%0Aconst%20fail%20%3D%20new%20AFailure%3B), you need to update, change, or better configure your tools to support proper classes.
+
+Babel 7 should've solved this in core, so use Babel 7 if you need transpilers.
+
+
 ### Avoiding CE Built In
 Since version `1.6` the **ponyfill** flag can be either a `string`,
 representing the ponyfill `type` such `"auto"` or `"force"`,
