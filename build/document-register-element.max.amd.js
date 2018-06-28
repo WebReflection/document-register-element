@@ -644,6 +644,7 @@ define(function(polyfill){'use strict';
   
     // replaced later on
     createElement = document.createElement,
+    importNode = document.importNode,
     patchedCreateElement = createElement,
   
     // shared observer for all attributes
@@ -975,14 +976,26 @@ define(function(polyfill){'use strict';
         document[ADD_EVENT_LISTENER](DOM_CONTENT_LOADED, onReadyStateChange);
         document[ADD_EVENT_LISTENER]('readystatechange', onReadyStateChange);
   
+        document.importNode = function (node, deep) {
+          switch (node.nodeType) {
+            case 1:
+              return setupAll(document, importNode, [node, !!deep]);
+            case 11:
+              for (var
+                fragment = document.createDocumentFragment(),
+                childNodes = node.childNodes,
+                length = childNodes.length,
+                i = 0; i < length; i++
+              )
+                fragment.appendChild(document.importNode(childNodes[i], !!deep));
+              return fragment;
+            default:
+              return cloneNode.call(node, !!deep);
+          }
+        };
+  
         HTMLElementPrototype.cloneNode = function (deep) {
-          var
-            node = cloneNode.call(this, !!deep),
-            i = getTypeIndex(node)
-          ;
-          if (-1 < i) patch(node, protos[i]);
-          if (deep && query.length) loopAndSetup(node.querySelectorAll(query));
-          return node;
+          return setupAll(this, cloneNode, [!!deep]);
         };
       }
   
@@ -1173,6 +1186,17 @@ define(function(polyfill){'use strict';
     var self = this;
     setAttribute.call(self, name, value);
     onSubtreeModified.call(self, {target: self});
+  }
+  
+  function setupAll(context, callback, args) {
+    var
+      node = callback.apply(context, args),
+      i = getTypeIndex(node)
+    ;
+    if (-1 < i) patch(node, protos[i]);
+    if (args.pop() && query.length)
+      loopAndSetup(node.querySelectorAll(query));
+    return node;
   }
   
   function setupNode(node, proto) {
