@@ -1309,8 +1309,10 @@ define(function(polyfill){'use strict';
     });
     safeProperty(proto, ATTRIBUTE_CHANGED_CALLBACK, {
       value: function (name) {
-        if (-1 < indexOf.call(attributes, name))
-          CProto[ATTRIBUTE_CHANGED_CALLBACK].apply(this, arguments);
+        if (-1 < indexOf.call(attributes, name)) {
+          if (CProto[ATTRIBUTE_CHANGED_CALLBACK])
+            CProto[ATTRIBUTE_CHANGED_CALLBACK].apply(this, arguments);
+        }
       }
     });
     if (CProto[CONNECTED_CALLBACK]) {

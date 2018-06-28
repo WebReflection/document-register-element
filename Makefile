@@ -50,7 +50,7 @@ indentation:
 var:
 	mkdir -p build
 	cat template/var.before $(VAR) template/var.after >build/no-copy.$(REPO).max.js
-	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.$(REPO).max.js >build/no-copy.$(REPO).js
+	node node_modules/uglify-js/bin/uglifyjs -m -c --verbose build/no-copy.$(REPO).max.js >build/no-copy.$(REPO).js
 	cat template/license.before LICENSE.txt template/license.after build/no-copy.$(REPO).max.js >build/$(REPO).max.js
 	cat template/copyright build/no-copy.$(REPO).js >build/$(REPO).js
 	rm build/no-copy.$(REPO).max.js
@@ -60,7 +60,7 @@ var:
 innerHTML:
 	mkdir -p build
 	cat $(INNERHTML) >build/no-copy.innerHTML.max.js
-	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.innerHTML.max.js >build/no-copy.innerHTML.js
+	node node_modules/uglify-js/bin/uglifyjs -m -c --verbose build/no-copy.innerHTML.max.js >build/no-copy.innerHTML.js
 	cat template/license.before LICENSE.txt template/license.after build/no-copy.innerHTML.max.js >build/innerHTML.max.js
 	cat template/copyright build/no-copy.innerHTML.js >build/innerHTML.js
 	rm build/no-copy.innerHTML.max.js
@@ -70,7 +70,7 @@ innerHTML:
 ie8:
 	mkdir -p build
 	cat template/var.before $(IE8) template/var.after >build/no-copy.$(REPO)-ie8.max.js
-	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.$(REPO)-ie8.max.js >build/no-copy.$(REPO)-ie8.js
+	node node_modules/uglify-js/bin/uglifyjs -m -c --verbose build/no-copy.$(REPO)-ie8.max.js >build/no-copy.$(REPO)-ie8.js
 	cat template/license.before LICENSE.txt template/license.after build/no-copy.$(REPO)-ie8.max.js >build/$(REPO)-ie8.max.js
 	cat template/copyright build/no-copy.$(REPO)-ie8.js >build/$(REPO)-ie8.js
 	rm build/no-copy.$(REPO)-ie8.max.js
@@ -79,7 +79,7 @@ ie8:
 dreie8:
 	mkdir -p build
 	cat src/dre-ie8-upfront-fix.js>build/no-copy.dre-ie8-upfront-fix.max.js
-	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.dre-ie8-upfront-fix.max.js >build/no-copy.dre-ie8-upfront-fix.js
+	node node_modules/uglify-js/bin/uglifyjs -m -c --verbose build/no-copy.dre-ie8-upfront-fix.max.js >build/no-copy.dre-ie8-upfront-fix.js
 	cat template/license.before LICENSE.txt template/license.after build/no-copy.dre-ie8-upfront-fix.max.js >build/dre-ie8-upfront-fix.max.js
 	cat template/copyright build/no-copy.dre-ie8-upfront-fix.js >build/dre-ie8-upfront-fix.js
 	rm build/no-copy.dre-ie8-upfront-fix.max.js
@@ -97,7 +97,7 @@ node:
 amd:
 	mkdir -p build
 	cat template/amd.before $(AMD) template/amd.after >build/no-copy.$(REPO).max.amd.js
-	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.$(REPO).max.amd.js >build/no-copy.$(REPO).amd.js
+	node node_modules/uglify-js/bin/uglifyjs -m -c --verbose build/no-copy.$(REPO).max.amd.js >build/no-copy.$(REPO).amd.js
 	cat template/license.before LICENSE.txt template/license.after build/no-copy.$(REPO).max.amd.js >build/$(REPO).max.amd.js
 	cat template/copyright build/no-copy.$(REPO).amd.js >build/$(REPO).amd.js
 	rm build/no-copy.$(REPO).max.amd.js
