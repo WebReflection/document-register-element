@@ -614,6 +614,8 @@ function installCustomElements(window, polyfill) {'use strict';
     MutationObserver = window.MutationObserver ||
                        window.WebKitMutationObserver,
   
+    HTMLAnchorElement = window.HTMLAnchorElement,
+  
     HTMLElementPrototype = (
       window.HTMLElement ||
       window.Element ||

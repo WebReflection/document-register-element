@@ -611,6 +611,8 @@ define(function(polyfill){'use strict';
     MutationObserver = window.MutationObserver ||
                        window.WebKitMutationObserver,
   
+    HTMLAnchorElement = window.HTMLAnchorElement,
+  
     HTMLElementPrototype = (
       window.HTMLElement ||
       window.Element ||
