@@ -28,6 +28,7 @@
     "url": "git://github.com/WebReflection/document-register-element.git"
   },
   "main": "./build/document-register-element.node.js",
+  "module": "./build/document-register-element.js",
   "unpkg": "./build/document-register-element.js",
   "scripts": {
     "test": "phantomjs testrunner.js",

@@ -1,4 +1,4 @@
-.PHONY: build indentation htmlclass duk var node amd size hint clean test web preview pages dependencies
+.PHONY: build indentation htmlclass duk var node esm amd size hint clean test web preview pages dependencies
 
 # repository name
 REPO = document-register-element
@@ -30,6 +30,7 @@ build:
 #	make ie8
 	make dreie8
 	make node
+	make esm
 	make amd
 	make test
 	make hint
@@ -92,6 +93,14 @@ node:
 	cat template/license.before LICENSE.txt template/license.after template/node.before $(NODE) template/node.after >build/$(REPO).node.js
 	cp build/$(REPO).node.js pony/index.js
 	echo 'installCustomElements(global);'>>build/$(REPO).node.js
+
+# build ESM version
+esm:
+	mkdir -p build
+	mkdir -p pony
+	cat template/license.before LICENSE.txt template/license.after template/esm.before $(NODE) template/esm.after >build/$(REPO).esm.js
+	cp build/$(REPO).esm.js pony/index.mjs
+	echo 'installCustomElements(window);'>>build/$(REPO).esm.js
 
 # build AMD version
 amd:
