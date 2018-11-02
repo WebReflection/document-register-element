@@ -7,6 +7,35 @@ A stand-alone lightweight version of [Custom Elements V1](https://html.spec.what
 based on top, and compatible with, the battle-tested [Custom Elements V0](http://w3c.github.io/webcomponents/spec/custom/),
 already used in production with projects such as [Google AMP HTML ⚡](https://github.com/ampproject/amphtml#amp-html-) and others.
 
+## Important: How To Migrate To Native V1
+
+Projects based on this polyfill should consider migrating to V1 API, which is natively available for Safari, Chrome, Firefox, and soon Edge too.
+
+Where built in extends are not possible, you can use my latest [built-in-element](https://github.com/WebReflection/built-in-element) polyfill instead, which will leave natively working implementations untouched, and will apply the minimal amount of patches to native V1 without built-in elements (only Safari to date).
+
+### How To Polyfill Custom Elements V1
+
+This is a bullet-proof way to bring in Custom Elements V1 when needed.
+
+Don't worry though, only very old browsers will pass through that `document.write`, preserving its 20yo tested nature, while no modern browser will ever complain.
+```html
+<script>this.customElements||document.write('<script src="//unpkg.com/document-register-element"><\x2fscript>');</script>
+<script src="//unpkg.com/built-in-element"></script>
+```
+
+Stick above **sequence of scripts** on top of any of your pages, and you'll see that only very old browsers will download this polyfill, while others will load less than 1k, delivering with 100% native performance.
+
+If you are bundling instead all the code, consider decoupling _DRE_ bundling a part, or perform the sasme `customElements` check on the `window` and bring in only the right polyfill.
+
+### What About Shadow DOM ?
+
+This polyfill, as well as _built-in-element_ one, are about Custom Elements that are a specification a part.
+
+If you need for some reason Shadow DOM, I suggest you to look at [attach-shadow](https://github.com/WebReflection/attachshadow) poorlifyll, which provides most basic/needed mechanism to create sandboxed components.
+
+You can try other polyfills around the web too but, if I were you, I'll stay away from Shadow DOM where it's not natively supported because other polyfills are heavier, less compatible, and yet not 100% reliable.
+
+
 ## Transpilers VS 1.9
 
 The version 1.9 of this polyfill does **not** patch browsers with full native support for Custom Elements,

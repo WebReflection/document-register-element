@@ -1492,7 +1492,8 @@ define(function(polyfill){'use strict';
   // FireFox only issue
   if(!polyfill.noBuiltIn) {
     try {
-      createElement.call(document, 'a', 'a');
+      if (createElement.call(document, 'a', 'a').outerHTML.indexOf('is') < 0)
+        throw {};
     } catch(FireFox) {
       secondArgument = function (is) {
         return {is: is.toLowerCase()};
