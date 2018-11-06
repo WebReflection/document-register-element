@@ -152,8 +152,8 @@ class MyElement extends HTMLElement {
   // in both cases, the mandatory `super()` call
   // will return the right context/instance to use
   // and eventually return
-  constructor(self) {
-    self = super(self);
+  constructor(...args) {
+    const self = super(...args);
     self.addEventListener('click', console.log);
     // important in case you create instances procedurally:
     // var me = new MyElement();
@@ -167,7 +167,7 @@ class MyElement extends HTMLElement {
 ```js
 // base class to extend, same trick as before
 class HTMLCustomElement extends HTMLElement {
-  constructor(_) { return (_ = super(_)).init(), _; }
+  constructor(...$) { const _ = super(...$); _.init(); return _; }
   init() { /* override as you like */ }
 }
 
