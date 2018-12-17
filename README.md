@@ -26,7 +26,7 @@ Don't worry though, only very old browsers will pass through that `document.writ
 
 Stick above **sequence of scripts** on top of any of your pages, and you'll see that only very old browsers will download this polyfill, while others will load **less than 1k**, delivering Custom Elements with 100% native performance.
 
-If you are bundling instead all the code, consider decoupling _DRE_ bundling a part, or perform the sasme `customElements` check on the `window` and bring in only the right polyfill.
+If you are bundling instead all the code, consider decoupling _DRE_ bundling a part, or perform the same `customElements` check on the `window` and bring in only the right polyfill.
 
 ### What About Shadow DOM ?
 
