@@ -37,14 +37,14 @@
   },
   "devDependencies": {
     "html-class": "^1.2.0",
-    "jshint": "^2.9.5",
+    "jshint": "^2.10.2",
     "phantomjs-prebuilt": "^2.1.14",
     "tiny-cdn": "^0.7.0",
     "uglify-js": "^2.8.29",
     "wru": "^0.3.0"
   },
   "dependencies": {
-    "lightercollective": "^0.1.0"
+    "lightercollective": "^0.3.0"
   },
   "collective": {
     "type": "opencollective",
