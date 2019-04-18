@@ -4,6 +4,7 @@ node_modules/
 src/
 template/
 test/
+.github/ISSUE_TEMPLATE.md
 .gitignore
 .npmignore
 .travis.yml
