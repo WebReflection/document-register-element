@@ -11,7 +11,7 @@ already used in production with projects such as [Google AMP HTML ⚡](https://g
 
 Projects based on this polyfill should consider migrating to V1 API, which is natively available for Safari, Chrome, Firefox, and soon Edge too.
 
-Where built in extends are not possible, you can use my latest [built-in-element](https://github.com/WebReflection/built-in-element) polyfill instead, which will leave natively working implementations untouched, and will apply the minimal amount of patches to native V1 without built-in elements (only Safari to date).
+Where built in extends are not possible, you can use my latest [built-in-element](https://github.com/ungap/custom-elements-builtin) polyfill instead, which will leave natively working implementations untouched, and will apply the minimal amount of patches to native V1 without built-in elements (only Safari to date).
 
 ### How To Polyfill Custom Elements V1
 
@@ -19,7 +19,7 @@ This is a bullet-proof way to bring in Custom Elements V1 when needed.
 
 ```html
 <script>this.customElements||document.write('<script src="//unpkg.com/document-register-element"><\x2fscript>');</script>
-<script src="//unpkg.com/built-in-element"></script>
+<script src="//unpkg.com/@ungap/built-in-element"></script>
 ```
 
 Don't worry though, only very old browsers will pass through that `document.write`, preserving its _20yo_ tested nature, while no modern browser will ever complain.
@@ -47,7 +47,7 @@ However, if your transpiler transforms native ES2015 classes into something inco
 Babel 7 should've solved this in core, so use Babel 7 if you need transpilers.
 
 
-### Avoiding CE Built In
+### How to avoid CE Built In
 Since version `1.6` the **ponyfill** flag can be either a `string`,
 representing the ponyfill `type` such `"auto"` or `"force"`,
 or an `object`, with the following shape:
@@ -61,10 +61,9 @@ installCE(global, {
 
 If you set `noBuiltIn` to true,
 the `V1` API will be polyfilled where needed.
+
 No extra checks and patches will be applied
-to make custom elements built-in work,
-since no browser currently ships
-[this part of the specification](https://html.spec.whatwg.org/multipage/custom-elements.html#custom-elements-customized-builtin-example).
+to make custom elements built-in work.
 
 
 ### New Ponyfill in 1.3
