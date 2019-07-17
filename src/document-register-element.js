@@ -35,7 +35,7 @@ var
   PREFIX_IS = '=',
 
   // valid and invalid node names
-  validName = /^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$/,
+  validName = /^[A-Z][._A-Z0-9]*-[-._A-Z0-9]*$/,
   invalidNames = [
     'ANNOTATION-XML',
     'COLOR-PROFILE',
