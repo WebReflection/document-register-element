@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="../build/document-register-element.max.js"></script>
+	<script>
+	var count = 0;
+	document.registerElement('in-template', {
+		prototype: Object.create(
+			HTMLElement.prototype, {
+				createdCallback: {value: function() {
+					document.getElementById('count').innerHTML = ++count;
+					this.innerHTML = count;
+				}}
+			})
+		});
+	</script>
+	</head>
+	<body>
+		<p>
+			Counter should be 2: <span id="count">0</span>
+		</p>
+		<template id="template"><in-template></in-template></template>
+		<script>
+		var template = document.getElementById('template');
+		// This FAILS on Chrome with fix!:
+		// document.body.appendChild(template.content.cloneNode(true));
+		document.body.appendChild(document.createElement('in-template'));
+		var div = document.createElement('div');
+		div.innerHTML = template.innerHTML;
+		document.body.appendChild(div);
+		</script>
+	</body>
+</html>

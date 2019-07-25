@@ -638,6 +638,12 @@ define(function(polyfill){'use strict';
   
     attachShadow = HTMLElementPrototype.attachShadow,
     cloneNode = HTMLElementPrototype.cloneNode,
+    closest = HTMLElementPrototype.closest || function (name) {
+      var self = this;
+      while (self && self.nodeName !== name)
+        self = self.parentNode;
+      return self;
+    },
     dispatchEvent = HTMLElementPrototype.dispatchEvent,
     getAttribute = HTMLElementPrototype.getAttribute,
     hasAttribute = HTMLElementPrototype.hasAttribute,
@@ -1246,7 +1252,7 @@ define(function(polyfill){'use strict';
       i = getTypeIndex(node),
       counterAction
     ;
-    if (-1 < i) {
+    if ((-1 < i) && !closest.call(node, 'TEMPLATE')) {
       patchIfNotAlready(node, protos[i]);
       i = 0;
       if (action === ATTACHED && !node[ATTACHED]) {
@@ -1269,8 +1275,6 @@ define(function(polyfill){'use strict';
       ))) fn.call(node);
     }
   }
-  
-  
   
   // V1 in da House!
   function CustomElementRegistry() {}
