@@ -19,7 +19,7 @@ This is a bullet-proof way to bring in Custom Elements V1 when needed.
 
 ```html
 <script>this.customElements||document.write('<script src="//unpkg.com/document-register-element"><\x2fscript>');</script>
-<script src="//unpkg.com/@ungap/built-in-element"></script>
+<script src="//unpkg.com/@ungap/custom-elements-builtin"></script>
 ```
 
 Don't worry though, only very old browsers will pass through that `document.write`, preserving its _20yo_ tested nature, while no modern browser will ever complain.
