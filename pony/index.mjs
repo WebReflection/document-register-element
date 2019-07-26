@@ -439,8 +439,11 @@ export default function installCustomElements(window, polyfill) {'use strict';
     // V0 polyfill entry
     REGISTER_ELEMENT = 'registerElement',
   
+    // pseudo-random number used as expando/unique name on feature detection
+    UID = window.Math.random() * 10e4 >> 0,
+  
     // IE < 11 only + old WebKit for attributes + feature detection
-    EXPANDO_UID = '__' + REGISTER_ELEMENT + (window.Math.random() * 10e4 >> 0),
+    EXPANDO_UID = '__' + REGISTER_ELEMENT + UID,
   
     // shortcuts and costants
     ADD_EVENT_LISTENER = 'addEventListener',
@@ -1487,7 +1490,7 @@ export default function installCustomElements(window, polyfill) {'use strict';
           return Reflect.construct(HTMLAnchorElement, [], DRE);
         },
         {},
-        'document-register-element-a'
+        'document-register-element-a' + UID
       ));
     } catch(o_O) {
       // or force the polyfill if not
