@@ -1088,6 +1088,10 @@ define(function(polyfill){'use strict';
       return node;
     });
   
+    // needed due unbelievable IE11 behavior
+    // https://github.com/WebReflection/document-register-element/issues/175#issuecomment-520904688
+    addEventListener('beforeunload', function () { delete document.createElement; }, false);
+  
   }
   
   function ASAP() {
