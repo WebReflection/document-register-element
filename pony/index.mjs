@@ -1091,11 +1091,19 @@ export default function installCustomElements(window, polyfill) {'use strict';
       return node;
     });
   
-    // needed due unbelievable IE11 behavior
-    // https://github.com/WebReflection/document-register-element/issues/175#issuecomment-520904688
-    addEventListener('beforeunload', function () { delete document.createElement; }, false);
-  
   }
+  
+  // needed due unbelievable IE11 behavior
+  // https://github.com/WebReflection/document-register-element/issues/175#issuecomment-520904688
+  addEventListener(
+    'beforeunload',
+    function () {
+      delete document.createElement;
+      delete document.importNode;
+      delete document[REGISTER_ELEMENT];
+    },
+    false
+  );
   
   function ASAP() {
     var queue = asapQueue.splice(0, asapQueue.length);
