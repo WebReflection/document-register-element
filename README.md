@@ -3,6 +3,21 @@ document-register-element
  [![build status](https://travis-ci.org/WebReflection/document-register-element.svg)](https://travis-ci.org/WebReflection/document-register-element) [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/WebReflection/donate) [![Backers on Open Collective](https://opencollective.com/document-register-element/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/document-register-element/sponsors/badge.svg)](#sponsors)
 =========================
 
+### Announcement
+
+Please help me out testing [the future version of this polyfill](https://github.com/WebReflection/custom-elements-ie#readme), as example by simply using `https://unpkg.com/@webreflection/custom-elements-ie` as library, in case you are getting this polyfill from some CDN.
+
+**New Features**
+
+  * no [constructor caveats](https://github.com/WebReflection/document-register-element#v1-caveat), everything works like in Chrome or Firefox
+  * better performance, only defined builtin gets observed, thanks to [qsa-observer](https://github.com/WebReflection/qsa-observer#readme)
+  * better memory handling: no leaks, and less operations
+  * better ShadowDOM integration: builtin extends are observed within ShadowDOM nodes, either opened or closed
+
+Thanks in advance for making Custom Elements with Builtin Extends available to everyone ♥
+
+- - -
+
 A stand-alone lightweight version of [Custom Elements V1](https://html.spec.whatwg.org/multipage/scripting.html#custom-elements)
 based on top, and compatible with, the battle-tested [Custom Elements V0](http://w3c.github.io/webcomponents/spec/custom/),
 already used in production with projects such as [Google AMP HTML ⚡](https://github.com/ampproject/amphtml#amp-html-) and others.
