@@ -5,7 +5,7 @@ document-register-element
 
 ### Announcement
 
-Please help me out testing [the future version of this polyfill](https://github.com/WebReflection/custom-elements-ie#readme), as example by simply using `https://unpkg.com/@webreflection/custom-elements-ie` as library, in case you are getting this polyfill from some CDN.
+Please help me out testing [the future version of this polyfill](https://github.com/WebReflection/custom-elements#readme), as example by simply using `https://unpkg.com/@webreflection/custom-elements` as library, in case you are getting this polyfill from some CDN.
 
 **New Features**
 
