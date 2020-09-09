@@ -5,16 +5,12 @@ document-register-element
 
 ### Announcement
 
-Please help me out testing [the future version of this polyfill](https://github.com/WebReflection/custom-elements#readme), as example by simply using `https://unpkg.com/@webreflection/custom-elements` as library, in case you are getting this polyfill from some CDN.
-
-**New Features**
+Please use [the modern version of this polyfill](https://github.com/ungap/custom-elements#readme) instead, which includes the following features:
 
   * no [constructor caveats](https://github.com/WebReflection/document-register-element#v1-caveat), everything works like in Chrome or Firefox
   * better performance, only defined builtin gets observed, thanks to [qsa-observer](https://github.com/WebReflection/qsa-observer#readme)
   * better memory handling: no leaks, and less operations
   * better ShadowDOM integration: builtin extends are observed within ShadowDOM nodes, either opened or closed
-
-Thanks in advance for making Custom Elements with Builtin Extends available to everyone ♥
 
 - - -
 
