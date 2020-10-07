@@ -32,8 +32,7 @@
   "unpkg": "./build/document-register-element.js",
   "scripts": {
     "test": "phantomjs testrunner.js",
-    "web": "tiny-cdn run -p=1337",
-    "postinstall": "node \"$(npm bin)/lightercollective\""
+    "web": "tiny-cdn run -p=1337"
   },
   "devDependencies": {
     "html-class": "^1.2.0",
@@ -42,13 +41,5 @@
     "tiny-cdn": "^0.7.0",
     "uglify-js": "^2.8.29",
     "wru": "^0.3.0"
-  },
-  "dependencies": {
-    "lightercollective": "^0.3.0"
-  },
-  "collective": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/document-register-element",
-    "logo": "logo.txt"
   }
 }
