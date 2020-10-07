@@ -1,4 +1,32 @@
-document-register-element
+# Deprecated
+
+This polyfill has served the Web well in the last 6 years, but it's time to use the *V1* only polyfill, which includes custom elements builtin extends like this one did before.
+
+Such polyfill is in *npm* as [@ungap/custom-elements](https://github.com/ungap/custom-elements#readme) and it does all features detections for every browser without any need to worry about anything.
+
+```html
+<script src="//unpkg.com/@ungap/custom-elements"></script>
+<script>
+// alternatively, if bundlers are around
+import '@ungap/custom-elements';
+// or
+require('@ungap/custom-elements');
+</script>
+```
+
+However, if all you need is custom elements without builtin extends, a module also used by `@ungap/custom-elements` , [@webreflection/custom-elements-no-builtin](https://github.com/WebReflection/custom-elements-no-builtin#readme) is your stop.
+
+
+```html
+<script>
+if(!self.customElements)
+  document.write('<script src="//unpkg.com/@webreflection/custom-elements-no-builtin"><\x2fscript>');
+</script>
+```
+
+Alternatively, if it's a **ponyfill** hat you are after, see [@webreflection/custom-elements](https://github.com/WebReflection/custom-elements#how-to-polyfill) instructions, as this module is already exported as *ponyfill*.
+
+- - -
 
  [![build status](https://travis-ci.org/WebReflection/document-register-element.svg)](https://travis-ci.org/WebReflection/document-register-element) [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/WebReflection/donate) [![Backers on Open Collective](https://opencollective.com/document-register-element/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/document-register-element/sponsors/badge.svg)](#sponsors)
 =========================
